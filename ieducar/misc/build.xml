@@ -36,7 +36,7 @@
   <property name="project.conf.dbdeploy.hostname"  value="localhost" />
   <property name="project.conf.dbdeploy.username"  value="ieducar" />
   <property name="project.conf.dbdeploy.dbname"    value="ieducar" />
-  <property name="project.conf.dbdeploy.password"  value="" />
+  <property name="project.conf.dbdeploy.password"  value="ieducar" />
   <property name="project.conf.dbdeploy.psql_path" value="" />
 
   <!-- Variáveis para substituição de tokens -->
@@ -137,7 +137,7 @@
       url="pgsql:host=${project.conf.dbdeploy.hostname};dbname=${project.conf.dbdeploy.dbname}"
       userid="${project.conf.dbdeploy.username}"
       password="${project.conf.dbdeploy.password}"
-      dir="${project.conf.curdir}/ieducar/misc/database/deltas"
+      dir="${project.conf.curdir}/misc/database/deltas"
       outputfile="${project.conf.builddir}/${project.conf.dbdeploy.deployfile}"
       undooutputfile="${project.conf.builddir}/${project.conf.dbdeploy.undofile}" />
 
