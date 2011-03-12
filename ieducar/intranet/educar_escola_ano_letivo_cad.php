@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gestão escolar
+ * i-Educar - Sistema de gestï¿½o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de Itajaí
+ * Copyright (C) 2006  Prefeitura Municipal de Itajaï¿½
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa é software livre; você pode redistribuí-lo e/ou modificá-lo
- * sob os termos da Licença Pública Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a versão 2 da Licença, como (a seu critério)
- * qualquer versão posterior.
+ * Este programa ï¿½ software livre; vocï¿½ pode redistribuï¿½-lo e/ou modificï¿½-lo
+ * sob os termos da Licenï¿½a Pï¿½blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a versï¿½o 2 da Licenï¿½a, como (a seu critï¿½rio)
+ * qualquer versï¿½o posterior.
  *
- * Este programa é distribuí­do na expectativa de que seja útil, porém, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implí­cita de COMERCIABILIDADE OU
- * ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral
+ * Este programa ï¿½ distribuï¿½do na expectativa de que seja ï¿½til, porï¿½m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia implï¿½cita de COMERCIABILIDADE OU
+ * ADEQUAï¿½ï¿½O A UMA FINALIDADE ESPECï¿½FICA. Consulte a Licenï¿½a Pï¿½blica Geral
  * do GNU para mais detalhes.
  *
- * Você deve ter recebido uma cópia da Licença Pública Geral do GNU junto
- * com este programa; se não, escreva para a Free Software Foundation, Inc., no
- * endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Vocï¿½ deve ter recebido uma cï¿½pia da Licenï¿½a Pï¿½blica Geral do GNU junto
+ * com este programa; se nï¿½o, escreva para a Free Software Foundation, Inc., no
+ * endereï¿½o 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itajaï¿½ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Arquivo disponível desde a versão 1.0.0
+ * @since     Arquivo disponï¿½vel desde a versï¿½o 1.0.0
  * @version   $Id$
  */
 
@@ -36,11 +36,11 @@ require_once 'include/pmieducar/geral.inc.php';
 /**
  * clsIndexBase class.
  *
- * @author    Prefeitura Municipal de Itajaí
+ * @author    Prefeitura Municipal de Itajaï¿½
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponível desde a versão 1.0.0
+ * @since     Classe disponï¿½vel desde a versï¿½o 1.0.0
  * @version   @@package_version@@
  */
 class clsIndexBase extends clsBase
@@ -55,11 +55,11 @@ class clsIndexBase extends clsBase
 /**
  * indice class.
  *
- * @author    Prefeitura Municipal de Itajaí
+ * @author    Prefeitura Municipal de Itajaï¿½
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponível desde a versão 1.0.0
+ * @since     Classe disponï¿½vel desde a versï¿½o 1.0.0
  * @version   @@package_version@@
  */
 class indice extends clsCadastro
@@ -115,14 +115,15 @@ class indice extends clsCadastro
       }
     }
 
-    $ano_atual = date('Y');
+    $ano_atual = date('Y') + 1;
+    
 
     // Foreign keys
     $opcoes = array('' => 'Selecione');
-    $lim = 5;
+    $lim = 25;
 
     for ($i = 0; $i < $lim; $i++) {
-      $ano = $ano_atual + $i;
+      $ano = $ano_atual - $i;
 
       if (! key_exists($ano,$ano_array)) {
         $opcoes[$ano] = $ano;
@@ -155,14 +156,14 @@ class indice extends clsCadastro
   }
 }
 
-// Instancia objeto de página
+// Instancia objeto de pï¿½gina
 $pagina = new clsIndexBase();
 
-// Instancia objeto de conteúdo
+// Instancia objeto de conteï¿½do
 $miolo = new indice();
 
-// Atribui o conteúdo à  página
+// Atribui o conteï¿½do ï¿½  pï¿½gina
 $pagina->addForm($miolo);
 
-// Gera o código HTML
+// Gera o cï¿½digo HTML
 $pagina->MakeAll();
