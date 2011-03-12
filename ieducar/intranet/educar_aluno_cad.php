@@ -2106,14 +2106,21 @@ if (!$_GET['cod_aluno']) {
     if (($F('cpf_') != '' && $F('cpf') == '' && $F('bloqueado') == 1) ||
          $F('cpf_') != $F('cpf_2')
     ) {
-      $('btn_enviar').disabled  = false;
-      $('btn_enviar').className = 'botaolistagemdisabled';
-      $('btn_enviar').value     = 'Aguarde...';
-      var cpf = $('cpf_').value;
-      var xml_dados_pessoa = new ajax(getDados);
-      xml_dados_pessoa.envia('educar_aluno_cad_xml.php?cpf=' + cpf);
+    	var cpf = $('cpf_').value;
+    	if (cpf == "")
+    	{
+    		location.reload(true);
+    	}
+    	else
+    	{
+			$('btn_enviar').disabled  = false;
+      		$('btn_enviar').className = 'botaolistagemdisabled';
+      		$('btn_enviar').value     = 'Aguarde...';
+			var xml_dados_pessoa = new ajax(getDados);
+      		xml_dados_pessoa.envia('educar_aluno_cad_xml.php?cpf=' + cpf);
+    	}
     }
-    else if ($F('cpf') != '' || $F('bloqueado') == 0) {
+    else if ($F('cpf') == '' || $F('bloqueado') == 0 || $F('cpf') != '') {
       validaTab(1);
       LTb0('0', '2');
       $('btn_enviar').disabled = false;
