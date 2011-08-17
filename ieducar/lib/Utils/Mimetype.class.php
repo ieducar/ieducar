@@ -104,11 +104,12 @@ class Mimetype
 
   protected function privBuildMimeArray() {
     return array(
-      'doc' => 'application/msword',
-      'odt' => 'application/vnd.oasis.opendocument.text',
-      'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
-      'pdf' => 'application/pdf',
-      'xls' => 'application/vnd.ms-excel',
+      'doc'  => 'application/msword',
+      'odt'  => 'application/vnd.oasis.opendocument.text',
+      'ods'  => 'application/vnd.oasis.opendocument.spreadsheet',
+      'pdf'  => 'application/pdf',
+      'xls'  => 'application/vnd.ms-excel',
+      'psql' => '',
     );
   }
 }

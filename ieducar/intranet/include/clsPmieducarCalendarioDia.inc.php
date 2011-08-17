@@ -429,7 +429,7 @@ class clsPmieducarCalendarioDia
 	 *
 	 * @return array
 	 */
-	function lista( $int_ref_cod_calendario_ano_letivo = null, $int_mes = null, $int_dia = null, $int_ref_usuario_exc = null, $int_ref_usuario_cad = null, $int_ref_cod_calendario_dia_motivo = null/*, $int_ref_cod_calendario_atividade = null*/, $str_descricao = null, $date_descricao_fim = null, $date_data_cadastro_ini = null, $date_data_cadastro_fim = null, $date_data_exclusao_ini = null, $date_data_exclusao_fim = null, $int_ativo = null,$str_tipo_dia_in = null)
+	function lista( $int_ref_cod_escola = null, $int_mes = null, $int_dia = null, $int_ref_usuario_exc = null, $int_ref_usuario_cad = null, $int_ref_cod_calendario_dia_motivo = null/*, $int_ref_cod_calendario_atividade = null*/, $str_descricao = null, $date_descricao_fim = null, $date_data_cadastro_ini = null, $date_data_cadastro_fim = null, $date_data_exclusao_ini = null, $date_data_exclusao_fim = null, $int_ativo = null,$str_tipo_dia_in = null)
 	{
 		$sql = "SELECT {$this->_campos_lista} FROM {$this->_tabela} c";
 
@@ -446,9 +446,9 @@ class clsPmieducarCalendarioDia
 
 
 
-		if( is_numeric( $int_ref_cod_calendario_ano_letivo ) )
+		if( is_numeric( $int_ref_cod_escola ) )
 		{
-			$filtros .= "{$whereAnd} c.ref_cod_calendario_ano_letivo = '{$int_ref_cod_calendario_ano_letivo}'";
+			$filtros .= "{$whereAnd} c.ref_cod_calendario_ano_letivo = (SELECT cod_calendario_ano_letivo FROM pmieducar.calendario_ano_letivo where ref_cod_escola = $int_ref_cod_escola)";
 			$whereAnd = " AND ";
 		}
 		if( is_numeric( $int_mes ) )
@@ -522,7 +522,6 @@ class clsPmieducarCalendarioDia
 			$filtros .= "{$whereAnd} exists (SELECT FROM pmieducar.calendario_dia_motivo WHERE )";
 			$whereAnd = " AND ";
 		}
-
 
 		$db = new clsBanco();
 		$countCampos = count( explode( ",", $this->_campos_lista ) );

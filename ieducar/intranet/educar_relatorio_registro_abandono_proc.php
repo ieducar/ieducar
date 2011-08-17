@@ -43,8 +43,8 @@ class clsIndexBase extends clsBase
 {
   function Formular()
   {
-    $this->SetTitulo($this->_instituicao . ' i-Educar - Registro de Matr&iacute;culas');
-    $this->processoAp = '916';
+    $this->SetTitulo($this->_instituicao . ' i-Educar - Registro de Abandonos');
+    $this->processoAp = '999';
     $this->renderMenu = FALSE;
     $this->renderMenuSuspenso = FALSE;
   }
@@ -72,21 +72,6 @@ class indice extends clsCadastro
   var $get_link;
   var $campo_assinatura;
   var $total = 0;
-
-  var $meses_do_ano = array(
-    '1'  => 'JANEIRO',
-    '2'  => 'FEVEREIRO',
-    '3'  => 'MARÇO',
-    '4'  => 'ABRIL',
-    '5'  => 'MAIO',
-    '6'  => 'JUNHO',
-    '7'  => 'JULHO',
-    '8'  => 'AGOSTO',
-    '9'  => 'SETEMBRO',
-    '10' => 'OUTUBRO',
-    '11' => 'NOVEMBRO',
-    '12' => 'DEZEMBRO'
-  );
 
   function renderHTML()
   {
@@ -137,42 +122,35 @@ class indice extends clsCadastro
       $db = new clsBanco();
       $this->nm_escola = $db->CampoUnico($sql);
 
-      $sql = "SELECT * FROM (
-	  SELECT DISTINCT ON
-	     (cod_matricula) cod_matricula,
-	     m.ref_cod_aluno,
-	     (SELECT
-	        nome
-	      FROM
-	        cadastro.pessoa p, pmieducar.aluno a
-	      WHERE
-	        a.cod_aluno = m.ref_cod_aluno AND a.ref_idpes = p.idpes)
-	     as nome_aluno,
-	     to_char(data_transferencia,'DD/MM/YYYY') as dt_transferencia,
-	     s.nm_serie,
-	     t.nm_turma,
-	     ts.ref_cod_matricula_entrada
-	   FROM
-	     pmieducar.matricula m,
-	     pmieducar.matricula_turma mt,
-	     pmieducar.turma t,
-	     pmieducar.serie s,
-	     pmieducar.transferencia_solicitacao ts
-	   WHERE
-	     m.ref_ref_cod_escola = {$this->ref_cod_escola}
-	     AND ref_cod_matricula_saida = cod_matricula
-	     AND ts.ativo = 1
-	     AND mt.ref_cod_matricula = m.cod_matricula
-	     AND mt.ref_cod_turma = t.cod_turma
-	     AND t.ref_ref_cod_serie = s.cod_serie
-	     AND m.ano = {$this->ano}
-	   ORDER BY
-	     cod_matricula, 
-	     mt.data_cadastro ASC,
-	     nm_turma) AS tb
-	ORDER BY tb.nm_turma,
-	         tb.nm_serie,
-	         tb.dt_transferencia";
+      $sql = "SELECT
+          cod_matricula,
+             m.ref_cod_aluno,
+             (SELECT
+                nome
+              FROM
+                cadastro.pessoa p, pmieducar.aluno a
+              WHERE
+                a.cod_aluno = m.ref_cod_aluno AND a.ref_idpes = p.idpes)
+              as nome_aluno,
+              s.nm_serie,
+              t.nm_turma,
+              to_char(m.data_exclusao,'DD/MM/YYYY') as dt_abandono
+           FROM
+              pmieducar.matricula m,
+              pmieducar.matricula_turma mt,
+              pmieducar.turma t,
+              pmieducar.serie s
+           WHERE
+              m.aprovado = 6
+              AND m.ref_ref_cod_escola = {$this->ref_cod_escola}
+              AND mt.ativo = 1
+              AND mt.ref_cod_matricula = m.cod_matricula
+              AND mt.ref_cod_turma = t.cod_turma
+              AND t.ref_ref_cod_serie = s.cod_serie
+              AND m.ano = {$this->ano}
+           ORDER BY
+              nm_turma,
+              nm_serie;";
 
       $db->Consulta($sql);
 
@@ -184,8 +162,8 @@ class indice extends clsCadastro
           $this->total++;
         }
 
-        $this->pdf = new clsPDF('Registro de Matrículas - '  . $this->ano,
-          'Registro de Matrículas', 'A4', '', FALSE, FALSE);
+        $this->pdf = new clsPDF('Registro de Abandonos - '  . $this->ano,
+          'Registro de Abandonos', 'A4', '', FALSE, FALSE);
         $obj_instituicao = new clsPmieducarInstituicao();
 
         $this->pdf->largura  = 842.0;
@@ -205,8 +183,8 @@ class indice extends clsCadastro
 
         $altura_escrita = 3;
         foreach ($dados as $dado_transferencia) {
-          list($cod_matricula, $ref_cod_aluno, $nome_aluno, $dt_transferencia,
-            $nm_serie, $nm_turma, $ref_cod_matricula_entrada) = $dado_transferencia;
+          list($cod_matricula, $ref_cod_aluno, $nome_aluno, $nm_serie, $nm_turma, 
+            $dt_abandono) = $dado_transferencia;
 
           $this->pdf->linha_relativa($esquerda, $altura += 18, 0, 18);
           $this->pdf->linha_relativa($esquerda, $altura, $direita, 0);
@@ -218,40 +196,18 @@ class indice extends clsCadastro
             $altura + $altura_escrita, 200, 30, $fonte, $tam_texto);
 
           $this->pdf->linha_relativa($esquerda + 267 - 18, $altura, 0, 18);
-          $this->pdf->escreve_relativo($dt_transferencia, $esquerda + 270 - 18,
-            $altura + $altura_escrita, 150, 30, $fonte, $tam_texto, $corTexto);
+          $this->pdf->escreve_relativo($nm_serie, $esquerda + 270 - 18,
+            $altura + $altura_escrita, 70, 30, $fonte, $tam_texto, $corTexto, 'center');
 
-          $this->pdf->linha_relativa($esquerda + 315-11, $altura, 0, 18);
-          $this->pdf->escreve_relativo($nm_serie, $esquerda + 315 - 9,
-            $altura + $altura_escrita, 72, 30, $fonte, $tam_texto, $corTexto, 'center');
+          $this->pdf->linha_relativa($esquerda + 335-11, $altura, 0, 18);
+          $this->pdf->escreve_relativo($nm_turma, $esquerda + 330 - 9,
+            $altura + $altura_escrita, 120, 30, $fonte, $tam_texto, $corTexto, 'center');
 
-          $this->pdf->linha_relativa($esquerda + 360+19, $altura, 0, 18);
-          $this->pdf->escreve_relativo($nm_turma, $esquerda + 358 + 0 + 20,
+          $this->pdf->linha_relativa($esquerda + 420+19, $altura, 0, 18);
+          $this->pdf->escreve_relativo($dt_abandono, $esquerda + 412 + 0 + 20,
             $altura + $altura_escrita, 100, 30, $fonte, $tam_texto, $corTexto, 'center');
 
-          $this->pdf->linha_relativa($esquerda + 449 + 34, $altura, 0, 18);
-
-          $estabelecimento_destino = NULL;
-          if (is_numeric($ref_cod_matricula_entrada)) {
-            $estabelecimento_destino = $this->getNomeEscola($ref_cod_matricula_entrada);
-          }
-          else {
-            $this->pdf->escreve_relativo('Escola Externa ao Sistema', $esquerda + 452 + 34,
-              $altura + $altura_escrita, 300, 30, $fonte, $tam_texto);
-          }
-
-          if (!empty($estabelecimento_destino)) {
-            $this->pdf->escreve_relativo($estabelecimento_destino, $esquerda + 452 + 34,
-              $altura + $altura_escrita, 300, 30, $fonte, $tam_texto);
-          }
-
-          $this->pdf->linha_relativa($esquerda + 757, $altura, 0, 18);
-
-          // Coloca o UF configurado em ieducar.ini caso exista um estabelecimento destino,
-          // supondo que todos os estabelecimentos estejam no mesmo estado.
-          // @todo Para suportar multi-instituições, deve pegar a informação dos dados da escola destino.
-          $this->pdf->escreve_relativo(empty($estabelecimento_destino) ? '' : $uf,
-            $esquerda + 763, $altura + $altura_escrita, 50, 30, $fonte, $tam_texto);
+          $this->pdf->linha_relativa($esquerda + 489 + 34, $altura, 0, 18);
 
           $this->pdf->linha_relativa($esquerda + 782, $altura, 0, 18);
           $this->pdf->linha_relativa($esquerda, $altura, $direita, 0);
@@ -359,10 +315,10 @@ class indice extends clsCadastro
     $this->pdf->escreve_relativo("Escola: {$this->nm_escola}",132, 64, 300, 80,
       $fonte, 9, $corTexto, 'left');
 
-    $this->pdf->escreve_relativo("Registro de Transferências Expedidas - {$this->ano}",
+    $this->pdf->escreve_relativo("Registro de Abandonos - {$this->ano}",
       30, 78, 782, 80, $fonte, 12, $corTexto, 'center');
 
-    $this->pdf->escreve_relativo("Total de Transferências: {$this->total}", 30,
+    $this->pdf->escreve_relativo("Total de Abandonos: {$this->total}", 30,
       95, 782, 80, $fonte, 10, $corTexto, 'center');
 
     $this->pdf->linha_relativa(30, $altura += 100, 782, 0);
@@ -374,7 +330,7 @@ class indice extends clsCadastro
     $altura    = 130;
 
     $this->pdf->linha_relativa($esquerda, $altura, 0, 18);
-    $this->pdf->escreve_relativo("Matrícula", $esquerda + 1, $altura + 3, 150,
+    $this->pdf->escreve_relativo("Matrícula", $esquerda + 5, $altura + 3, 150,
       30, $fonte, $tam_texto);
     $this->pdf->linha_relativa($esquerda + 55, $altura, 0, 18);
 
@@ -382,24 +338,18 @@ class indice extends clsCadastro
       100, 30, $fonte, $tam_texto);
     $this->pdf->linha_relativa($esquerda + 267 - 18, $altura, 0, 18);
 
-    $this->pdf->escreve_relativo("Data", $esquerda + 270 - 18, $altura + 3,
-      45, 30, $fonte, $tam_texto, $corTexto, 'center');
-    $this->pdf->linha_relativa($esquerda + 315 -11, $altura, 0, 18);
+    $this->pdf->escreve_relativo("Série", $esquerda + 270 - 18, $altura + 3,
+      70, 30, $fonte, $tam_texto, $corTexto, 'center');
+    $this->pdf->linha_relativa($esquerda + 335 -11, $altura, 0, 18);
 
-    $this->pdf->escreve_relativo("Série", $esquerda + 305, $altura + 3, 70, 30,
+    $this->pdf->escreve_relativo("Turma", $esquerda + 320, $altura + 3, 120, 30,
       $fonte, $tam_texto, $corTexto, 'center');
-    $this->pdf->linha_relativa($esquerda + 360 + 19, $altura, 0, 18);
+    $this->pdf->linha_relativa($esquerda + 420 + 19, $altura, 0, 18);
 
-    $this->pdf->escreve_relativo("Turma", $esquerda + 358 + 10 + 16, $altura + 3,
-      50, 30, $fonte, $tam_texto, $corTexto, 'center');
-    $this->pdf->linha_relativa($esquerda + 449 + 34, $altura, 0, 18);
+    $this->pdf->escreve_relativo("Data", $esquerda + 402 + 10 + 16, $altura + 3,
+      100, 30, $fonte, $tam_texto, $corTexto, 'center');
+    $this->pdf->linha_relativa($esquerda + 489 + 34, $altura, 0, 18);
 
-    $this->pdf->escreve_relativo("Estabelecimento Destino", $esquerda + 452 + 37,
-      $altura + 3, 150, 30, $fonte, $tam_texto);
-    $this->pdf->linha_relativa($esquerda + 757, $altura, 0, 18);
-
-    $this->pdf->escreve_relativo("UF", $esquerda + 763, $altura + 3, 50, 30,
-      $fonte, $tam_texto);
     $this->pdf->linha_relativa($esquerda + 782, $altura, 0, 18);
 
     $this->page_y +=19;

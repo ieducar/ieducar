@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Include
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -39,10 +39,10 @@ if (class_exists('clsPmiajudaPagina')) {
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Include
  * @since     Classe disponível desde a versão 1.0.0
- * @version   @@package_version@@
+ * @version   arapiraca-r733
  */
 class clsCadastro extends clsCampos
 {

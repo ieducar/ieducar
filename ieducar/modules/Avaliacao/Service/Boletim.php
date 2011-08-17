@@ -1082,6 +1082,7 @@ class Avaliacao_Service_Boletim implements CoreExt_Configurable
     $situacao->andamento   = FALSE;
     $situacao->recuperacao = FALSE;
     $situacao->retidoFalta = FALSE;
+    $situacao->reprovado   = FALSE;
     $situacao->nota        = NULL;
     $situacao->falta       = NULL;
 
@@ -1102,6 +1103,7 @@ class Avaliacao_Service_Boletim implements CoreExt_Configurable
         $situacao->recuperacao = TRUE;
         break;
       case App_Model_MatriculaSituacao::REPROVADO:
+        $situacao->reprovado   = TRUE;
         $situacao->aprovado    = FALSE;
         break;
     }
@@ -2337,13 +2339,13 @@ class Avaliacao_Service_Boletim implements CoreExt_Configurable
       require_once 'CoreExt/Service/Exception.php';
       throw new CoreExt_Service_Exception('Não é possível promover uma matrícula em andamento.');
     }
-
+/*
     // Se a matrícula já foi alterada (aluno aprovado ou reprovado), lança exceção.
     if (App_Model_MatriculaSituacao::EM_ANDAMENTO > $this->getOption('aprovado')) {
       require_once 'CoreExt/Service/Exception.php';
       throw new CoreExt_Service_Exception('A matrícula já foi promovida.');
     }
-
+*/
     $tipoProgressao = $this->getRegra()->get('tipoProgressao');
 
     switch ($tipoProgressao) {

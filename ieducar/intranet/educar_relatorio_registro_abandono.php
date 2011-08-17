@@ -20,67 +20,52 @@
  * com este programa; se não, escreva para a Free Software Foundation, Inc., no
  * endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
- * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
- * @package   iEd_Pmieducar
- * @since     Arquivo disponível desde a versão 1.0.0
- * @version   $Id$
+ * @author      Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
+ * @license     http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @package     Core
+ * @subpackage  pmieducar
+ * @subpackage  Matricula
+ * @subpackage  SolicitacaoTransferencia
+ * @subpackage  Relatorio
+ * @since       Arquivo disponível desde a versão 1.0.0
+ * @version     $Id$
  */
 
 require_once 'include/clsBase.inc.php';
 require_once 'include/clsCadastro.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
-require_once 'include/relatorio.inc.php';
+require_once 'include/clsPDF.inc.php';
 
-/**
- * clsIndexBase class.
- *
- * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
- * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
- * @package   iEd_Pmieducar
- * @since     Classe disponível desde a versão 1.0.0
- * @version   arapiraca-r733
- */
 class clsIndexBase extends clsBase
 {
   function Formular()
   {
-    $this->SetTitulo($this->_instituicao . ' i-Educar - Quadro de Professores & Funcionários');
-    $this->processoAp = 690;
+    $this->SetTitulo($this->_instituicao . ' i-Educar - Registro de Abandonos');
+    $this->processoAp = '999';
   }
 }
 
-/**
- * clsIndexBase class.
- *
- * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
- * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
- * @package   iEd_Pmieducar
- * @since     Classe disponível desde a versão 1.0.0
- * @version   arapiraca-r733
- */
 class indice extends clsCadastro
 {
+  /**
+   * Referência a usuário da sessão.
+   * @var int
+   */
   var $pessoa_logada;
 
   var $ref_cod_instituicao;
   var $ref_cod_escola;
-  var $ref_ref_cod_escola;
-  var $ref_cod_curso;
-  var $ref_ref_cod_serie;
-  var $ref_cod_turma;
-
   var $ano;
-  var $link;
+  var $nm_escola;
+  var $nm_instituicao;
+
+  var $pdf;
+  var $page_y = 139;
 
   function Inicializar()
   {
     $retorno = 'Novo';
-
     session_start();
     $this->pessoa_logada = $_SESSION['id_pessoa'];
     session_write_close();
@@ -90,8 +75,23 @@ class indice extends clsCadastro
 
   function Gerar()
   {
-    $get_escola  = TRUE;
-    $obrigatorio = TRUE;
+    session_start();
+    $this->pessoa_logada = $_SESSION['id_pessoa'];
+    session_write_close();
+
+    if ($_POST) {
+      foreach ($_POST as $key => $value) {
+        $this->$key = $value;
+      }
+    }
+
+    $this->ano = $ano_atual = date('Y');
+    $this->campoNumero('ano', 'Ano', $this->ano, 4, 4, TRUE);
+
+    $get_escola              = TRUE;
+    $obrigatorio             = FALSE;
+    $instituicao_obrigatorio = TRUE;
+    $escola_obrigatorio      = TRUE;
 
     include 'include/pmieducar/educar_campo_lista.php';
 
@@ -99,16 +99,11 @@ class indice extends clsCadastro
       $this->ref_ref_cod_escola = $this->ref_cod_escola;
     }
 
-    $this->campoCheck("professor","Busca somente professores","");
+    $this->url_cancelar      = 'educar_index.php';
+    $this->nome_url_cancelar = 'Cancelar';
 
-    $this->acao_enviar = false;
-    $this->array_botao = array("Gerar Relat&oacute;rio");
-    $this->array_botao_url_script = array("showExpansivelImprimir(400, 200,  'educar_relatorio_quadro_professores_proc.php',['ref_cod_escola', 'ref_cod_instituicao', 'professor'], 'Relatório i-Educar' )");
-  }
-
-  function Novo()
-  {
-    return TRUE;
+    $this->acao_enviar = 'acao2()';
+    $this->acao_executa_submit = FALSE;
   }
 }
 
@@ -123,3 +118,19 @@ $pagina->addForm($miolo);
 
 // Gera o código HTML
 $pagina->MakeAll();
+?>
+<script type="text/javascript">
+function acao2()
+{
+
+  if(! acao()) {
+    return false;
+  }
+
+  showExpansivelImprimir(400, 200, '', [], 'Registro de Abandonos');
+  document.formcadastro.target = 'miolo_' + (DOM_divs.length - 1);
+  document.formcadastro.submit();
+}
+
+document.formcadastro.action = 'educar_relatorio_registro_abandono_proc.php';
+</script>
