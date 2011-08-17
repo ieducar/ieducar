@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Pmieducar
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -36,11 +36,11 @@ require_once 'include/clsMenuFuncionario.inc.php';
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
  * @todo      Eliminar a lógica duplicada dos métodos permissao_*
- * @version   @@package_version@@
+ * @version   arapiraca-r733
  */
 class clsPermissoes
 {

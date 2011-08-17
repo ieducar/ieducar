@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Pmieducar
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -40,10 +40,10 @@ require_once 'ComponenteCurricular/Model/ComponenteDataMapper.php';
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
- * @version   @@package_version@@
+ * @version   arapiraca-r733
  */
 class clsIndexBase extends clsBase
 {
@@ -59,14 +59,14 @@ class clsIndexBase extends clsBase
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
  * @todo      Ver a questão de formulários que tem campos dinamicamente
  *   desabilitados de acordo com a requisição (GET, POST ou erro de validação).
  *   A forma atual de usar valores em campos hidden leva a diversos problemas
  *   como aumento da lógica de pré-validação nos métodos Novo() e Editar().
- * @version   @@package_version@@
+ * @version   arapiraca-r733
  */
 class indice extends clsCadastro
 {

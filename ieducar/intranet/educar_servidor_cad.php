@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Pmieducar
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -33,17 +33,15 @@ require_once 'include/clsCadastro.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
 
-require_once 'Educacenso/Model/DocenteDataMapper.php';
-
 /**
  * clsIndexBase class.
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
- * @version   @@package_version@@
+ * @version   arapiraca-r733
  */
 class clsIndexBase extends clsBase
 {
@@ -59,10 +57,10 @@ class clsIndexBase extends clsBase
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
- * @version   @@package_version@@
+ * @version   arapiraca-r733
  */
 class indice extends clsCadastro
 {
@@ -80,9 +78,6 @@ class indice extends clsCadastro
   var $ref_cod_instituicao_original;
 
   var $total_horas_alocadas;
-
-  // Determina se o servidor é um docente para buscar código Educacenso/Inep.
-  var $docente = FALSE;
 
   function Inicializar()
   {
@@ -153,10 +148,6 @@ class indice extends clsCadastro
             $det_funcao = $obj_funcao->detalhe();
 
             $this->ref_cod_funcao[] = array($funcao['ref_cod_funcao'] . '-' . $det_funcao['professor']);
-
-            if (FALSE == $this->docente && (bool) $det_funcao['professor']) {
-              $this->docente = TRUE;
-            }
           }
         }
 
@@ -321,28 +312,6 @@ class indice extends clsCadastro
 
     $this->campoHora('carga_horaria', 'Carga Horária', $hora_formatada, TRUE,
       'Número de horas deve ser maior que horas alocadas');
-
-    // Dados do docente no Inep/Educacenso.
-    if ($this->docente) {
-      $docenteMapper = new Educacenso_Model_DocenteDataMapper();
-
-      $docenteInep = NULL;
-      try {
-        $docenteInep = $docenteMapper->find(array('docente' => $this->cod_servidor));
-      }
-      catch (Exception $e) {
-      }
-
-      if (isset($docenteInep)) {
-        $this->campoRotulo('_inep_cod_docente', 'Código do docente no Educacenso/Inep',
-          $docenteInep->docenteInep);
-
-        if (isset($docenteInep->nomeInep)) {
-          $this->campoRotulo('_inep_nome_docente', 'Nome do docente no Educacenso/Inep',
-            $docenteInep->nomeInep);
-        }
-      }
-    }
   }
 
   function Novo()
