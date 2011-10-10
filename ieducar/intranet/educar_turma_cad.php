@@ -302,13 +302,7 @@ class indice extends clsCadastro
 
     $this->campoNumero('max_aluno', 'Máximo de Alunos', $this->max_aluno, 3, 3, TRUE);
 
-    // Evita que o campo seja desmarcado quando um módulo ou dia da semana forem
-    // adicionados.
-    if (isset($this->visivel)) {
-      $this->visivel = 't';
-    }
-
-    $this->campoCheck('visivel', 'Ativo', dbBool($this->visivel), '');
+    $this->campoCheck('visivel', 'Ativo', dbBool($this->visivel));
 
     $this->campoCheck('multiseriada', 'Multi-Seriada', $this->multiseriada, '',
       FALSE, FALSE);
@@ -670,12 +664,13 @@ class indice extends clsCadastro
       $this->turma_modulo = unserialize(urldecode($this->turma_modulo));
       $this->turma_dia_semana = unserialize(urldecode($this->turma_dia_semana));
 
-      if ($this->turma_modulo) {
+      if ($this->turma_modulo && $this->turma_dia_semana) {
         $obj = new clsPmieducarTurma(NULL, NULL, $this->pessoa_logada,
           $this->ref_ref_cod_serie, $this->ref_cod_escola,
           $this->ref_cod_infra_predio_comodo, $this->nm_turma, $this->sgl_turma,
           $this->max_aluno, $this->multiseriada, NULL, NULL, 1,
-          $this->ref_cod_turma_tipo, NULL, NULL, NULL, NULL, $this->ref_cod_regente,
+          $this->ref_cod_turma_tipo, $this->hora_inicial, $this->hora_final,
+          $this->hora_inicio_intervalo, $this->hora_fim_intervalo, $this->ref_cod_regente,
           $this->ref_cod_instituicao_regente, $this->ref_cod_instituicao,
           $this->ref_cod_curso, $this->ref_ref_cod_serie_mult, $this->ref_cod_escola,
           $this->visivel);
@@ -702,19 +697,17 @@ class indice extends clsCadastro
           }
 
           // Cadastra dia semana
-          if ($this->turma_dia_semana) {
-            foreach ($this->turma_dia_semana as $campo) {
-              $obj = new clsPmieducarTurmaDiaSemana($campo["dia_semana_"],
-                $cadastrou, $campo["hora_inicial_"], $campo["hora_final_"]);
+          foreach ($this->turma_dia_semana as $campo) {
+            $obj = new clsPmieducarTurmaDiaSemana($campo["dia_semana_"],
+              $cadastrou, $campo["hora_inicial_"], $campo["hora_final_"]);
 
-              $cadastrou2  = $obj->cadastra();
+            $cadastrou2  = $obj->cadastra();
 
-              if (!$cadastrou2) {
-                $this->mensagem = 'Cadastro não realizado.';
-                echo "<!--\nErro ao cadastrar clsPmieducarTurmaDiaSemana\nvalores obrigat&oacute;rios\nis_numeric( $cadastrou ) && is_numeric( {$campo["dia_semana_"]} ) && is_string( {$campo["hora_inicial_"]} ) && is_string( {$campo["hora_final_"]} )\n-->";
+            if (!$cadastrou2) {
+              $this->mensagem = 'Cadastro não realizado.';
+              echo "<!--\nErro ao cadastrar clsPmieducarTurmaDiaSemana\nvalores obrigat&oacute;rios\nis_numeric( $cadastrou ) && is_numeric( {$campo["dia_semana_"]} ) && is_string( {$campo["hora_inicial_"]} ) && is_string( {$campo["hora_final_"]} )\n-->";
 
-                return FALSE;
-              }
+              return FALSE;
             }
           }
 
@@ -730,7 +723,7 @@ class indice extends clsCadastro
         return FALSE;
       }
 
-      echo '<script type="text/javascript">alert("É necessário adicionar pelo menos 1 módulo!")</script>';
+      echo '<script type="text/javascript">alert("É necessário adicionar pelo menos 1 módulo e 1 dia da semana!")</script>';
       $this->mensagem = "Cadastro não realizado.";
 
       return FALSE;
@@ -795,12 +788,13 @@ class indice extends clsCadastro
       $this->turma_modulo = unserialize(urldecode($this->turma_modulo));
       $this->turma_dia_semana = unserialize(urldecode($this->turma_dia_semana));
 
-      if ($this->turma_modulo) {
+      if ($this->turma_modulo && $this->turma_dia_semana) {
         $obj = new clsPmieducarTurma($this->cod_turma, $this->pessoa_logada, NULL,
           $this->ref_ref_cod_serie, $this->ref_cod_escola,
           $this->ref_cod_infra_predio_comodo, $this->nm_turma, $this->sgl_turma,
           $this->max_aluno, $this->multiseriada, NULL, NULL, 1,
-          $this->ref_cod_turma_tipo, NULL, NULL, NULL, NULL, $this->ref_cod_regente,
+          $this->ref_cod_turma_tipo, $this->hora_inicial, $this->hora_final,
+          $this->hora_inicio_intervalo, $this->hora_fim_intervalo, $this->ref_cod_regente,
           $this->ref_cod_instituicao_regente, $this->ref_cod_instituicao,
           $this->ref_cod_curso, $this->ref_ref_cod_serie_mult, $this->ref_cod_escola,
           $this->visivel);
@@ -831,23 +825,21 @@ class indice extends clsCadastro
           }
 
           // Edita o dia da semana
-          if ($this->turma_dia_semana) {
-            $obj  = new clsPmieducarTurmaDiaSemana(NULL, $this->cod_turma);
-            $excluiu = $obj->excluirTodos();
+          $obj  = new clsPmieducarTurmaDiaSemana(NULL, $this->cod_turma);
+          $excluiu = $obj->excluirTodos();
 
-            if ($excluiu) {
-              foreach ($this->turma_dia_semana as $campo) {
-                $obj = new clsPmieducarTurmaDiaSemana($campo["dia_semana_"],
-                  $this->cod_turma, $campo["hora_inicial_"], $campo["hora_final_"]);
+          if ($excluiu) {
+            foreach ($this->turma_dia_semana as $campo) {
+              $obj = new clsPmieducarTurmaDiaSemana($campo["dia_semana_"],
+                $this->cod_turma, $campo["hora_inicial_"], $campo["hora_final_"]);
 
-                $cadastrou2  = $obj->cadastra();
+              $cadastrou2  = $obj->cadastra();
 
-                if (!$cadastrou2) {
-                  $this->mensagem = 'Edição não realizada.';
-                  echo "<!--\nErro ao editar clsPmieducarTurmaDiaSemana\nvalores obrigat&oacute;rios\nis_numeric( $this->cod_turma ) && is_numeric( {$campo["dia_semana_"]} ) \n-->";
+              if (!$cadastrou2) {
+                $this->mensagem = 'Edição não realizada.';
+                echo "<!--\nErro ao editar clsPmieducarTurmaDiaSemana\nvalores obrigat&oacute;rios\nis_numeric( $this->cod_turma ) && is_numeric( {$campo["dia_semana_"]} ) \n-->";
 
-                  return FALSE;
-                }
+                return FALSE;
               }
             }
           }
@@ -860,7 +852,7 @@ class indice extends clsCadastro
         }
       }
       else {
-        echo '<script type="text/javascript">alert("É necessário adicionar pelo menos 1 módulo!")</script>';
+        echo '<script type="text/javascript">alert("É necessário adicionar pelo menos 1 módulo e 1 dia da semana!")</script>';
         $this->mensagem = 'Edição não realizada.';
 
         return FALSE;
@@ -1615,6 +1607,11 @@ function valida_xml(xml)
       return false;
     }
 
+    if (qtdDiaSemana == 1) {
+      alert("ATENÇÂO! \n É necessário incluir um 'Dia da Semana'!");
+      document.getElementById('dia_semana').focus();
+      return false;
+    }
   }
 
   if (document.getElementById('padrao_ano_escolar') == 1) {

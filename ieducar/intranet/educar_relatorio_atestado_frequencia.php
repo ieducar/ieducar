@@ -287,7 +287,7 @@ class indice extends clsCadastro
 		$mes = date('n');
 		$mes = strtolower($this->meses_do_ano["{$mes}"]);
 		$data = date('d')." de $mes de ".date('Y');
-		$this->pdf->escreve_relativo( "Cobra Tecnologia, $data", 30, 600, 535, 80, $fonte, 14, $corTexto, 'center' );
+		$this->pdf->escreve_relativo( "Brasilia, $data", 30, 600, 535, 80, $fonte, 14, $corTexto, 'center' );
 		$this->rodape();
 		$this->pdf->CloseFile();
 		$this->get_link = $this->pdf->GetLink();

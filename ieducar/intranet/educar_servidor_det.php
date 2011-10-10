@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -32,17 +32,19 @@ require_once 'include/clsBase.inc.php';
 require_once 'include/clsDetalhe.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
+
 require_once 'ComponenteCurricular/Model/ComponenteDataMapper.php';
+require_once 'Educacenso/Model/DocenteDataMapper.php';
 
 /**
  * clsIndexBase class.
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
- * @version   arapiraca-r733
+ * @version   @@package_version@@
  */
 class clsIndexBase extends clsBase {
   function Formular()
@@ -57,10 +59,10 @@ class clsIndexBase extends clsBase {
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
- * @version   arapiraca-r733
+ * @version   @@package_version@@
  */
 class indice extends clsDetalhe
 {
@@ -196,6 +198,9 @@ class indice extends clsDetalhe
     $obj_funcao = new clsPmieducarServidorFuncao();
     $lst_funcao = $obj_funcao->lista($this->ref_cod_instituicao, $this->cod_servidor);
 
+    // Inep.
+    $docente = false;
+
     if ($lst_funcao) {
       $tabela .= "
         <table cellspacing='0' cellpadding='0' border='0'>
@@ -272,6 +277,8 @@ class indice extends clsDetalhe
           <tr class='$class' align='left'>
             <td><b>{$det_funcao['nm_funcao']}</b></td>
           </tr>";
+
+        $docente = (bool) $det_funcao['professor'];
 
         $class = $class == "formlttd" ? "formmdtd" : "formlttd" ;
       }
@@ -407,6 +414,26 @@ class indice extends clsDetalhe
       ));
     }
 
+    // Dados do docente no Educacenso/Inep.
+    if ($docente) {
+      $docenteMapper = new Educacenso_Model_DocenteDataMapper();
+
+      $docenteInep = NULL;
+      try {
+        $docenteInep = $docenteMapper->find(array('docente' => $registro['cod_servidor']));
+      }
+      catch (Exception $e) {
+      }
+
+      if (isset($docenteInep)) {
+        $this->addDetalhe(array('Código do docente no Educacenso/Inep', $docenteInep->docenteInep));
+
+        if (isset($docenteInep->nomeInep)) {
+          $this->addDetalhe(array('Nome do docente no Educacenso/Inep', $docenteInep->nomeInep));
+        }
+      }
+    }
+
     $obj_permissoes = new clsPermissoes();
 
     if ($obj_permissoes->permissao_cadastra(635, $this->pessoa_logada, 7)) {
@@ -424,6 +451,12 @@ class indice extends clsDetalhe
 
       $this->array_botao[] = 'Formação';
       $this->array_botao_url_script[] = "go(\"educar_servidor_formacao_lst.php?{$get_padrao}\");";
+
+      $this->array_botao[] = 'Cursos superiores/Licenciaturas';
+      $this->array_botao_url_script[] = sprintf(
+        "go(\"../module/Docente/index?servidor=%d&instituicao=%d\");",
+        $registro['cod_servidor'], $this->ref_cod_instituicao
+      );
 
       $this->array_botao[] = 'Faltas/Atrasos';
       $this->array_botao_url_script[] = "go(\"educar_falta_atraso_lst.php?{$get_padrao}\");";

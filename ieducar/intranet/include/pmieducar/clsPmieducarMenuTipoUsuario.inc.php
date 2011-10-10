@@ -185,57 +185,6 @@ class clsPmieducarMenuTipoUsuario
 
 	}
 
-
-	/**
-	 * Atualiza os usuarios quando um tipo de usuario e atualizado
-	 *
-	 * @return bool
-	 */
-
-	public function atualizaUsuarios($tipo){
-		$db = new clsBanco();
-
-		// Busca as permissoes desse tipo de usuario
-		$sql = "SELECT ref_cod_menu_submenu, cadastra, exclui FROM menu_tipo_usuario WHERE ref_cod_tipo_usuario = $tipo";
-		$db->Consulta($sql);
-
-		$permissoes = array();
-		while ( $db->ProximoRegistro() ) {
-			$tupla = $db->Tupla();
-
-			$permissoes[] = "{$tupla['cadastra']}, {$tupla['exclui']}, {$tupla['ref_cod_menu_submenu']}";
-		}
-		
-		// Busca os usuarios cadastrados do tipo
-		$sql2 = "SELECT cod_usuario FROM pmieducar.usuario WHERE ref_cod_tipo_usuario = $tipo";
-		$db->Consulta($sql2);
-
-		
-		$cod_usuario = array();
-		while ( $db->ProximoRegistro() ) {
-			$tupla = $db->Tupla();
-
-			$cod_usuario[] = $tupla['cod_usuario'];
-		}
-
-
-		// Deleta as permissoes existentes e adiciona as novas
-		foreach ( $cod_usuario as $cod) {
-			$sqlD = "DELETE FROM portal.menu_funcionario WHERE ref_ref_cod_pessoa_fj = $cod";
-			$db->Consulta($sqlD);
-
-			$sqlI = "INSERT INTO portal.menu_funcionario VALUES ";
-			foreach ( $permissoes as $value) {
-				$sqlI .= " ($cod, $value),";
-			}
-
-			$sqlI = trim($sqlI, ",");
-			$db->Consulta($sqlI);
-		}
-
-		return true;
-	}
-
 	/**
 	 * Cria um novo registro
 	 *
@@ -245,7 +194,6 @@ class clsPmieducarMenuTipoUsuario
 	{
 		if( is_numeric( (int)$this->ref_cod_tipo_usuario ) && is_numeric( $this->ref_cod_menu_submenu ) && is_numeric( (int)$this->cadastra ) && is_numeric( (int)$this->visualiza ) && is_numeric( (int)$this->exclui ) )
 		{
-
 			$db = new clsBanco();
 
 			$campos = "";
@@ -323,7 +271,6 @@ class clsPmieducarMenuTipoUsuario
 			if( $set )
 			{
 				$db->Consulta( "UPDATE {$this->_tabela} SET $set WHERE ref_cod_tipo_usuario = '{$this->ref_cod_tipo_usuario}' AND ref_cod_menu_submenu = '{$this->ref_cod_menu_submenu}'" );
-
 				return true;
 			}
 		}

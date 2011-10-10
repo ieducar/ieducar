@@ -245,7 +245,7 @@ class BoletimController extends Core_Controller_Page_ViewController
     }
 
     // Colspan para tabela com labels e sublabels
-    $colspan += $porComponente && ($sit->recuperacao || $sit->reprovado) ? 4 : 3;
+    $colspan += $porComponente && $sit->recuperacao ? 4 : 3;
     if ($nenhumaNota) {
       $colspan--;
     }
@@ -256,7 +256,7 @@ class BoletimController extends Core_Controller_Page_ViewController
 
     // Inclui coluna para % de presença geral.
     if (!$porComponente) {
-      if ($sit->recuperacao || $sit->reprovado) {
+      if ($sit->recuperacao) {
         $labels[] = array('data' => 'Exame', 'attributes' => $attributes);
       }
 
@@ -285,7 +285,7 @@ class BoletimController extends Core_Controller_Page_ViewController
         $subLabels[] = array('data' => 'Média', 'attributes' => $attributes);
       }
 
-      if ($sit->recuperacao || $sit->reprovado) {
+      if ($sit->recuperacao) {
         $subLabels[] = array('data' => 'Exame', 'attributes' => $attributes);
       }
 
@@ -442,7 +442,7 @@ class BoletimController extends Core_Controller_Page_ViewController
       }
 
       // Adiciona uma coluna extra caso aluno esteja em exame em alguma componente curricular
-      if ($sit->recuperacao || $sit->reprovado) {
+      if ($sit->recuperacao) {
         if ($mediaSituacao->situacao == App_Model_MatriculaSituacao::EM_EXAME ||
             $mediaSituacao->situacao == App_Model_MatriculaSituacao::APROVADO_APOS_EXAME ||
             $mediaSituacao->situacao == App_Model_MatriculaSituacao::REPROVADO) {
@@ -547,7 +547,7 @@ class BoletimController extends Core_Controller_Page_ViewController
       $data[] = array();
     }
 
-    if ($sit->recuperacao || $sit->reprovado) {
+    if ($sit->recuperacao) {
       $data[] = array('data' => '', 'attributes' => $attributes);
     }
 
@@ -591,7 +591,7 @@ class BoletimController extends Core_Controller_Page_ViewController
         }
       }
 
-      if ($sit->recuperacao || $sit->reprovado) {
+      if ($sit->recuperacao) {
         $data[] = array('data' => '', 'attributes' => $attributes);
       }
 

@@ -216,12 +216,12 @@ class indice extends clsCadastro
 		$obj_permissoes = new clsPermissoes();
 		$obj_permissoes->permissao_cadastra( 602, $this->pessoa_logada, 11,  "educar_situacao_lst.php" );
 
-		if ($this->situacao_padrao == '0')
+		if ($this->situacao_padrao == 'on')
 			$this->situacao_padrao = 1;
 		else
 			$this->situacao_padrao = 0;
 
-		if ($this->situacao_emprestada == '0')
+		if ($this->situacao_emprestada == 'on')
 			$this->situacao_emprestada = 1;
 		else
 			$this->situacao_emprestada = 0;
@@ -250,12 +250,12 @@ class indice extends clsCadastro
 		$obj_permissoes = new clsPermissoes();
 		$obj_permissoes->permissao_cadastra( 602, $this->pessoa_logada, 11,  "educar_situacao_lst.php" );
 
-		if ($this->situacao_padrao == '')
+		if ($this->situacao_padrao == 'on')
 			$this->situacao_padrao = 1;
 		else
 			$this->situacao_padrao = 0;
 
-		if ($this->situacao_emprestada == '0')
+		if ($this->situacao_emprestada == 'on')
 			$this->situacao_emprestada = 1;
 		else
 			$this->situacao_emprestada = 0;

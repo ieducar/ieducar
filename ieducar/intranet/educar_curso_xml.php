@@ -56,9 +56,6 @@
 	{
 		$db = new clsBanco();
 		$db->Consulta( "SELECT cod_curso, nm_curso,padrao_ano_escolar FROM pmieducar.curso WHERE ref_cod_instituicao = {$_GET["ins"]} AND ativo = 1 ORDER BY nm_curso ASC" );
-
-		// O primeiro da lista será a opção TODOS               
-		echo "  <curso cod_curso=\"E\">Todos os cursos</curso>\n";
 		while ( $db->ProximoRegistro() )
 		{
 			list( $cod, $nome,$padrao  ) = $db->Tupla();
@@ -88,9 +85,7 @@
 							{$sql_padrao_ano_escolar}
 						ORDER BY 
 							c.nm_curso ASC" );
-
-		// O primeiro da lista será a opção TODOS		
-		echo "  <curso cod_curso=\"E\">Todos os cursos</curso>\n";
+		
 		while ( $db->ProximoRegistro() )
 		{
 			list( $cod, $nome) = $db->Tupla();

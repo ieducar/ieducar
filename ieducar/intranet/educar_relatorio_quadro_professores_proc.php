@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -64,13 +64,11 @@ $config = $coreExt['Config']->app->template->pdf;
 
 if ($ref_cod_escola) {
   $obj_servidor = new clsPmieducarServidorAlocacao ();
-//  $obj_servidor->setCamposLista('ref_ref_cod_instituicao, ref_cod_escola, sa.ref_cod_servidor, SUM(carga_horaria) AS carga_horaria');
-  $obj_servidor->setCamposLista('ref_ref_cod_instituicao, ref_cod_escola, sa.ref_cod_servidor, SUM((substring(carga_horaria, 1,2)::varchar)::int) || \':00\' || \':00\' AS carga_horaria');
+  $obj_servidor->setCamposLista('ref_ref_cod_instituicao, ref_cod_escola, sa.ref_cod_servidor, SUM(carga_horaria) AS carga_horaria');
   $obj_servidor->setOrderby('sa.ref_ref_cod_instituicao, sa.ref_cod_escola, p.nome, sa.ref_cod_servidor');
   $obj_servidor->setGroupBy('ref_ref_cod_instituicao, ref_cod_escola, sa.ref_cod_servidor, p.nome');
   $lst_servidor = $obj_servidor->lista(NULL, $ref_cod_instituicao, NULL, NULL,
     $ref_cod_escola, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, TRUE, $professor);
-
 
   if (is_array($lst_servidor)) {
     $total_servidor = count($lst_servidor);
@@ -186,7 +184,7 @@ else {
 
     foreach ($lst_escolas as $escolas) {
       $obj_servidor = new clsPmieducarServidorAlocacao ();
-      $obj_servidor->setCamposLista('ref_ref_cod_instituicao, ref_cod_escola, sa.ref_cod_servidor, SUM((substring(carga_horaria, 1,2)::varchar)::int) || \':00\' || \':00\' AS carga_horaria');
+      $obj_servidor->setCamposLista('ref_ref_cod_instituicao, ref_cod_escola, sa.ref_cod_servidor, SUM(carga_horaria) AS carga_horaria');
       $obj_servidor->setOrderby('sa.ref_ref_cod_instituicao, sa.ref_cod_escola, p.nome, sa.ref_cod_servidor');
       $obj_servidor->setGroupBy('ref_ref_cod_instituicao, ref_cod_escola, sa.ref_cod_servidor, p.nome');
       $lst_servidor = $obj_servidor->lista(NULL, $ref_cod_instituicao, NULL,

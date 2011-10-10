@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -36,18 +36,16 @@ require_once 'include/clsPDF.inc.php';
 
 require_once 'App/Model/IedFinder.php';
 require_once 'Avaliacao/Service/Boletim.php';
-require_once 'Core/Controller/Page/EditController.php';
-
 
 /**
  * clsIndexBase class.
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
- * @version   arapiraca-r735
+ * @version   @@package_version@@
  */
 class clsIndexBase extends clsBase
 {
@@ -65,10 +63,10 @@ class clsIndexBase extends clsBase
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
- * @version   arapiraca-r735
+ * @version   @@package_version@@
  */
 class indice extends clsCadastro
 {
@@ -95,7 +93,6 @@ class indice extends clsCadastro
   var $nm_serie;
   var $nm_turma;
   var $nm_turno;
-  var $tipo_nota;
 
   var $pdf;
   var $page_y = 139;
@@ -156,10 +153,10 @@ class indice extends clsCadastro
         AND mt.ref_cod_matricula = m.cod_matricula
         AND m.ativo = 1
         AND mt.ativo = 1
-        AND aprovado IN (1, 2, 6, 9)
+        AND aprovado IN (1, 2)
         AND ano = %d
       ORDER BY
-        mt.ativo DESC, nome", $this->ref_cod_turma, $this->ano);
+        ref_ref_cod_serie, nome", $this->ref_cod_turma, $this->ano);
 
     //verificar se a turma é multiseriada
     $obj_turma = new clsPmieducarTurma($this->ref_cod_turma);
@@ -216,9 +213,6 @@ class indice extends clsCadastro
     }
 
     $this->presencaGeral = ($this->regra->get('tipoPresenca') == RegraAvaliacao_Model_TipoPresenca::GERAL);
-
-    // Busca o tipo de nota que é usada nessa série
-    $tipo_nota = $this->regra->get('tipoNota');
 
     $obj_turma = new clsPmieducarTurma($this->ref_cod_turma);
     $obj_turma->setCamposLista('nm_turma, hora_inicial');
@@ -404,7 +398,7 @@ class indice extends clsCadastro
 
       // Situação da matrícula
       $this->pdf->escreve_relativo(App_Model_MatriculaSituacao::getInstance()->getValue($aluno['aprovado']),
-        $esquerda, $this->page_y + 4, 50, 50, $fonte, $tam_texto, $corTexto, 'center');
+        $esquerda, $this->page_y + 4, 45, 45, $fonte, $tam_texto, $corTexto, 'center');
 
       $this->pdf->linha_relativa($esquerda += 45, $this->page_y, 0, $altura);
 
@@ -416,27 +410,16 @@ class indice extends clsCadastro
       foreach ($this->componentes as $id => $componente) {
         // Se não tem média, foi dispensado do componente
         if (!isset($medias[$id])) {
-          if ($aluno['aprovado'] == 4 || $aluno['aprovado'] == 6 ){
-            $media  = ' - ';
-            $faltas = ' - ';
-          }else{
-	    $media  = 'PPC';
-
-            if (!$this->presencaGeral) {
-              if (isset($faltas[$id])) {
-                $faltas = array_sum(CoreExt_Entity::entityFilterAttr(
-                  $faltas[$id], 'id', 'quantidade')
-                );
-              }
-            }
-          }
-        }else {
+          $media  = 'D';
+          $faltas = 'D';
+        }
+        else {
           $media = $medias[$id][0];
           $media = $media->mediaArredondada;
 
           if (!$this->presencaGeral) {
             if (isset($faltas[$id])) {
-              $faltas_componente = array_sum(CoreExt_Entity::entityFilterAttr(
+              $faltas = array_sum(CoreExt_Entity::entityFilterAttr(
                 $faltas[$id], 'id', 'quantidade')
               );
             }
@@ -452,7 +435,7 @@ class indice extends clsCadastro
 
         // Exibe as faltas no componente curricular, caso a presença não seja geral
         if (!$this->presencaGeral) {
-          $this->pdf->escreve_relativo($faltas_componente, $esquerda + $espacoComponentes / $espacoDiv,
+          $this->pdf->escreve_relativo($faltas, $esquerda + $espacoComponentes / $espacoDiv,
             $this->page_y + 4, $espacoComponentes / $espacoDiv, 100, $fonte, $tam_texto + 1,
             $corTexto, 'center');
         }
@@ -549,8 +532,8 @@ class indice extends clsCadastro
 
     $this->pdf->linha_relativa($esquerda += $espaco_nome, $this->page_y, 0, $altura);
 
-    $this->pdf->escreve_relativo('Situação', $esquerda, $this->page_y + 2, 50,
-      50, $fonte, $tam_texto, $corTexto, 'center');
+    $this->pdf->escreve_relativo('Situação', $esquerda, $this->page_y + 2, 45,
+      45, $fonte, $tam_texto, $corTexto, 'center');
 
     $this->pdf->linha_relativa($esquerda += 45, $this->page_y, 0, $altura);
 
@@ -570,10 +553,9 @@ class indice extends clsCadastro
 
   function buscaDiasLetivos()
   {
-
-    $obj_calendario = new clsPmieducarCalendarioAnoLetivo();
-    $lista_calendario = $obj_calendario->lista(NULL, $this->ref_cod_escola,
-      NULL, NULL, $this->ano, NULL, NULL, NULL, NULL, 1, NULL);
+    $obj_calendario = new clsPmieducarEscolaAnoLetivo();
+    $lista_calendario = $obj_calendario->lista($this->ref_cod_escola, $this->ano,
+      NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL);
 
     $totalDiasUteis = 0;
     $total_semanas  = 0;
@@ -589,32 +571,25 @@ class indice extends clsCadastro
       $fim    = $lst_ano_letivo_modulo[count($lst_ano_letivo_modulo) - 1];
 
       $mes_inicial = explode('-', $inicio['data_inicio']);
-      $dia_inicial = $mes_inicial[2];
-      $ano_inicial = $mes_inicial[0];
       $mes_inicial = $mes_inicial[1];
+      $dia_inicial = $mes_inicial[2];
 
       $mes_final = explode('-', $fim['data_fim']);
-      $dia_final = $mes_final[2];
-      $ano_final = $mes_final[0];
       $mes_final = $mes_final[1];
+      $dia_final = $mes_final[2];
     }
 
-//    for ($mes = $mes_inicial;$mes <= $mes_final; $mes++) {
-    $cond=1;
-    $ano_t = $this->ano;
-    $mes= $mes_inicial;
-    while ($cond) {
-
+    for ($mes = $mes_inicial;$mes <= $mes_final; $mes++) {
       $obj_calendario_dia = new clsPmieducarCalendarioDia();
-      $lista_dias = $obj_calendario_dia->lista($lista_calendario['0']['cod_calendario_ano_letivo'],
+
+      $lista_dias = $obj_calendario_dia->lista($calendario['cod_calendario_ano_letivo'],
         $mes, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1);
 
       $dias_mes = array();
 
       if ($lista_dias) {
         foreach ($lista_dias as $dia) {
-
-         $obj_motivo = new clsPmieducarCalendarioDiaMotivo($dia['ref_cod_calendario_dia_motivo']);
+          $obj_motivo = new clsPmieducarCalendarioDiaMotivo($dia['ref_cod_calendario_dia_motivo']);
 
           $det_motivo = $obj_motivo->detalhe();
           $dias_mes[$dia['dia']] = strtolower($det_motivo['tipo']);
@@ -624,7 +599,7 @@ class indice extends clsCadastro
       //Dias previstos do mes
 
       // Qual o primeiro dia do mes
-      $primeiroDiaDoMes = mktime(0, 0, 0, $mes, 1, $ano_t);
+      $primeiroDiaDoMes = mktime(0, 0, 0, $mes, 1, $this->ano);
 
       // Quantos dias tem o mes
       $NumeroDiasMes = date('t', $primeiroDiaDoMes);
@@ -633,25 +608,23 @@ class indice extends clsCadastro
       $dateComponents = getdate($primeiroDiaDoMes);
 
       // What is the name of the month in question?
-      $NomeMes = $mesesDoAno[$dateComponents['month']];
+      $NomeMes = $mesesDoAno[$dateComponents['mon']];
 
       // What is the index value (0-6) of the first day of the
       // month in question.
       $DiaSemana = $dateComponents['wday'];
 
       //total de dias uteis + dias extra-letivos - dia nao letivo - fim de semana
-      //$DiaSemana = 0;
+      $DiaSemana = 0;
 
       if ($mes == $mes_inicial) {
         $dia_ini = $dia_inicial;
       }
+      elseif ($mes == $mes_final) {
+        $dia_ini = $dia_final;
+      }
       else {
         $dia_ini = 1;
-      }
-
-      if ($dia_ini != 1 ) {
-        $wday = getdate($dia_ini);
-        $wday = $wday['wday'];
       }
 
       for ($dia = $dia_ini; $dia <= $NumeroDiasMes; $dia++) {
@@ -668,27 +641,14 @@ class indice extends clsCadastro
         elseif (key_exists($dia, $dias_mes) && $dias_mes[$dia] == strtolower('e')) {
           $totalDiasUteis++;
         }
+
         $DiaSemana++;
       }
-
-      if ($ano_inicial == $ano_final && $mes < $mes_final) {
-        $mes++;
-      }else if ($ano_inicial != $ano_final && $mes != $mes_final){
-        if ($mes < 12 ) {
-          $mes++;
-        }else{
-          $mes = 1;
-          $ano_t++;
-        }
-      }else{
-        $cond = 0;
-      }
-
     }
 
     $this->dias_letivos = $totalDiasUteis;
   }
-  
+
   function rodape()
   {
     $texto     = '';

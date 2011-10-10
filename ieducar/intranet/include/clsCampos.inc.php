@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Include
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -38,10 +38,10 @@ require_once 'Core/Controller/Page/Abstract.php';
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Include
  * @since     Classe disponível desde a versão 1.0.0
- * @version   arapiraca-r733
+ * @version   @@package_version@@
  */
 class clsCampos extends Core_Controller_Page_Abstract
 {
@@ -2829,6 +2829,15 @@ class clsCampos extends Core_Controller_Page_Abstract
     return $retorno .= "<input onKeyPress=\"formataCEP(this, event);\" class='{$class}' type='text' name=\"{$nome}\" id=\"{$nome}\" value=\"{$valor}\" size=\"{$tamanhovisivel}\" maxlength=\"{$tamanhomaximo}\" {$disabled}>$descricao\n";
   }
 
+  /**
+   * TODO: Remover método. No único caso possível de ser invocado, não o é
+   *   (através de intranet/funcionario_cad.php). É necessário estudar
+   *   o método clsCampos::MakeCampos() para entender o caso possível em que
+   *   este método seria invocado.
+   *
+   * @see scripts/padrao.js::pesquisa_valores_f()
+   * @see clsCampos::MakeCampos()
+   */
   function getCampoTextoPesquisa($nome, $id = '', $valor, $class, $tamanhovisivel,
     $tamanhomaximo, $disabled = FALSE, $caminho, $campos_serializados = NULL,
     $descricao = NULL, $script = NULL, $evento = NULL)

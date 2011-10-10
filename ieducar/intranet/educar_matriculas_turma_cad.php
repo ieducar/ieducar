@@ -233,9 +233,8 @@ class indice extends clsCadastro
         $det_aluno = array_shift($lst_aluno);
         $nm_aluno = $det_aluno['nome_aluno'];
 
-        $this->campoTextoInv('ref_cod_matricula_' . $matricula, '',
-          $det_matricula['ref_cod_aluno'] . ' - ' . $nm_aluno,
-          100, 255, FALSE, FALSE, FALSE, '', '', '', '', 'ref_cod_matricula');
+        $this->campoTextoInv('ref_cod_matricula_' . $matricula, '', $nm_aluno,
+          30, 255, FALSE, FALSE, FALSE, '', '', '', '', 'ref_cod_matricula');
       }
     }
 

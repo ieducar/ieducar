@@ -30,7 +30,7 @@
  * - checkdate
  *
  * @author    Eriksen Costa <eriksen.paixao_bs@cobra.com.br>
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @since     Arquivo disponível desde a versão 2.0.0
  * @version   $Id$
  */

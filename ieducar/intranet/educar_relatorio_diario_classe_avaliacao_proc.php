@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -41,10 +41,10 @@ require_once 'App/Model/IedFinder.php';
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
- * @version   arapiraca-r733
+ * @version   @@package_version@@
  */
 class clsIndexBase extends clsBase
 {
@@ -62,7 +62,7 @@ class clsIndexBase extends clsBase
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
  * @todo      Adicionar no título ou no header do arquivo o módulo atual ao qual
@@ -70,7 +70,7 @@ class clsIndexBase extends clsBase
  *   educar_modulo_xml.php em App_Model_IedFinder
  * @see       intranet/educar_modulo_xml.php
  * @see       App_Model_IedFinder
- * @version   arapiraca-r733
+ * @version   @@package_version@@
  */
 class indice extends clsCadastro
 {

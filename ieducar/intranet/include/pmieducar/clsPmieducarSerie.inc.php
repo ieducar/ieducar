@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -36,14 +36,14 @@ require_once 'RegraAvaliacao/Model/RegraDataMapper.php';
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
  * @todo      A verificação de regra de avaliação no construtor é falha pois
  *   ignora os casos que a foreign key de curso não é informada. Atribuir
  *   um foreign key de instituição a tabelam pmieducar.serie resolveria este
  *   problema.
- * @version   arapiraca-r733
+ * @version   @@package_version@@
  */
 class clsPmieducarSerie
 {

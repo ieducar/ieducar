@@ -278,20 +278,8 @@ if (is_numeric($_GET['alu']) && is_numeric($_GET['ins']) &&
   }
 }
 
-if ($resultado) {
-  foreach ($resultado as $cod => $nome) {
-    print sprintf('<serie cod_serie="%d">%s</serie>' . "\n", $cod, $nome);
-  }
-}else{
-  print '<serie cod_serie="21">1º Ano</serie>';
-  print '<serie cod_serie="23">2º Ano</serie>';
-  print '<serie cod_serie="25">3º Ano</serie>';
-  print '<serie cod_serie="27">4º Ano</serie>';
-  print '<serie cod_serie="29">5º Ano</serie>';
-  print '<serie cod_serie="31">6º Ano</serie>';
-  print '<serie cod_serie="33">7º Ano</serie>';
-  print '<serie cod_serie="35">8º Ano</serie>';
-  print '<serie cod_serie="37">9º Ano</serie>';
+foreach ($resultado as $cod => $nome) {
+  print sprintf('<serie cod_serie="%d">%s</serie>' . "\n", $cod, $nome);
 }
 
 print '</query>';

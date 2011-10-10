@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
+ * @license   @@license@@
  * @package   iEd_Pmieducar
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -38,16 +38,12 @@ echo "<?xml version=\"1.0\" encoding=\"ISO-8859-15\"?>\n<query xmlns=\"sugestoes
 $componentes = array();
 
 // Seleciona os componentes de um curso ou série
-// cur = E serve para pegar todas as materias 
-if (is_numeric($_GET['cur']) || $_GET['cur'] == 'E' || is_numeric($_GET['ser'])) {
+if (is_numeric($_GET['cur']) || is_numeric($_GET['ser'])) {
   require_once 'ComponenteCurricular/Model/AnoEscolarDataMapper.php';
   $mapper = new ComponenteCurricular_Model_AnoEscolarDataMapper();
 
   if (is_numeric($_GET['cur'])) {
     $componentes = $mapper->findComponentePorCurso($_GET['cur']);
-  }
-  else if ($_GET['cur'] == 'E') {
-    $componentes = $mapper->findComponentePorCurso(0);
   }
   elseif(is_numeric($_GET['ser'])) {
     $componentes = $mapper->findComponentePorSerie($_GET['ser']);

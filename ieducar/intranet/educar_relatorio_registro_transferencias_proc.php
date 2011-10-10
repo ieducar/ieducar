@@ -137,42 +137,39 @@ class indice extends clsCadastro
       $db = new clsBanco();
       $this->nm_escola = $db->CampoUnico($sql);
 
-      $sql = "SELECT * FROM (
-	  SELECT DISTINCT ON
-	     (cod_matricula) cod_matricula,
-	     m.ref_cod_aluno,
-	     (SELECT
-	        nome
-	      FROM
-	        cadastro.pessoa p, pmieducar.aluno a
-	      WHERE
-	        a.cod_aluno = m.ref_cod_aluno AND a.ref_idpes = p.idpes)
-	     as nome_aluno,
-	     to_char(data_transferencia,'DD/MM/YYYY') as dt_transferencia,
-	     s.nm_serie,
-	     t.nm_turma,
-	     ts.ref_cod_matricula_entrada
-	   FROM
-	     pmieducar.matricula m,
-	     pmieducar.matricula_turma mt,
-	     pmieducar.turma t,
-	     pmieducar.serie s,
-	     pmieducar.transferencia_solicitacao ts
-	   WHERE
-	     m.ref_ref_cod_escola = {$this->ref_cod_escola}
-	     AND ref_cod_matricula_saida = cod_matricula
-	     AND ts.ativo = 1
-	     AND mt.ref_cod_matricula = m.cod_matricula
-	     AND mt.ref_cod_turma = t.cod_turma
-	     AND t.ref_ref_cod_serie = s.cod_serie
-	     AND m.ano = {$this->ano}
-	   ORDER BY
-	     cod_matricula, 
-	     mt.data_cadastro ASC,
-	     nm_turma) AS tb
-	ORDER BY tb.nm_turma,
-	         tb.nm_serie,
-	         tb.dt_transferencia";
+      $sql = "
+        SELECT
+          cod_matricula,
+          m.ref_cod_aluno,
+          (SELECT
+             nome
+           FROM
+             cadastro.pessoa p, pmieducar.aluno a
+           WHERE
+             a.cod_aluno = m.ref_cod_aluno AND a.ref_idpes = p.idpes)
+          as nome_aluno,
+          to_char(data_transferencia,'DD/MM/YYYY') as dt_transferencia,
+          s.nm_serie,
+          t.nm_turma,
+          ts.ref_cod_matricula_entrada
+        FROM
+          pmieducar.matricula m,
+          pmieducar.matricula_turma mt,
+          pmieducar.turma t,
+          pmieducar.serie s,
+          pmieducar.transferencia_solicitacao ts
+        WHERE
+          m.ref_ref_cod_escola = {$this->ref_cod_escola}
+          AND ref_cod_matricula_saida = cod_matricula
+          AND ts.ativo = 1
+          AND mt.ref_cod_matricula = m.cod_matricula
+          AND mt.ref_cod_turma = t.cod_turma
+          AND t.ref_ref_cod_serie = s.cod_serie
+          AND m.ano = {$this->ano}
+        ORDER BY
+          nm_turma,
+          nm_serie,
+          dt_transferencia";
 
       $db->Consulta($sql);
 
@@ -215,19 +212,19 @@ class indice extends clsCadastro
 
           $this->pdf->linha_relativa($esquerda + 55, $altura, 0, 18);
           $this->pdf->escreve_relativo($nome_aluno, $esquerda + 58,
-            $altura + $altura_escrita, 200, 30, $fonte, $tam_texto);
+            $altura + $altura_escrita, 300, 30, $fonte, $tam_texto);
 
-          $this->pdf->linha_relativa($esquerda + 267 - 18, $altura, 0, 18);
-          $this->pdf->escreve_relativo($dt_transferencia, $esquerda + 270 - 18,
+          $this->pdf->linha_relativa($esquerda + 317 - 18, $altura, 0, 18);
+          $this->pdf->escreve_relativo($dt_transferencia, $esquerda + 320 - 18,
             $altura + $altura_escrita, 150, 30, $fonte, $tam_texto, $corTexto);
 
-          $this->pdf->linha_relativa($esquerda + 315-11, $altura, 0, 18);
-          $this->pdf->escreve_relativo($nm_serie, $esquerda + 315 - 9,
+          $this->pdf->linha_relativa($esquerda + 365-11, $altura, 0, 18);
+          $this->pdf->escreve_relativo($nm_serie, $esquerda + 365 - 9,
             $altura + $altura_escrita, 72, 30, $fonte, $tam_texto, $corTexto, 'center');
 
-          $this->pdf->linha_relativa($esquerda + 360+19, $altura, 0, 18);
-          $this->pdf->escreve_relativo($nm_turma, $esquerda + 358 + 0 + 20,
-            $altura + $altura_escrita, 100, 30, $fonte, $tam_texto, $corTexto, 'center');
+          $this->pdf->linha_relativa($esquerda + 410+19, $altura, 0, 18);
+          $this->pdf->escreve_relativo($nm_turma, $esquerda + 408 + 10 + 13,
+            $altura + $altura_escrita, 35, 30, $fonte, $tam_texto, $corTexto, 'center');
 
           $this->pdf->linha_relativa($esquerda + 449 + 34, $altura, 0, 18);
 
@@ -379,19 +376,19 @@ class indice extends clsCadastro
     $this->pdf->linha_relativa($esquerda + 55, $altura, 0, 18);
 
     $this->pdf->escreve_relativo("Nome Completo", $esquerda + 58, $altura + 3,
-      100, 30, $fonte, $tam_texto);
-    $this->pdf->linha_relativa($esquerda + 267 - 18, $altura, 0, 18);
+      150, 30, $fonte, $tam_texto);
+    $this->pdf->linha_relativa($esquerda + 317 - 18, $altura, 0, 18);
 
-    $this->pdf->escreve_relativo("Data", $esquerda + 270 - 18, $altura + 3,
+    $this->pdf->escreve_relativo("Data", $esquerda + 320 - 18, $altura + 3,
       45, 30, $fonte, $tam_texto, $corTexto, 'center');
-    $this->pdf->linha_relativa($esquerda + 315 -11, $altura, 0, 18);
+    $this->pdf->linha_relativa($esquerda + 365 -11, $altura, 0, 18);
 
-    $this->pdf->escreve_relativo("Série", $esquerda + 305, $altura + 3, 70, 30,
+    $this->pdf->escreve_relativo("Série", $esquerda + 355, $altura + 3, 70, 30,
       $fonte, $tam_texto, $corTexto, 'center');
-    $this->pdf->linha_relativa($esquerda + 360 + 19, $altura, 0, 18);
+    $this->pdf->linha_relativa($esquerda + 410 + 19, $altura, 0, 18);
 
-    $this->pdf->escreve_relativo("Turma", $esquerda + 358 + 10 + 16, $altura + 3,
-      50, 30, $fonte, $tam_texto, $corTexto, 'center');
+    $this->pdf->escreve_relativo("Turma", $esquerda + 408 + 10 + 16, $altura + 3,
+      35, 30, $fonte, $tam_texto, $corTexto, 'center');
     $this->pdf->linha_relativa($esquerda + 449 + 34, $altura, 0, 18);
 
     $this->pdf->escreve_relativo("Estabelecimento Destino", $esquerda + 452 + 37,

@@ -225,7 +225,7 @@ class indice extends clsCadastro
         foreach ($this->permissoes as $key => $valor) {
           $valor['cadastra']  = $valor['cadastra']  == 'on' ? 1 : 0;
           $valor['visualiza'] = $valor['visualiza'] == 'on' ? 1 : 0;
-          $valor['exclui']    = is_numeric($valor['exclui']) ? 1 : 0;
+          $valor['exclui']    = $valor['exclui']    == 'on' ? 1 : 0;
 
           if ($valor['cadastra'] || $valor['visualiza'] || $valor['exclui']) {
             // Instancia novo objeto clsPmieducarMenuTipoUsuario.
@@ -267,7 +267,7 @@ class indice extends clsCadastro
         foreach ($this->permissoes as $key => $valor) {
           $valor['cadastra']  = $valor['cadastra']  == 'on' ? 1 : 0;
           $valor['visualiza'] = $valor['visualiza'] == 'on' ? 1 : 0;
-          $valor['exclui']    = is_numeric($valor['exclui']) ? 1 : 0;
+          $valor['exclui']    = $valor['exclui']    == 'on' ? 1 : 0;
 
           if ($valor['cadastra'] || $valor['visualiza'] || $valor['exclui']) {
             $this->cod_tipo_usuario = $this->cod_tipo_usuario == FALSE ? '0' : $this->cod_tipo_usuario;
@@ -282,9 +282,7 @@ class indice extends clsCadastro
         }
       }
 
-      $obj_menu_usuario->atualizaUsuarios($this->cod_tipo_usuario);
       $this->mensagem .= 'Edi&ccedil;&atilde;o efetuada com sucesso.<br>';
-
       header('Location: educar_tipo_usuario_lst.php');
       die();
     }
