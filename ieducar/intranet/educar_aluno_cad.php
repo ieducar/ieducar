@@ -22,7 +22,7 @@
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Include
  * @since     Arquivo disponível desde a versão 1.0.0
  * @version   $Id$
@@ -33,21 +33,15 @@ require_once 'include/clsCadastro.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
 
-require_once 'App/Model/SimNao.php';
-require_once 'App/Model/ZonaLocalizacao.php';
-require_once 'Educacenso/Model/AlunoDataMapper.php';
-require_once 'Transporte/Model/AlunoDataMapper.php';
-require_once 'Transporte/Model/Responsavel.php';
-
 /**
  * clsIndexBase class.
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
- * @version   @@package_version@@
+ * @version   arapiraca-r733
  */
 class clsIndexBase extends clsBase
 {
@@ -63,10 +57,10 @@ class clsIndexBase extends clsBase
  *
  * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
  * @category  i-Educar
- * @license   @@license@@
+ * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   iEd_Pmieducar
  * @since     Classe disponível desde a versão 1.0.0
- * @version   @@package_version@@
+ * @version   arapiraca-r733
  */
 class indice extends clsCadastro
 {
@@ -394,8 +388,6 @@ class indice extends clsCadastro
             $this->cep_ = int2CEP($this->id_cep);
           }
         }
-
-        $this->zona_localizacao = $obj_endereco_det['zona_localizacao'];
       }
     }
 
@@ -596,19 +588,8 @@ class indice extends clsCadastro
 
     $this->campoOculto('isEnderecoExterno', $this->isEnderecoExterno);
 
-    $urlPesquisaCep = 'educar_pesquisa_cep_log_bairro.php?' .
-      'campo1=nm_bairro&campo2=id_bairro&campo3=id_cep&campo4=nm_logradouro&' .
-      'campo5=id_logradouro&campo6=ref_sigla_uf&campo7=cidade&' .
-      'campo8=ref_idtlog_&campo9=isEnderecoExterno&campo10=cep_&' .
-      'campo11=ref_sigla_uf_&campo12=ref_idtlog&campo13=id_cidade&' .
-      'campo14=zona_localizacao';
-
-    $urlPesquisaCep = sprintf(
-      "<img id='lupa' src=\"imagens/lupa.png\" border=\"0\" onclick=\"showExpansivel( 500,500, '<iframe name=\'miolo\' id=\'miolo\' frameborder=\'0\' height=\'100%%\' width=\'500\' marginheight=\'0\' marginwidth=\'0\' src=\'%s\'></iframe>');\">",
-      $urlPesquisaCep
-    );
-
-    $this->campoCep('cep_', 'CEP', $this->cep_, TRUE, '-', $urlPesquisaCep, $disabled);
+    $this->campoCep('cep_', 'CEP', $this->cep_, TRUE, '-',
+      "<img id='lupa' src=\"imagens/lupa.png\" border=\"0\" onclick=\"showExpansivel( 500,500, '<iframe name=\'miolo\' id=\'miolo\' frameborder=\'0\' height=\'100%\' width=\'500\' marginheight=\'0\' marginwidth=\'0\' src=\'educar_pesquisa_cep_log_bairro.php?campo1=nm_bairro&campo2=id_bairro&campo3=id_cep&campo4=nm_logradouro&campo5=id_logradouro&campo6=ref_sigla_uf&campo7=cidade&campo8=ref_idtlog_&campo9=isEnderecoExterno&campo10=cep_&campo11=ref_sigla_uf_&campo12=ref_idtlog&campo13=id_cidade\'></iframe>');\">", $disabled);
 
     $this->campoTexto('cidade', 'Cidade', $this->cidade, 30, 255, TRUE, FALSE,
       TRUE, '', '', '', '', $disabled);
@@ -644,10 +625,6 @@ class indice extends clsCadastro
     $this->campoTexto('nm_logradouro', 'Logradouro', $this->nm_logradouro, 30, 255,
       TRUE, FALSE, FALSE, '', '', '', '', $disabled);
 
-    $zl = App_Model_ZonaLocalizacao::getInstance();
-    $this->campoLista('zona_localizacao', 'Zona Localização', $zl->getEnums(),
-      $this->zona_localizacao, FALSE, FALSE, FALSE, FALSE, $disabled);
-
     $this->campoNumero('numero', 'N&uacute;mero', $this->numero, 4, 6, FALSE, '',
       '', FALSE, FALSE, TRUE);
     $this->campoTexto('letra', ' &nbsp; Letra', $this->letra, 4, 1, FALSE);
@@ -657,11 +634,6 @@ class indice extends clsCadastro
       FALSE, FALSE, TRUE);
     $this->campoNumero('apartamento', ' &nbsp; Apartamento', $this->apartamento,
       4, 6, FALSE);
-
-    $this->campoLista('nacionalidade', 'Nacionalidade', $lista_nacionalidade,
-      $this->nacionalidade, 'tmpObj = document.getElementById("pais_origem"); if(this.value != 1) { tmpObj.disabled = false; } else { tmpObj.selectedIndex = 27; tmpObj.disabled = true; }',
-      TRUE, '', '', '', FALSE);
-
 
     $lista_mun_nasc = array('NULL' => 'Selecione a cidade');
 
@@ -703,26 +675,6 @@ class indice extends clsCadastro
 
     $this->campoLista('pais_origem', ' &nbsp; País de Origem', $lista_pais_origem,
       $this->pais_origem, '', '', '', '', $this->nacionalidade == 1, FALSE);
-
-    $this->campoQuebra2('#224488');
-
-    // Transporte escolar
-    $transporteMapper = new Transporte_Model_AlunoDataMapper();
-    $transporte       = NULL;
-
-    try {
-      $transporte = $transporteMapper->find(array($this->cod_aluno));
-    }
-    catch (Exception $e) {
-    }
-
-    $bit = App_Model_SimNao::getInstance();
-    $this->campoLista('transporte_aluno', 'Transporte', $bit->getEnums(),
-      !is_null($transporte) ? 1 : 0, 'transporteResponsavel();');
-
-    $responsavel = Transporte_Model_Responsavel::getInstance();
-    $this->campoLista('transporte_responsavel', 'Responsável', $responsavel->getEnums(),
-      !is_null($transporte) ? $transporte->get('responsavel') : 0);
 
     $this->campoQuebra2('#224488');
 
@@ -932,9 +884,7 @@ class indice extends clsCadastro
     $this->campoOculto('isEnderecoExterno', $this->isEnderecoExterno);
 
     $this->campoCep('cep_', 'CEP', $this->cep_, TRUE, '-',
-      //"<img id='lupa' src=\"imagens/lupa.png\" border=\"0\" onclick=\"showExpansivel( 500,500, '<iframe name=\'miolo\' id=\'miolo\' frameborder=\'0\' height=\'100%\' width=\'500\' marginheight=\'0\' marginwidth=\'0\' src=\'educar_pesquisa_cep_log_bairro.php?campo1=nm_bairro&campo2=id_bairro&campo3=id_cep&campo4=nm_logradouro&campo5=id_logradouro&campo6=ref_sigla_uf&campo7=cidade&campo8=ref_idtlog_&campo9=isEnderecoExterno&campo10=cep_&campo11=ref_sigla_uf_&campo12=ref_idtlog&campo13=id_cidade\'></iframe>');\">",
-      $urlPesquisaCep,
-      $disabled);
+      "<img id='lupa' src=\"imagens/lupa.png\" border=\"0\" onclick=\"showExpansivel( 500,500, '<iframe name=\'miolo\' id=\'miolo\' frameborder=\'0\' height=\'100%\' width=\'500\' marginheight=\'0\' marginwidth=\'0\' src=\'educar_pesquisa_cep_log_bairro.php?campo1=nm_bairro&campo2=id_bairro&campo3=id_cep&campo4=nm_logradouro&campo5=id_logradouro&campo6=ref_sigla_uf&campo7=cidade&campo8=ref_idtlog_&campo9=isEnderecoExterno&campo10=cep_&campo11=ref_sigla_uf_&campo12=ref_idtlog&campo13=id_cidade\'></iframe>');\">", $disabled);
 
     $this->campoTexto('cidade', 'Cidade', $this->cidade, 30, 255, TRUE, FALSE,
       TRUE, '', '', '', '', $disabled);
@@ -1214,7 +1164,7 @@ class indice extends clsCadastro
       NULL, FALSE);
 
     $this->campoTexto('num_termo', 'Termo', $this->num_termo, '8', '8', FALSE);
-    $this->campoTexto('num_livro', 'Livro', $this->num_livro, '8', '8', FALSE);
+    $this->campoNumero('num_livro', 'Livro', $this->num_livro, '8', '8', FALSE);
     $this->campoTexto('num_folha', 'Folha', $this->num_folha, '4', '4', FALSE);
 
     $this->campoData('data_emissao_cert_civil', 'Emissão Certidão Civil',
@@ -1235,30 +1185,6 @@ class indice extends clsCadastro
 
     $this->campoTexto('secao_tit_eleitor', 'Seção', $this->secao_tit_eleitor,
       '10', '10', FALSE);
-
-    // Adiciona uma aba com dados do Inep/Educacenso caso aluno tenha código Inep.
-    if (isset($this->cod_aluno)) {
-      $alunoMapper = new Educacenso_Model_AlunoDataMapper();
-
-      $alunoInep = NULL;
-      try {
-        $alunoInep = $alunoMapper->find(array('aluno' => $this->cod_aluno));
-      }
-      catch(Exception $e) {
-      }
-
-      if ($alunoInep) {
-        $this->campoAdicionaTab('Educacenso/Inep', $this->tab_habilitado);
-
-        $this->campoRotulo('_inep_cod_aluno', 'Código do aluno no Educacenso/Inep',
-          $alunoInep->alunoInep);
-
-        if (isset($alunoInep->nomeInep)) {
-          $this->campoRotulo('_inep_nome_aluno', 'Nome do aluno no Educacenso/Inep',
-            $alunoInep->nomeInep);
-        }
-      }
-    }
 
     $this->campoTabFim();
   }
@@ -1492,7 +1418,7 @@ class indice extends clsCadastro
         $this->ref_idtlog, $this->nm_logradouro, $this->numero, $this->letra,
         $this->complemento, $this->nm_bairro, $this->cep_, $this->cidade,
         $this->ref_sigla_uf_, NULL, $this->bloco, $this->apartamento, $this->andar,
-        NULL, $this->pessoa_logada, $this->zona_localizacao);
+        NULL, $this->pessoa_logada);
 
       if ($obj_endereco->existe()) {
         if (!$obj_endereco->edita()) {
@@ -1659,11 +1585,10 @@ class indice extends clsCadastro
 
       if ($this->ref_idpes) {
         if ($obj->existePessoa()) {
-          $aluno = $obj->edita();
-          $this->cod_aluno = $aluno['cod_aluno'];
+          $obj->edita();
         }
         else {
-          $this->cod_aluno = $obj->cadastra();
+          $obj->cadastra();
         }
       }
     }
@@ -1682,10 +1607,6 @@ class indice extends clsCadastro
         }
       }
     }
-
-    // Atualiza a informação de uso de transporte escolar.
-    $this->_cadastraTransporte($this->cod_aluno, $this->transporte_aluno,
-      $this->transporte_responsavel, $this->pessoa_logada);
 
     header('Location: educar_aluno_det.php?cod_aluno=' . $this->cod_aluno);
     die();
@@ -1817,53 +1738,6 @@ class indice extends clsCadastro
     }
 
     return $nome_do_arquivo;
-  }
-
-  /**
-   * Cadastra ou atualiza a informação de uso de transporte escolar.
-   *
-   * @access protected
-   * @param  int  $codAluno     Código do aluno
-   * @param  bool $transporte   [Opcional] TRUE para cadastrar/atualizar e FALSE
-   *   para remover a informação de uso de transporte escolar
-   * @param  int  $responsavel  [Opcional] Código do responsável pelo transporte
-   *   escolar, valor mapeado para o enum Transporte_Model_Responsavel. Apenas
-   *   obrigatório caso $transporte = TRUE
-   * @param  int  $user         Código do usuário a alterar o registroo
-   * @return bool TRUE caso tenha criado/editado/apagado o registro com sucesso
-   * @since  Método disponível desde a versão 1.2.0
-   */
-  function _cadastraTransporte($codAluno, $transporte = TRUE, $responsavel = NULL,
-    $user)
-  {
-    $data = array(
-      'aluno'       => $codAluno,
-      'responsavel' => $responsavel,
-      'user'        => $user,
-      'created_at'  => 'NOW()'
-    );
-
-    $transporteMapper = new Transporte_Model_AlunoDataMapper();
-
-    if ($transporte) {
-      if (is_null($responsavel)) {
-        return FALSE;
-      }
-
-      try {
-        $transporteMapper->find(array('aluno' => $codAluno));
-      }
-      catch (Exception $e) {
-        $transporteMapper->save(
-          $transporteMapper->createNewEntityInstance($data)
-        );
-      }
-    }
-    else {
-      $transporteMapper->delete(array('aluno' => $codAluno));
-    }
-
-    return TRUE;
   }
 }
 
@@ -2183,18 +2057,4 @@ if (!$_GET['cod_aluno']) {
 }
 /** Javascript condicional */
 ?>
-Event.observe(window, 'load', transporteResponsavel, false);
-
-function transporteResponsavel()
-{
-  obj1 = document.getElementById('transporte_aluno');
-  obj2 = document.getElementById('transporte_responsavel');
-
-  if (obj1.value == 1) {
-    obj2.disabled = false;
-  }
-  else {
-    obj2.disabled = true;
-  }
-}
 </script>

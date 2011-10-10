@@ -126,8 +126,8 @@ class indice extends clsCadastro
 
 		$cursos = array();
 		$sql_curso_aluno = "SELECT ref_cod_curso FROM pmieducar.serie WHERE cod_serie = {$this->ref_ref_cod_serie}";
-		$this->ref_cod_curso = $db->CampoUnico($sql_curso_aluno);
 
+		$this->ref_cod_curso = $db->CampoUnico($sql_curso_aluno);
 		foreach ($array_inicio_sequencias as $serie_inicio)
 		{
 			$serie_inicio = $serie_inicio[0];
@@ -147,8 +147,10 @@ class indice extends clsCadastro
 						 WHERE s.cod_serie = o.ref_serie_origem
 						   AND s.cod_serie = $seq_ini
 				           AND sd.cod_serie = o.ref_serie_destino
+					   AND o.ativo = 1;
 						";
 //						   AND s.ref_cod_curso = $curso
+
 				$db->Consulta($sql);
 				$db->ProximoRegistro();
 				$tupla = $db->Tupla();
@@ -161,11 +163,9 @@ class indice extends clsCadastro
 				$obj_curso = new clsPmieducarCurso($curso_origem);
 				$det_curso = $obj_curso->detalhe();
 				$cursos[$curso_origem] = $det_curso['nm_curso'];
-
 				$obj_curso = new clsPmieducarCurso($curso_destino);
 				$det_curso = $obj_curso->detalhe();
 				$cursos[$curso_destino] = $det_curso['nm_curso'];
-
 				if($this->ref_ref_cod_serie == $serie_origem)
 					$seq_correta = true;
 

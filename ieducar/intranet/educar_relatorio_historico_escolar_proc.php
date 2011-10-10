@@ -238,7 +238,7 @@ class indice extends clsCadastro
 		if( $det_escola_complemento )
 		{
 			// NOME DA ESCOLA
-			$nm_escola = str2upper($det_escola_complemento['nm_escola']);
+			$this->nm_escola = str2upper($det_escola_complemento['nm_escola']);
 			// ENDERECO DA ESCOLA
 			$logradouro = str2upper($det_escola_complemento['logradouro']);
 			$numero = $det_escola_complemento['numero'];
@@ -499,9 +499,11 @@ class indice extends clsCadastro
 
 					foreach ($lst_series as $key2 => $serie)
 					{
+						//$consulta = "SELECT (nm_disciplina || '\t\t' || cargah_disciplina || ' horas') AS nm_disciplina
 						$consulta = "SELECT nm_disciplina
 									       ,nota
 									       ,faltas
+									       ,cargah_disciplina
 									  FROM pmieducar.historico_disciplinas
 									 WHERE ref_ref_cod_aluno = {$this->ref_cod_aluno}
 									   AND ref_sequencial = {$serie['sequencial']}
@@ -518,15 +520,16 @@ class indice extends clsCadastro
 							while ($db->ProximoRegistro())
 							{
 								$registro = $db->Tupla();
+								$horas = "\t\t\t\t({$registro['cargah_disciplina']} horas)";
 								if(fonetiza_palavra($disciplina['nm_disciplina']) == fonetiza_palavra($registro['nm_disciplina']) )
 								{
 									if (is_numeric(substr($registro["nota"],0,1)) || is_numeric(substr($registro["nota"],strpos($registro["nota"],",")+1,1))) {
-										$notas[fonetiza_palavra($disciplina['nm_disciplina'])][$serie['sequencial']] = number_format(str_replace(",",".",$registro['nota']),2,".",'');
+										$notas[fonetiza_palavra($disciplina['nm_disciplina'])][$serie['sequencial']] = number_format(str_replace(",",".",$registro['nota']),2,".",'').$horas;
 									} else {
 										if ($extra_curricular) {
 											$possui_eja = true;
 										}
-										$notas[fonetiza_palavra($disciplina['nm_disciplina'])][$serie['sequencial']] = $registro["nota"];
+										$notas[fonetiza_palavra($disciplina['nm_disciplina'])][$serie['sequencial']] = $registro["nota"].$horas;
 									}
 //									$notas[fonetiza_palavra($disciplina['nm_disciplina'])][$serie['sequencial']] = number_format(str_replace(",",".",$registro['nota']),2,".",'');
 									//$falta += $registro['faltas'];
@@ -1317,7 +1320,7 @@ class indice extends clsCadastro
 		else
 		{
 			$ajuste = -4;
-			$nm_disciplina = $array_valores['nm_disciplina'];
+			$nm_disciplina = $array_valores['nm_disciplina']."   (teste horas)";
 			unset($array_valores['nm_disciplina']);
 			$this->pdf->escreve_relativo( "{$nm_disciplina}",25, $this->page_y + $ajuste, 300, $altura_linha, $fonte, 8, $corTexto, 'left' );
 		}

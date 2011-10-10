@@ -235,7 +235,7 @@ if ($nivel_usuario <= 4 && !empty($nivel_usuario)) {
 
   $lim = 5;
 
-  for ($a = date('Y'); $a < date('Y') + $lim; $a++) {
+  for ($a = (date('Y')-1); $a < date('Y') + $lim; $a++) {
     $retorno .= sprintf('<option value="%s"', $a);
 
     if ($a == $_POST['ano']) {
