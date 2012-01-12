@@ -162,7 +162,18 @@ class clsControlador
               if (!empty($tempo_senha) && ! empty($data_senha)) {
                 if (time() - strtotime($data_senha) > $tempo_senha * 60 * 60 * 24) {
                   // Senha expirada, pede que mude a senha
-                  die("<html><body><form id='reenvio' name='reenvio' action='usuario_trocasenha.php' method='POST'><input type='hidden' name='cod_pessoa' value='{$id_pessoa}'></form></body><script>document.getElementById('reenvio').submit();</script></html>");
+                  @session_start();
+                  $_SESSION = array();
+                  $_SESSION['itj_controle'] = 'logado';
+                  $_SESSION['id_pessoa']    = $id_pessoa;
+                  $_SESSION['pessoa_setor'] = $setor_new;
+                  $_SESSION['menu_opt']     = unserialize( $opcaomenu );
+                  $_SESSION['tipo_menu']    = $tipo_menu;
+                  @session_write_close();
+                  $this->logado = TRUE;
+                  die("<html><body><form id='reenvio' name='reenvio' action='troca_senha_pop.php' method='POST'> " 
+                    . " <input type='hidden' name='cod_pessoa' value='{$id_pessoa}'></form></body>" 
+                    . "<script>document.getElementById('reenvio').submit();</script></html>");
                 }
               }
 
