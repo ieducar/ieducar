@@ -212,7 +212,8 @@ class clsBase extends clsConfig
       if ($processo_ap != 0) {
         $db = new clsBanco();
 
-        $db->Consulta("SELECT 1 FROM menu_funcionario WHERE ref_cod_menu_submenu = 0 AND ref_ref_cod_pessoa_fj = {$id_usuario}");
+        $db->Consulta("SELECT 1 FROM menu_funcionario WHERE ref_cod_menu_submenu = 0 "
+                    . "AND ref_ref_cod_pessoa_fj = {$id_usuario}");
         if ($db->ProximoRegistro()) {
           list($aui) = $db->Tupla();
           $sempermissao = FALSE;
@@ -222,7 +223,9 @@ class clsBase extends clsConfig
         //       permissão de acesso ao processo. Já a segunda, não existe
         //       sentido para nivel = 2 já que processoAp pode ser de níveis
         //       maiores que 2.
-        $db->Consulta("SELECT 1 FROM menu_funcionario WHERE (ref_cod_menu_submenu = {$processo_ap} AND ref_ref_cod_pessoa_fj = {$id_usuario}) OR (SELECT true FROM menu_submenu WHERE cod_menu_submenu = {$processo_ap} AND nivel = 2)");
+        $db->Consulta("SELECT 1 FROM menu_funcionario WHERE (ref_cod_menu_submenu = {$processo_ap} "
+                    . "AND ref_ref_cod_pessoa_fj = {$id_usuario}) OR "
+                    . "(SELECT true FROM menu_submenu WHERE cod_menu_submenu = {$processo_ap} AND nivel = 2)");
         if ($db->ProximoRegistro()) {
           list($aui) = $db->Tupla();
           $sempermissao = FALSE;
@@ -251,10 +254,14 @@ class clsBase extends clsConfig
           $variaveis = "POST\n{$posts}GET\n{$gets}SESSION\n{$sessions}";
 
           if ($id_usuario) {
-            $db->Consulta("INSERT INTO intranet_segur_permissao_negada (ref_ref_cod_pessoa_fj, ip_externo, ip_interno, data_hora, pagina, variaveis) VALUES('$id_usuario', '$ip', '$ip_de_rede', NOW(), '$pagina', '$variaveis')");
+            $db->Consulta("INSERT INTO intranet_segur_permissao_negada (ref_ref_cod_pessoa_fj, ip_externo, "
+                        . "ip_interno, data_hora, pagina, variaveis) VALUES "
+                        . "('$id_usuario', '$ip', '$ip_de_rede', NOW(), '$pagina', '$variaveis')");
           }
           else {
-            $db->Consulta("INSERT INTO intranet_segur_permissao_negada (ref_ref_cod_pessoa_fj, ip_externo, ip_interno, data_hora, pagina, variaveis) VALUES(NULL, '$ip', '$ip_de_rede', NOW(), '$pagina', '$variaveis')");
+            $db->Consulta("INSERT INTO intranet_segur_permissao_negada (ref_ref_cod_pessoa_fj, ip_externo, "
+                        . "ip_interno, data_hora, pagina, variaveis) VALUES(NULL, '$ip', '$ip_de_rede', "
+                        . "NOW(), '$pagina', '$variaveis')");
           }
 
           return FALSE;
@@ -299,7 +306,8 @@ class clsBase extends clsConfig
 
     if ($this->processoAp) {
       $db = new clsBanco();
-      $menu_atual = $db->UnicoCampo("SELECT ref_cod_menu_menu FROM menu_submenu WHERE cod_menu_submenu = '{$this->processoAp}'");
+      $menu_atual = $db->UnicoCampo("SELECT ref_cod_menu_menu FROM menu_submenu "
+                                  . "WHERE cod_menu_submenu = '{$this->processoAp}'");
 
       if ($menu_atual) {
         $db->Consulta("SELECT cod_menu_submenu FROM menu_submenu WHERE ref_cod_menu_menu = '{$menu_atual}'");
@@ -312,7 +320,8 @@ class clsBase extends clsConfig
         $menu_tutor = $db->UnicoCampo("SELECT ref_cod_tutormenu FROM pmicontrolesis.menu WHERE $where LIMIT 1 OFFSET 0");
       }
       else {
-        $this->prog_alert .= "O menu pai do processo AP {$this->processoAp} está voltando vazio (cod_menu inexistente?).<br>";
+        $this->prog_alert .= "O menu pai do processo AP {$this->processoAp} "
+                           . "está voltando vazio (cod_menu inexistente?).<br>";
       }
     }
     elseif ($_SESSION['menu_atual']) {
@@ -382,7 +391,9 @@ class clsBase extends clsConfig
               $menu_suspenso['caminho'] = '../../' . $menu_suspenso['caminho'];
           }
 
-          $saida .= "array_menu[array_menu.length] = new Array(\"{$menu_suspenso['tt_menu']}\",{$menu_suspenso['cod_menu']},'{$menu_suspenso['ref_cod_menu_pai']}','', '$ico_menu', '{$menu_suspenso['caminho']}', '{$alvo}');";
+          $saida .= "array_menu[array_menu.length] = new Array(\"{$menu_suspenso['tt_menu']}\","
+                  . "{$menu_suspenso['cod_menu']},'{$menu_suspenso['ref_cod_menu_pai']}','', '$ico_menu', "
+                  . "'{$menu_suspenso['caminho']}', '{$alvo}');";
           if (!$menu_suspenso['ref_cod_menu_pai']) {
             $saida .= "array_id[array_id.length] = {$menu_suspenso['cod_menu']};";
           }
@@ -548,7 +559,8 @@ class clsBase extends clsConfig
     $objPessoa = new clsPessoaFisica();
     list($nome_user) = $objPessoa->queryRapida($id_usuario, "nome");
 
-    $ultimoAcesso = $db->UnicoCampo("SELECT data_hora FROM acesso WHERE cod_pessoa = $id_usuario ORDER BY data_hora DESC LIMIT 1,1");
+    $ultimoAcesso = $db->UnicoCampo("SELECT data_hora FROM acesso WHERE cod_pessoa = $id_usuario "
+                                  . "ORDER BY data_hora DESC LIMIT 1,1");
     $nome_user = ($nome_user) ? $nome_user : "<span style='color: #DD0000; '>Convidado</span>";
 
     if($ultimoAcesso) {
@@ -560,7 +572,8 @@ class clsBase extends clsConfig
     $expirando = FALSE;
     $mensagem_expirar = '';
     $db = new clsBanco();
-    $db->Consulta("SELECT tempo_expira_senha, data_troca_senha FROM funcionario WHERE ref_cod_pessoa_fj = '{$id_usuario}' ");
+    $db->Consulta("SELECT tempo_expira_senha, data_troca_senha FROM funcionario "
+                . "WHERE ref_cod_pessoa_fj = '{$id_usuario}' ");
     if ($db->ProximoRegistro()) {
       list($tempo_senha, $data_senha) = $db->Tupla();
 
@@ -569,7 +582,9 @@ class clsBase extends clsConfig
           // senha vai expirar dentro de 10 dias
           $expirando = TRUE;
           $days_left = $tempo_senha - (int)((time() - strtotime( $data_senha )) / 86400);
-          $mensagem_expirar = "Sua senha expirará em $days_left dias, atualize sua senha em 'Meus dados' no menu 'Principal' !";
+          $fufu = "<a id=\"linkFechar\" onclick=\"fechaExpansivel( 'div_dinamico_0');\" href=\"javascript:void(0);\">";
+          $mensagem_expirar = "Sua senha expirará em $days_left dias, atualize sua senha em "
+                            . "'Meus dados' no menu 'Principal' !";
           $mensagem_expirar .= "<script>showExpansivelIframe(800, 270, 'troca_senha_pop.php', 1);</script>";
         }
       }
@@ -577,20 +592,24 @@ class clsBase extends clsConfig
 
     // somente para programadores
     // @todo Essa linha pode afetar o uso de usuários comuns?
-    if (($id_usuario == 49659 || $id_usuario == 2151 ||  $id_usuario == 4637 || $id_usuario == 21330|| $id_usuario == 21317|| $id_usuario == 25109|| $id_usuario == 4702)) {
+    if (($id_usuario == 49659 || $id_usuario == 2151 ||  $id_usuario == 4637 || $id_usuario == 21330|| 
+            $id_usuario == 21317|| $id_usuario == 25109|| $id_usuario == 4702)) {
       if($expirando || $this->prog_alert) {
         $mensagem = $expirando ? "<b style='color:red'>$mensagem_expirar</b><br />" : "";
         $mensagem .= $this->prog_alert ? $this->prog_alert : "";
-        $saida = str_replace("<!-- #&PROG_ALERT&# -->", "<div class=\"prog_alert\" align=\"center\">$mensagem</div>", $saida);
+        $saida = str_replace("<!-- #&PROG_ALERT&# -->", "<div class=\"prog_alert\" "
+                           . "align=\"center\">$mensagem</div>", $saida);
       }
     }
     elseif($expirando) {
-      $saida = str_replace("<!-- #&PROG_ALERT&# -->", "<div class=\"prog_alert\" align=\"center\" style='color: red; font-weight:bold;'>{$mensagem_expirar}</div>", $saida);
+      $saida = str_replace("<!-- #&PROG_ALERT&# -->", "<div class=\"prog_alert\" align=\"center\" "
+                         . "style='color: red; font-weight:bold;'>{$mensagem_expirar}</div>", $saida);
     }
 
     $notificacao = "";
     $db = new clsBanco();
-    $db->Consulta("SELECT cod_notificacao, titulo, conteudo, url FROM portal.notificacao WHERE ref_cod_funcionario = '{$id_usuario}' AND data_hora_ativa < NOW()");
+    $db->Consulta("SELECT cod_notificacao, titulo, conteudo, url FROM portal.notificacao WHERE "
+                . "ref_cod_funcionario = '{$id_usuario}' AND data_hora_ativa < NOW()");
 
     if ($db->numLinhas()) {
       while ($db->ProximoRegistro()) {
@@ -606,7 +625,8 @@ class clsBase extends clsConfig
         </div>";
       }
       $saida = str_replace( "<!-- #&NOTIFICACOES&# -->", $notificacao, $saida );
-      $db->Consulta("UPDATE portal.notificacao SET visualizacoes = visualizacoes + 1 WHERE ref_cod_funcionario = '{$id_usuario}' AND data_hora_ativa < NOW()");
+      $db->Consulta("UPDATE portal.notificacao SET visualizacoes = visualizacoes + 1 WHERE "
+                  . "ref_cod_funcionario = '{$id_usuario}' AND data_hora_ativa < NOW()");
       $db->Consulta("DELETE FROM portal.notificacao WHERE visualizacoes > 10");
     }
 
@@ -626,7 +646,8 @@ class clsBase extends clsConfig
       $ip_maquina = $_SERVER['REMOTE_ADDR'];
     }
 
-    $sql = "UPDATE funcionario SET ip_logado = '$ip_maquina' , data_login = NOW() WHERE ref_cod_pessoa_fj = {$id_usuario}";
+    $sql = "UPDATE funcionario SET ip_logado = '$ip_maquina' , data_login = NOW() "
+         . "WHERE ref_cod_pessoa_fj = {$id_usuario}";
     $db2 = new clsBanco();
     $db2->Consulta($sql);
 
@@ -657,7 +678,12 @@ class clsBase extends clsConfig
 
     while ($db->ProximoRegistro()) {
       list($caminho, $title, $prioridade, $link) = $db->Tupla();
-      $listaBanners[] = array("titulo"=>$title, "caminho"=>$caminho, "prioridade"=>$prioridade, "link"=>$link, "controle_inicio"=>0, "controle_fim"=>0);
+      $listaBanners[] = array("titulo"          =>  $title, 
+                              "caminho"         =>  $caminho, 
+                              "prioridade"      =>  $prioridade, 
+                              "link"            =>  $link, 
+                              "controle_inicio" =>  0, 
+                              "controle_fim"    =>  0);
     }
 
     list($listaBanners, $aux_fim) = $this->organiza($listaBanners);
@@ -669,7 +695,8 @@ class clsBase extends clsConfig
       foreach($listaBanners as $ind => $banner) {
         if ($banner["controle_inicio"]<=$sorteio && $banner["controle_fim"]>=$sorteio) {
           if ($pregadas == 0) {
-            $img = "<IMG style='margin-top: 170px;' src='fotos/imgs/{$banner['caminho']}' border=0 title='{$banner['titulo']}' alt='{$banner['titulo']}' width='149' height='74'>";
+            $img = "<IMG style='margin-top: 170px;' src='fotos/imgs/{$banner['caminho']}' "
+                 . "border=0 title='{$banner['titulo']}' alt='{$banner['titulo']}' width='149' height='74'>";
 
             if (!empty($banner['link'])) {
               $retorno .= "<a href='{$banner['link']}' target='_blank' alt='{$banner['titulo']}'>{$img}</a><BR><BR>";
@@ -679,7 +706,8 @@ class clsBase extends clsConfig
             }
           }
           else {
-            $img = "<IMG src='fotos/imgs/{$banner['caminho']}' border=0 title='{$banner['titulo']}' alt='{$banner['titulo']}' width='149' height='74'>";
+            $img = "<IMG src='fotos/imgs/{$banner['caminho']}' border=0 title='{$banner['titulo']}' "
+                 . "alt='{$banner['titulo']}' width='149' height='74'>";
 
             if (!empty($banner['link'])) {
               $retorno .= "<a href='{$banner['link']}' target='_blank' alt='{$banner['titulo']}'>{$img}</a><BR><BR>";
@@ -805,7 +833,8 @@ class clsBase extends clsConfig
       $conteudo .= "<tr><td><b>Data</b>:</td><td>" . date( "d/m/Y H:i:s", time() ) . "</td></tr>";
       $conteudo .= "<tr><td><b>Script</b>:</td><td>{$_SERVER["PHP_SELF"]}</td></tr>";
       $conteudo .= "<tr><td><b>Tempo de processamento</b>:</td><td>{$tempoTotal} segundos</td></tr>";
-      $conteudo .= "<tr><td><b>Tempo max permitido</b>:</td><td>{$objConfig->arrayConfig["intSegundosProcessaPagina"]} segundos</td></tr>";
+      $conteudo .= "<tr><td><b>Tempo max permitido</b>:</td><td>"
+                 . "{$objConfig->arrayConfig["intSegundosProcessaPagina"]} segundos</td></tr>";
       $conteudo .= "<tr><td><b>URL get</b>:</td><td>{$_SERVER['QUERY_STRING']}</td></tr>";
       $conteudo .= "<tr><td><b>Metodo</b>:</td><td>{$_SERVER["REQUEST_METHOD"]}</td></tr>";
 
@@ -830,7 +859,8 @@ class clsBase extends clsConfig
 
       $conteudo .= "</table>";
 
-      $objMail = new clsEmail($objConfig->arrayConfig['ArrStrEmailsAdministradores'], "[INTRANET - PMI] Desempenho de pagina", $conteudo);
+      $objMail = new clsEmail($objConfig->arrayConfig['ArrStrEmailsAdministradores'], 
+                              "[INTRANET - PMI] Desempenho de pagina", $conteudo);
       $objMail->envia();
     }
   }
