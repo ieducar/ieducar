@@ -22,7 +22,7 @@
  */
 
 require_once 'include/clsBanco.inc.php';
-
+require_once 'lib/Portabilis/Message.php';
 
 /**
  * clsControlador class.
@@ -84,6 +84,7 @@ class clsControlador
     }
 
     session_write_close();
+    $this->messages = new Message();
   }
 
   /**
@@ -93,183 +94,6 @@ class clsControlador
   public function Logado()
   {
     return $this->logado;
-  }
-
-  /**
-   * Faz o login do usuário.
-   * @param  mixed  $acao
-   */
-  public function Logar($acao)
-  {
-    if ($acao)
-    {
-      $login = @$_POST['login'];
-      $senha = md5(@$_POST['senha']);
-      $db    = new clsBanco();
-
-      $db->Consulta("SELECT ref_cod_pessoa_fj FROM funcionario WHERE matricula = '{$login}'");
-      if ($db->ProximoRegistro())
-      {
-        list($idpes) = $db->Tupla();
-
-        // Padrão: meia hora atrás
-        $intervalo = date("Y-m-d H:i", time() - (60 * 1 ));
-
-        // Se o último login bem sucedido foi em menos de meia hora, conta somente dali para a frente
-        $db->consulta("SELECT data_hora FROM acesso WHERE cod_pessoa = '{$idpes}' AND data_hora > '{$intervalo}' AND sucesso = 't' ORDER BY data_hora DESC LIMIT 1" );
-        if ($db->Num_Linhas()) {
-          $db->ProximoRegistro();
-          list($intervalo) = $db->Tupla();
-        }
-
-        // Trava usuário se tentar login mais de 5 vezes
-        $tentativas = $db->CampoUnico("SELECT COUNT(0) FROM acesso WHERE cod_pessoa = '{$idpes}' AND data_hora > '{$intervalo}' AND sucesso = 'f'" );
-        if ($tentativas > 5)
-        {
-          $hora_ultima_tentativa = $db->CampoUnico("SELECT data_hora FROM acesso WHERE cod_pessoa = '{$idpes}' ORDER BY data_hora DESC LIMIT 1 OFFSET 4" );
-          $hora_ultima_tentativa = explode(".",$hora_ultima_tentativa);
-          $hora_ultima_tentativa = $hora_ultima_tentativa[0];
-
-          $data_libera = date("d/m/Y H:i",
-            strtotime($hora_ultima_tentativa) + (60 * 30));
-
-          die("<html><body></body><script>alert('Houveram mais de 5 tentativas frustradas de acessar a sua conta na última meia hora.\\nPor segurança, sua conta ficará interditada até: {$data_libera}');document.location.href='/intranet';</script></html>");
-        }
-
-        $db->Consulta( "SELECT ref_cod_pessoa_fj, opcao_menu, ativo, tempo_expira_senha, tempo_expira_conta, data_troca_senha, data_reativa_conta, proibido, ref_cod_setor_new, tipo_menu FROM funcionario WHERE ref_cod_pessoa_fj = '{$idpes}' AND senha = '{$senha}'" );
-        if ($db->ProximoRegistro())
-        {
-          list($id_pessoa, $opcaomenu, $ativo, $tempo_senha,
-            $tempo_conta, $data_senha, $data_conta, $proibido,
-            $setor_new, $tipo_menu) = $db->Tupla();
-
-          if (!$proibido)
-          {
-            if ($ativo)
-            {
-              // Usuário ativo, verifica se a conta expirou
-              $expirada = FALSE;
-              if (!empty($tempo_conta) && !empty($data_conta))
-              {
-                if (time() - strtotime($data_conta) > $tempo_conta * 60 * 60 * 24) {
-                  // Conta expirada
-                  $db->Consulta("UPDATE funcionario SET ativo='0' WHERE ref_cod_pessoa_fj = '$id_pessoa'");
-                  die("<html><body></body><script>alert( 'Sua conta na intranet expirou.\nContacte um administrador para reativa-la.' );document.location.href='/intranet';</script></html>");
-                }
-              }
-
-              // Vendo se a senha não expirou
-              if (!empty($tempo_senha) && ! empty($data_senha)) {
-                if (time() - strtotime($data_senha) > $tempo_senha * 60 * 60 * 24) {
-                  // Senha expirada, pede que mude a senha
-                  die("<html><body><form id='reenvio' name='reenvio' action='usuario_trocasenha.php' method='POST'><input type='hidden' name='cod_pessoa' value='{$id_pessoa}'></form></body><script>document.getElementById('reenvio').submit();</script></html>");
-                }
-              }
-
-              // Pega o endereço IP do host, primeiro com HTTP_X_FORWARDED_FOR (para pegar o IP real
-              // caso o host esteja atrás de um proxy)
-              if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR'] != '') {
-                // No caso de múltiplos IPs, pega o último da lista
-                $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-                $ip_maquina = trim(array_pop($ip));
-              }
-              else {
-                $ip_maquina = $_SERVER['REMOTE_ADDR'];
-              }
-
-              $sql = "SELECT ip_logado, data_login FROM funcionario WHERE ref_cod_pessoa_fj = {$id_pessoa}";
-              $db2 = new clsBanco();
-              $db2->Consulta($sql);
-              while ($db2->ProximoRegistro())
-              {
-                list($ip_banco, $data_login) = $db2->Tupla();
-                if ($ip_banco)
-                {
-                  if (abs(time() - strftime("now") - strtotime($data_login)) <= 10 * 60
-                    && $ip_banco != $ip_maquina) {
-                    die("<html><body></body><script>alert('Conta já em uso.\\nTente novamente mais tarde');document.location.href='/intranet';</script></html>");
-                  }
-                  else {
-                    $sql = "UPDATE funcionario SET data_login = NOW() WHERE ref_cod_pessoa_fj = {$id_pessoa}";
-                    $db2->Consulta($sql);
-                  }
-                }
-                else {
-                  $sql = "UPDATE funcionario SET ip_logado = '{$ip_maquina}', data_login = NOW() WHERE ref_cod_pessoa_fj = {$id_pessoa}";
-                  $db2->Consulta($sql);
-                }
-              }
-
-              // Login do usuário, grava dados na sessão
-              @session_start();
-              $_SESSION = array();
-              $_SESSION['itj_controle'] = 'logado';
-              $_SESSION['id_pessoa']    = $id_pessoa;
-              $_SESSION['pessoa_setor'] = $setor_new;
-              $_SESSION['menu_opt']     = unserialize( $opcaomenu );
-              $_SESSION['tipo_menu']    = $tipo_menu;
-              @session_write_close();
-
-              $this->logado = TRUE;
-            }
-            else
-            {
-              if (!empty($tempo_conta) && !empty($data_conta))
-              {
-                if (time() - strtotime( $data_conta ) > $tempo_conta * 60 * 60 * 24) {
-                  $this->erroMsg = "Sua conta expirou. Contacte o administrador para reativá-la.";
-                  $expirada = 1;
-                }
-                else {
-                  $this->erroMsg = "Sua conta n&atilde;o est&aacute; ativa. Use a op&ccedil;&atilde;o 'Nunca usei a intrenet'.";
-                  $expirada = 0;
-                }
-              }
-            }
-          }
-          else
-          {
-            $this->erroMsg = "Imposs&iacute;vel realizar login.";
-            $this->logado  = FALSE;
-          }
-        }
-        else
-        {
-          if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR'] != '') {
-            // No caso de múltiplos IPs, pega o último da lista
-            $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-            $ip_de_rede = trim(array_pop($ip));
-          }
-
-          $ip = empty($_SERVER['REMOTE_ADDR']) ? 'NULL' : $_SERVER['REMOTE_ADDR'];
-          $ip_de_rede = empty($ip_de_rede) ? 'NULL' : $ip_de_rede;
-
-          $db->Consulta("INSERT INTO acesso (data_hora, ip_externo, ip_interno, cod_pessoa, sucesso) VALUES (now(), '{$ip}', '{$ip_de_rede}',  {$idpes}, 'f')");
-
-          $this->erroMsg = 'Login ou Senha incorretos.';
-          $this->logado  = FALSE;
-        }
-      }
-      else {
-        $this->erroMsg = "Login ou Senha incorretos.";
-        $this->logado  = FALSE;
-      }
-    }
-    else
-    {
-      $arquivo = 'templates/nvp_htmlloginintranet.tpl';
-      $ptrTpl  = fopen($arquivo, "r");
-      $strArquivo = fread($ptrTpl, filesize($arquivo));
-
-      if ($this->erroMsg) {
-        $strArquivo = str_replace( "<!-- #&ERROLOGIN&# -->", $this->erroMsg, $strArquivo );
-      }
-
-      fclose($ptrTpl);
-      die($strArquivo);
-      // @todo
-      #throw new Exception($strArquivo);
-    }
   }
 
   /**
@@ -285,4 +109,178 @@ class clsControlador
     }
   }
 
+  // novo metodo login, logica quebrada em metodos menores
+  public function Logar($validateCredentials) {
+    if ($validateCredentials) {
+      $username = @$_POST['login'];
+      $password = md5(@$_POST['senha']);
+      $userId = $this->validateUser($username, $password);
+
+      if ($this->canStartLoginSession($userId))
+        $this->startLoginSession($userId);
+      else {
+        $this->renderLoginPage();
+      }
+    }
+    else
+      $this->renderLoginPage();
+  }
+
+  // renderiza o template de login, com as mensagens adicionadas durante validações
+  protected function renderLoginPage() {
+    $this->destroyLoginSession();
+
+    $templateName = 'templates/nvp_htmlloginintranet.tpl';
+    $templateFile  = fopen($templateName, "r");
+    $templateText = fread($templateFile, filesize($templateName));
+    $templateText = str_replace( "<!-- #&ERROLOGIN&# -->", $this->messages->toHtml('p'), $templateText);
+
+    fclose($templateFile);
+    die($templateText);
+  }
+
+  // valida se o usuário e senha informados, existem no banco de dados.
+  protected function validateUser($username, $password) {
+    $sql = "SELECT ref_cod_pessoa_fj FROM portal.funcionario WHERE matricula = $1 and senha = $2";
+    $userId = $this->fetchPreparedQuery($sql, array($username, $password), true, 'first-field');
+
+    if (! is_numeric($userId))
+      $this->messages->append("Usuário ou senha incorreta.", "error");
+    else
+      return $userId;
+
+    return false;
+  }
+
+
+  // valida se o usuário, pode acessar o sistema.
+  public function canStartLoginSession($userId) {
+
+    if (! $this->messages->hasMsgWithType("error")) {
+      $sql = "SELECT ativo, proibido, tempo_expira_conta, data_reativa_conta, ip_logado " .
+             "as ip_ultimo_acesso, data_login FROM portal.funcionario WHERE ref_cod_pessoa_fj = $1";
+
+      $user = $this->fetchPreparedQuery($sql, $userId, true, 'first-line');
+
+      if ($user['ativo'] != '1') {
+        $this->messages->append("Aparentemente sua conta de usuário esta inativa (expirada), por favor, " .
+                                "entre em contato com o administrador do sistema.", "error", false, "error");
+      }
+
+      if ($user['proibido'] != '0') {
+        $this->messages->append("Aparentemente sua conta não pode acessar o sistema, " .
+                                "por favor, entre em contato com o administrador do sistema.", 
+                                "error", false, "error");
+      }
+
+      /* considera como expirado caso data_reativa_conta + tempo_expira_conta <= now
+         obs: ao salvar drh > cadastro funcionario, seta data_reativa_conta = now */
+      $contaExpirou = ! empty($user['tempo_expira_conta']) && ! empty($user['data_reativa_conta']) &&
+                      time() - strtotime($user['data_reativa_conta']) > $user['tempo_expira_conta'] * 60 * 60 * 24;
+
+      if($contaExpirou) {
+        $sql = "UPDATE funcionario SET ativo = 0 WHERE ref_cod_pessoa_fj = $1";
+        $this->fetchPreparedQuery($sql, $userId, true);
+
+        $this->messages->append("Aparentemente a conta de usuário expirou, por favor, " .
+                                "entre em contato com o administrador do sistema.", "error", false, "error");
+      }
+
+      // considera como acesso multiplo, acesso em diferentes IPs em menos de $tempoMultiploAcesso minutos
+      $tempoMultiploAcesso = 10;
+      $tempoEmEspera = abs(time() - strftime("now") - strtotime($user['data_login'])) / 60;
+
+      $multiploAcesso = $tempoEmEspera <= $tempoMultiploAcesso &&
+                        $user['ip_ultimo_acesso'] != $this->getClientIP();
+    
+      if ($multiploAcesso) {
+        $minutosEmEspera = round($tempoMultiploAcesso - $tempoEmEspera) + 1;
+        $this->messages->append("Aparentemente sua conta foi acessada em outro computador nos últimos " .
+                                "$tempoMultiploAcesso minutos, caso não tenha sido você, " . 
+                                "por favor, altere sua senha ou tente novamente em $minutosEmEspera minutos",
+                                "error", false, "error");
+      }
+      #TODO verificar se conta nunca usada (exibir "Sua conta n&atilde;o est&aacute; ativa. Use a op&ccedil;&atilde;o 'Nunca usei a intrenet'." ?)
+    }
+    return ! $this->messages->hasMsgWithType("error");
+  }
+
+
+  public function startLoginSession($userId, $redirectTo = '') {
+    $sql = "SELECT ref_cod_pessoa_fj, opcao_menu, ref_cod_setor_new, tipo_menu, email, status_token FROM funcionario WHERE ref_cod_pessoa_fj = $1";
+    $record = $this->fetchPreparedQuery($sql, $userId, true, 'first-line');
+
+    @session_start();
+    $_SESSION = array();
+    $_SESSION['itj_controle'] = 'logado';
+    $_SESSION['id_pessoa']    = $record['ref_cod_pessoa_fj'];
+    $_SESSION['pessoa_setor'] = $record['ref_cod_setor_new'];
+    $_SESSION['menu_opt']     = unserialize($record['opcao_menu']);
+    $_SESSION['tipo_menu']    = $record['tipo_menu'];
+    @session_write_close();
+
+    $this->logado = true;
+    $this->messages->append("Usuário logado com sucesso.", "success");
+
+    $this->logAccess($userId);
+
+    //redireciona para usuário informar email, caso este seja inválido
+    if (! filter_var($record['email'], FILTER_VALIDATE_EMAIL))
+       header("Location: /module/Usuario/AlterarEmail");
+    elseif(! empty($redirectTo))
+       header("Location: $redirectTo");
+  }
+
+
+  protected function destroyLoginSession($addMsg = false) {
+    @session_start();
+    $_SESSION = array();
+    @session_destroy();
+
+    if ($addMsg)
+      $this->messages->append("Usuário deslogado com sucesso.", "success");
+  }
+
+
+  protected function getClientIP() {
+    if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR'] != '') {
+      // pega o (ultimo) IP real caso o host esteja atrás de um proxy
+      $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+      $ip = trim(array_pop($ip));
+    }
+    else
+      $ip = $_SERVER['REMOTE_ADDR'];
+    return $ip;
+  }
+
+
+  protected function logAccess($userId) {
+    $sql = "UPDATE funcionario SET ip_logado = '{$this->getClientIP()}', data_login = NOW() WHERE ref_cod_pessoa_fj = $1";
+    $this->fetchPreparedQuery($sql, $userId, true);
+  }
+
+
+  // wrapper para $db->execPreparedQuery($sql, $params)
+  protected function fetchPreparedQuery($sql, $params = array(), $hideExceptions = true, $returnOnly = '') {
+    try{    
+      $result = array();
+      $db = new clsBanco();
+      if ($db->execPreparedQuery($sql, $params) != false) {
+
+        while ($db->ProximoRegistro())
+          $result[] = $db->Tupla();
+
+        if ($returnOnly == 'first-line' and isset($result[0]))
+          $result = $result[0];
+        elseif ($returnOnly == 'first-field' and isset($result[0]) and isset($result[0][0]))
+          $result = $result[0][0];
+      }
+    }
+    catch(Exception $e) 
+    {
+      if (! $hideExceptions)
+        $this->messages->append($e->getMessage(), "error", true);
+    }
+    return $result;
+  }
 }
