@@ -79,7 +79,8 @@ class clsControlador
 
       $db = new clsBanco();
       if (isset($_SESSION['id_pessoa'])) {
-        $db->Consulta("UPDATE funcionario SET opcao_menu = '" . serialize( $_SESSION['menu_opt'] ) . "' WHERE ref_cod_pessoa_fj = '" . $_SESSION['id_pessoa'] . "'");
+        $db->Consulta("UPDATE funcionario SET opcao_menu = '" . serialize( $_SESSION['menu_opt'] ) 
+                    . "' WHERE ref_cod_pessoa_fj = '" . $_SESSION['id_pessoa'] . "'");
       }
     }
 
@@ -116,27 +117,35 @@ class clsControlador
         $intervalo = date("Y-m-d H:i", time() - (60 * 1 ));
 
         // Se o último login bem sucedido foi em menos de meia hora, conta somente dali para a frente
-        $db->consulta("SELECT data_hora FROM acesso WHERE cod_pessoa = '{$idpes}' AND data_hora > '{$intervalo}' AND sucesso = 't' ORDER BY data_hora DESC LIMIT 1" );
+        $db->consulta("SELECT data_hora FROM acesso WHERE cod_pessoa = '{$idpes}' AND data_hora > '{$intervalo}' "
+                    . "AND sucesso = 't' ORDER BY data_hora DESC LIMIT 1" );
         if ($db->Num_Linhas()) {
           $db->ProximoRegistro();
           list($intervalo) = $db->Tupla();
         }
 
         // Trava usuário se tentar login mais de 5 vezes
-        $tentativas = $db->CampoUnico("SELECT COUNT(0) FROM acesso WHERE cod_pessoa = '{$idpes}' AND data_hora > '{$intervalo}' AND sucesso = 'f'" );
+        $tentativas = $db->CampoUnico("SELECT COUNT(0) FROM acesso WHERE cod_pessoa = '{$idpes}' "
+                                    . "AND data_hora > '{$intervalo}' AND sucesso = 'f'" );
         if ($tentativas > 5)
         {
-          $hora_ultima_tentativa = $db->CampoUnico("SELECT data_hora FROM acesso WHERE cod_pessoa = '{$idpes}' ORDER BY data_hora DESC LIMIT 1 OFFSET 4" );
+          $hora_ultima_tentativa = $db->CampoUnico("SELECT data_hora FROM acesso WHERE cod_pessoa = '{$idpes}' "
+                                                 . "ORDER BY data_hora DESC LIMIT 1 OFFSET 4" );
           $hora_ultima_tentativa = explode(".",$hora_ultima_tentativa);
           $hora_ultima_tentativa = $hora_ultima_tentativa[0];
 
           $data_libera = date("d/m/Y H:i",
             strtotime($hora_ultima_tentativa) + (60 * 30));
 
-          die("<html><body></body><script>alert('Houveram mais de 5 tentativas frustradas de acessar a sua conta na última meia hora.\\nPor segurança, sua conta ficará interditada até: {$data_libera}');document.location.href='/intranet';</script></html>");
+          die("<html><body></body><script>alert('Houveram mais de 5 tentativas frustradas de acessar a sua conta na " 
+            . "última meia hora.\\nPor segurança, sua conta ficará interditada até: {$data_libera}')"
+            . ";document.location.href='/intranet';</script></html>");
         }
 
-        $db->Consulta( "SELECT ref_cod_pessoa_fj, opcao_menu, ativo, tempo_expira_senha, tempo_expira_conta, data_troca_senha, data_reativa_conta, proibido, ref_cod_setor_new, tipo_menu FROM funcionario WHERE ref_cod_pessoa_fj = '{$idpes}' AND senha = '{$senha}'" );
+        $db->Consulta( "SELECT ref_cod_pessoa_fj, opcao_menu, ativo, tempo_expira_senha, tempo_expira_conta, "
+                     . "data_troca_senha, data_reativa_conta, proibido, ref_cod_setor_new, tipo_menu "
+                     . "FROM funcionario WHERE ref_cod_pessoa_fj = '{$idpes}' AND senha = '{$senha}'" );
+                    
         if ($db->ProximoRegistro())
         {
           list($id_pessoa, $opcaomenu, $ativo, $tempo_senha,
@@ -154,15 +163,8 @@ class clsControlador
                 if (time() - strtotime($data_conta) > $tempo_conta * 60 * 60 * 24) {
                   // Conta expirada
                   $db->Consulta("UPDATE funcionario SET ativo='0' WHERE ref_cod_pessoa_fj = '$id_pessoa'");
-                  die("<html><body></body><script>alert( 'Sua conta na intranet expirou.\nContacte um administrador para reativa-la.' );document.location.href='/intranet';</script></html>");
-                }
-              }
-
-              // Vendo se a senha não expirou
-              if (!empty($tempo_senha) && ! empty($data_senha)) {
-                if (time() - strtotime($data_senha) > $tempo_senha * 60 * 60 * 24) {
-                  // Senha expirada, pede que mude a senha
-                  die("<html><body><form id='reenvio' name='reenvio' action='usuario_trocasenha.php' method='POST'><input type='hidden' name='cod_pessoa' value='{$id_pessoa}'></form></body><script>document.getElementById('reenvio').submit();</script></html>");
+                  die("<html><body></body><script>alert( 'Sua conta na intranet expirou.\nContacte um administrador "
+                    . "para reativa-la.' );document.location.href='/intranet';</script></html>");
                 }
               }
 
@@ -187,7 +189,8 @@ class clsControlador
                 {
                   if (abs(time() - strftime("now") - strtotime($data_login)) <= 10 * 60
                     && $ip_banco != $ip_maquina) {
-                    die("<html><body></body><script>alert('Conta já em uso.\\nTente novamente mais tarde');document.location.href='/intranet';</script></html>");
+                    die("<html><body></body><script>alert('Conta já em uso.\\nTente novamente mais tarde');"
+                      . "document.location.href='/intranet';</script></html>");
                   }
                   else {
                     $sql = "UPDATE funcionario SET data_login = NOW() WHERE ref_cod_pessoa_fj = {$id_pessoa}";
@@ -195,14 +198,14 @@ class clsControlador
                   }
                 }
                 else {
-                  $sql = "UPDATE funcionario SET ip_logado = '{$ip_maquina}', data_login = NOW() WHERE ref_cod_pessoa_fj = {$id_pessoa}";
+                  $sql = "UPDATE funcionario SET ip_logado = '{$ip_maquina}', data_login = NOW() "
+                       . "WHERE ref_cod_pessoa_fj = {$id_pessoa}";
                   $db2->Consulta($sql);
                 }
               }
 
               // Login do usuário, grava dados na sessão
               @session_start();
-              $_SESSION = array();
               $_SESSION['itj_controle'] = 'logado';
               $_SESSION['id_pessoa']    = $id_pessoa;
               $_SESSION['pessoa_setor'] = $setor_new;
@@ -221,7 +224,8 @@ class clsControlador
                   $expirada = 1;
                 }
                 else {
-                  $this->erroMsg = "Sua conta n&atilde;o est&aacute; ativa. Use a op&ccedil;&atilde;o 'Nunca usei a intrenet'.";
+                  $this->erroMsg = "Sua conta n&atilde;o est&aacute; ativa. Use a op&ccedil;&atilde;o "
+                                 . "'Nunca usei a intrenet'.";
                   $expirada = 0;
                 }
               }
@@ -244,7 +248,8 @@ class clsControlador
           $ip = empty($_SERVER['REMOTE_ADDR']) ? 'NULL' : $_SERVER['REMOTE_ADDR'];
           $ip_de_rede = empty($ip_de_rede) ? 'NULL' : $ip_de_rede;
 
-          $db->Consulta("INSERT INTO acesso (data_hora, ip_externo, ip_interno, cod_pessoa, sucesso) VALUES (now(), '{$ip}', '{$ip_de_rede}',  {$idpes}, 'f')");
+          $db->Consulta("INSERT INTO acesso (data_hora, ip_externo, ip_interno, cod_pessoa, sucesso) "
+                      . "VALUES (now(), '{$ip}', '{$ip_de_rede}',  {$idpes}, 'f')");
 
           $this->erroMsg = 'Login ou Senha incorretos.';
           $this->logado  = FALSE;
