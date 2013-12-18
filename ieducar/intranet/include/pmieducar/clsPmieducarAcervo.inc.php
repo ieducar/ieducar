@@ -1040,10 +1040,11 @@ class clsPmieducarAcervo
 	 *
 	 * @return null
 	 */
-	function setLimite( $intLimiteQtd, $intLimiteOffset = null )
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
 	{
 		$this->_limite_quantidade = $intLimiteQtd;
-		$this->_limite_offset = $intLimiteOffset;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
 	}
 
 	/**

@@ -96,9 +96,10 @@ class clsPessoaFisica extends clsPessoaFj
       $whereAnd = ' AND ';
     }
 
-    if (is_string($numeric_cpf)) {
-      $where .= "{$whereAnd} cpf ILIKE '%{$numeric_cpf}%' ";
-    }
+		if( is_string( $numeric_cpf ) )
+		{
+			$where .= "{$whereAnd} cpf = $numeric_cpf ";
+		}
 
     if (is_numeric($int_ref_cod_sistema)) {
       $where .= "{$whereAnd} (ref_cod_sistema = '{$int_ref_cod_sistema}' OR cpf is not null  )";

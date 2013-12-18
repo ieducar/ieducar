@@ -565,7 +565,7 @@ class clsPmieducarAluno
       }
 
       if (is_numeric($int_cpf_responsavel)) {
-        $and_cpf_pai_mae = "and fisica_resp.cpf LIKE '$int_cpf_responsavel'";
+        $and_cpf_pai_mae = "and fisica_resp.cpf = $int_cpf_responsavel ";
       }
 
       $filtros .= "

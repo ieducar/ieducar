@@ -100,7 +100,7 @@ class clsPmieducarAlunoCMF
 		}
 		if(is_numeric($cpf_aluno))
 		{
-			$where_aluno .= "AND cpf_aluno.cpf like '%{$cpf_aluno}%' ";
+			$where_aluno .= "AND cpf_aluno.cpf = $cpf_aluno ";
 		}
 
 
@@ -110,7 +110,7 @@ class clsPmieducarAlunoCMF
 		}
 		if(is_numeric($cpf_responsavel))
 		{
-			$where_responsavel .= "AND cpf_resp.cpf like '%{$cpf_responsavel}%' ";
+			$where_responsavel .= "AND cpf_resp.cpf = $cpf_responsavel' ";
 		}
 		if(!empty($where_responsavel))
 		{
@@ -203,10 +203,11 @@ class clsPmieducarAlunoCMF
 	 *
 	 * @return null
 	 */
-	function setLimite( $intLimiteQtd, $intLimiteOffset = null )
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
 	{
 		$this->_limite_quantidade = $intLimiteQtd;
-		$this->_limite_offset = $intLimiteOffset;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
 	}
 
 	/**

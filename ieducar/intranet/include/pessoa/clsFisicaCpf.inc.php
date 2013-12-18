@@ -100,12 +100,12 @@ class clsFisicaCpf
 		$whereAnd = "WHERE ";
 		if(is_numeric($int_idpes))
 		{
-			$where .= "{$whereAnd}idpes = '$int_idpes'";
+			$where .= "{$whereAnd}idpes = '$int_idpes' ";
 			$whereAnd = " AND ";
 		}
 		if(is_numeric($int_cpf))
 		{
-			$where .= "{$whereAnd}cpf ILIKE '%$int_cpf%' OR cpf ILIKE '$int_cpf%' ";
+			$where .= "{$whereAnd} cpf = $int_cpf ";
 		}
 
 		$orderBy = "";
@@ -155,8 +155,7 @@ class clsFisicaCpf
 
 		if(is_numeric($int_cpf))
 		{
-			$temp_cpf = $int_cpf + 0;
-			$where .= "{$whereAnd}cpf ILIKE '%$int_cpf%' OR cpf ILIKE '$temp_cpf%' ";
+			$where .= "{$whereAnd} cpf = $int_cpf ";
 		}
 
 		$orderBy = "";

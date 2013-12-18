@@ -78,7 +78,7 @@ class clsPessoaFisicaAlterado extends clsPessoaFj
 
 		if( is_string( $numeric_cpf ) )
 		{
-			$where .= "{$whereAnd} cpf ILIKE '%{$numeric_cpf}%' ";
+			$where .= "{$whereAnd} cpf = $numeric_cpf ";
 		}
 
 		if( is_numeric( $int_ref_cod_sistema ) )
@@ -140,7 +140,7 @@ class clsPessoaFisicaAlterado extends clsPessoaFj
 
 			if( is_string( $numeric_cpf ) )
 			{
-				$where .= "{$whereAnd} cpf ILIKE '%{$numeric_cpf}%' ";
+				$where .= "{$whereAnd} cpf = $numeric_cpf ";
 				$whereAnd = " AND ";
 			}
 			if( is_numeric( $int_ref_cod_sistema ) )
