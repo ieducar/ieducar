@@ -266,14 +266,17 @@ class clsCadastroDeficiencia
     $this->_campos_lista = $this->_todos_campos;
   }
 
-  /**
-   * Define limites de retorno para o método Lista().
-   */
-  function setLimite($intLimiteQtd, $intLimiteOffset = NULL)
-  {
-    $this->_limite_quantidade = $intLimiteQtd;
-    $this->_limite_offset = $intLimiteOffset;
-  }
+	/**
+	 * Define limites de retorno para o metodo lista
+	 *
+	 * @return null
+	 */
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
+	{
+		$this->_limite_quantidade = $intLimiteQtd;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
+	}
 
   /**
    * Retorna a string com o trecho da query responsável pelo limite de

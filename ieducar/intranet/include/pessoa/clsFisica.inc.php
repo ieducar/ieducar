@@ -655,7 +655,7 @@ class clsFisica
 
 		if(is_numeric($int_cpf))
 		{
-			$where .= "{$whereAnd}cpf like '%$int_cpf%'";
+			$where .= "{$whereAnd}cpf = $int_cpf";
 		}
 
 		if( is_array( $arrayint_idisin ) )

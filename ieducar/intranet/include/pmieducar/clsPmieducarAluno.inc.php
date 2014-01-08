@@ -601,7 +601,7 @@ class clsPmieducarAluno
                   fisica_pai_mae.idpes = fisica_aluno.idpes_pai
                   OR fisica_pai_mae.idpes = fisica_aluno.idpes_mae
                 )
-              AND fisica_pai_mae.cpf LIKE '$int_cpf_responsavel'
+              AND fisica_pai_mae.cpf = $int_cpf_responsavel
               )
           )
         )";
@@ -791,7 +791,7 @@ class clsPmieducarAluno
       }
 
       if (is_numeric($int_cpf_responsavel)) {
-        $and_cpf_pai_mae = "and fisica_resp.cpf LIKE '$int_cpf_responsavel'";
+        $and_cpf_pai_mae = "and fisica_resp.cpf = $int_cpf_responsavel ";
       }
 
       $filtros .= "
@@ -826,7 +826,7 @@ class clsPmieducarAluno
                 fisica_pai_mae.idpes = fisica_aluno.idpes_pai
                 OR fisica_pai_mae.idpes = fisica_aluno.idpes_mae
               )
-              AND fisica_pai_mae.cpf LIKE '$int_cpf_responsavel'
+              AND fisica_pai_mae.cpf = $int_cpf_responsavel
             )
           )
         )";
@@ -1123,11 +1123,12 @@ class clsPmieducarAluno
   /**
    * Define limites de retorno para o método Lista().
    */
-  function setLimite($intLimiteQtd, $intLimiteOffset = NULL)
-  {
-    $this->_limite_quantidade = $intLimiteQtd;
-    $this->_limite_offset = $intLimiteOffset;
-  }
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
+	{
+		$this->_limite_quantidade = $intLimiteQtd;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
+	}
 
   /**
    * Retorna a string com o trecho da query responsável pelo limite de
