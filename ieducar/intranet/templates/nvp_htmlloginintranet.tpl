@@ -42,6 +42,8 @@
 				text-align : right;
 			}
 			#login, #senha {
+				-webkit-transition : 500ms;
+				transition : 1s;
 				margin-bottom:5px;
 				width: 18em;
 				font-size: 150%;
@@ -63,10 +65,17 @@
 				margin-top : 30px;
 				margin-left : 200px;
 			}
-			#cidades_digitais {
-				position : absolute;
-				bottom : 50px;
-				left : 50px;
+			.logo_rodape {
+				margin-top : 20px;
+				margin-left : 16px;
+				float : left;
+				-webkit-transition : 1s;
+				transition : 1s;
+				border : thin solid transparent;
+			}
+			.logo_rodape:hover {
+				background-color : #C0E0EE;
+				border : thin solid white;
 			}
 		</style>
 	</head>
@@ -81,9 +90,29 @@
 
 			<input type="image" id="botao" src="imagens/bot_login.png" value="Entrar" />
 		</form>
+
+		<a class="logo_rodape" href="http://pagina.softwarepublico.gov.br/ieducar/" target="_top">
+			<img id="logo_ieducar" src="imagens/logo_ieducar.png" alt="i-Educar"> </img>
+		</a>
 		
-		<a href="http://www.cidadesdigitais.gov.br" target="_top">
-			<img id="cidades_digitais" src="imagens/logo_cidades_digitais.jpg" alt="Cidades Digitais"> </img>
+		<a class="logo_rodape" href="http://cidadesdigitais.gov.br" target="_top">
+			<img id="logo_cidades_digitais" src="imagens/logo_cidades_digitais.png" alt="Cidades Digitais"> </img>
+		</a>
+	
+		<a class="logo_rodape" href="http://serpro.gov.br" target="_top">
+			<img id="logo_serpro" src="imagens/logo_serpro.png" alt="SERPRO"> </img>
+		</a>
+		
+		<a class="logo_rodape" href="http://fazenda.gov.br" target="_top">
+			<img id="logo_fazenda" src="imagens/logo_ministerio_fazenda.png" alt="Minist&eacute;rio da Fazenda"> </img>
+		</a>
+		
+		<a class="logo_rodape" href="http://mc.gov.br" target="_top">
+			<img id="logo_comunicacoes" src="imagens/logo_ministerio_comunicacoes.png" alt="Minist&eacute;rio das Comunica&ccedil;&otilde;es"> </img>
+		</a>
+		
+		<a class="logo_rodape" href="http://brasil.gov.br/ieducar/" target="_top">
+			<img id="logo_brasil" src="imagens/logo_brasil.png" alt="Governo Federal do Brasil"> </img>
 		</a>
 	</body>
 </html>

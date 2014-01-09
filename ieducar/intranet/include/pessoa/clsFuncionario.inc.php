@@ -279,7 +279,7 @@ class clsFuncionario extends clsPessoaFisica
 		else if($this->cpf)
 		{
 			$db = new clsBanco();
-			$db->Consulta("SELECT idpes FROM {$this->schema_cadastro}.fisica WHERE cpf = '{$this->cpf}'");
+			$db->Consulta("SELECT idpes FROM {$this->schema_cadastro}.fisica WHERE cpf = {$this->cpf}");
 			if( $db->ProximoRegistro() )
 			{
 				list( $this->idpes ) = $db->Tupla();
