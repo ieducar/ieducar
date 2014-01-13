@@ -1052,7 +1052,27 @@ CREATE FUNCTION fcn_aft_documento() RETURNS "trigger"
     v_idpes   numeric;
     BEGIN
       v_idpes := NEW.idpes;
-      EXECUTE 'DELETE FROM cadastro.documento WHERE ( (rg = 0 OR rg IS NULL) AND (idorg_exp_rg IS NULL) AND data_exp_rg IS NULL AND (sigla_uf_exp_rg IS NULL OR length(trim(sigla_uf_exp_rg))=0) AND (tipo_cert_civil = 0 OR tipo_cert_civil IS NULL) AND (num_termo = 0 OR num_termo IS NULL) AND (num_livro = 0 OR num_livro IS NULL) AND (num_livro = 0 OR num_livro IS NULL) AND (num_folha = 0 OR num_folha IS NULL) AND data_emissao_cert_civil IS NULL AND (sigla_uf_cert_civil IS NULL OR length(trim(sigla_uf_cert_civil))=0) AND (sigla_uf_cart_trabalho IS NULL OR length(trim(sigla_uf_cart_trabalho))=0) AND (cartorio_cert_civil IS NULL OR length(trim(cartorio_cert_civil))=0) AND (num_cart_trabalho = 0 OR num_cart_trabalho IS NULL) AND (serie_cart_trabalho = 0 OR serie_cart_trabalho IS NULL) AND data_emissao_cart_trabalho IS NULL AND (num_tit_eleitor = 0 OR num_tit_eleitor IS NULL) AND (zona_tit_eleitor = 0 OR zona_tit_eleitor IS NULL) AND (secao_tit_eleitor = 0 OR secao_tit_eleitor IS NULL) ) AND idpes='||quote_literal(v_idpes)||' AND certidao_nascimento is null';
+      EXECUTE 'DELETE FROM cadastro.documento WHERE ( 
+		(rg = 0 OR rg IS NULL) AND 
+		(idorg_exp_rg IS NULL) AND 
+		(data_exp_rg IS NULL) AND 
+	    (sigla_uf_exp_rg IS NULL OR length(trim(sigla_uf_exp_rg))=0) AND 
+		(tipo_cert_civil = 0 OR tipo_cert_civil IS NULL) AND 
+		(num_termo = 0 OR num_termo IS NULL) AND 
+		(num_livro IS NULL) AND 
+		(num_folha = 0 OR num_folha IS NULL) AND 
+		(data_emissao_cert_civil IS NULL) AND 
+		(sigla_uf_cert_civil IS NULL OR length(trim(sigla_uf_cert_civil))=0) AND 
+		(sigla_uf_cart_trabalho IS NULL OR length(trim(sigla_uf_cart_trabalho))=0) AND 
+		(cartorio_cert_civil IS NULL OR length(trim(cartorio_cert_civil))=0) AND 
+		(num_cart_trabalho = 0 OR num_cart_trabalho IS NULL) AND 
+		(serie_cart_trabalho = 0 OR serie_cart_trabalho IS NULL) AND 
+		(data_emissao_cart_trabalho IS NULL) AND 
+		(num_tit_eleitor = 0 OR num_tit_eleitor IS NULL) AND 
+		(zona_tit_eleitor = 0 OR zona_tit_eleitor IS NULL) AND 
+		(secao_tit_eleitor = 0 OR secao_tit_eleitor IS NULL) ) AND 
+		idpes='||quote_literal(v_idpes)||' AND 
+		(certidao_nascimento is null)';
     RETURN NEW;
   END; $$
     LANGUAGE plpgsql;
@@ -6150,23 +6170,55 @@ BEGIN
     END IF;
  
   -- Insere dados na tabela funcionário
-    INSERT INTO cadastro.documento (idpes, rg, idorg_exp_rg, 
-                                data_exp_rg, sigla_uf_exp_rg,
-                                tipo_cert_civil, num_termo,
-                                num_livro, num_folha,
-                                data_emissao_cert_civil, sigla_uf_cert_civil,
-                                sigla_uf_cart_trabalho, cartorio_cert_civil,
-                                num_cart_trabalho, serie_cart_trabalho,
-                                data_emissao_cart_trabalho, num_tit_eleitor,                                              zona_tit_eleitor, secao_tit_eleitor, origem_gravacao, idpes_cad, idsis_cad, data_cad, operacao)
-    VALUES(v_id_pes, to_number(v_rg_aux,9999999999), to_number(v_orgao_exp_rg_aux,9999999999),
-           to_date(v_data_exp_rg,'DD/MM/YYYY'), v_sigla_uf_exp_rg_aux,
-           v_tipo_cert_civil_aux, v_num_termo_aux,
-           v_num_livro_aux, v_num_folha_aux,
-           to_date(v_data_emissao_cert_civil,'DD/MM/YYYY'), v_sigla_uf_cert_civil_aux,
-           v_sigla_uf_cart_trabalho_aux, v_cartorio_cert_civil_aux,
-           v_num_cart_trabalho_aux, v_serie_cart_trabalho_aux,
-           to_date(v_data_emissao_cart_trabalho,'DD/MM/YYYY'), to_number(v_num_tit_eleitor_aux,9999999999999),
-           v_zona_tit_eleitor_aux, v_secao_tit_eleitor_aux, v_origem_gravacao, v_idpes_cad, v_idsis_cad, CURRENT_TIMESTAMP, 'I');
+    INSERT INTO cadastro.documento (idpes,
+    			rg, 
+    			idorg_exp_rg, 
+				data_exp_rg, 
+				sigla_uf_exp_rg,
+				tipo_cert_civil, 
+				num_termo,
+				num_livro, 
+				num_folha,
+				data_emissao_cert_civil, 
+				sigla_uf_cert_civil,
+				sigla_uf_cart_trabalho, 
+				cartorio_cert_civil,
+				num_cart_trabalho, 
+				serie_cart_trabalho,
+				data_emissao_cart_trabalho, 
+				num_tit_eleitor,
+				zona_tit_eleitor, 
+				secao_tit_eleitor, 
+				origem_gravacao, 
+				idpes_cad, 
+				idsis_cad, 
+				data_cad, 
+				operacao
+			)
+    VALUES(v_id_pes, -- idpes 
+    	   to_number(v_rg_aux,9999999999), -- rg 
+    	   to_number(v_orgao_exp_rg_aux,9999999999), -- idorg_exp_rg
+           to_date(v_data_exp_rg,'DD/MM/YYYY'),  -- data_exp_rg
+           v_sigla_uf_exp_rg_aux, -- sigla_uf_exp_rg
+           v_tipo_cert_civil_aux, -- tipo_cert_civil 
+           to_number(v_num_termo_aux, 99999999), -- num_termo
+           v_num_livro_aux, -- num_livro
+           v_num_folha_aux, -- num_folha
+           to_date(v_data_emissao_cert_civil,'DD/MM/YYYY'), -- data_emissao_cert_civil 
+           v_sigla_uf_cert_civil_aux, -- sigla_uf_cert_civil
+           v_sigla_uf_cart_trabalho_aux, -- sigla_uf_cart_trabalho
+           v_cartorio_cert_civil_aux, -- cartorio_cert_civil
+           v_num_cart_trabalho_aux,  -- num_Cart_trabalho
+           v_serie_cart_trabalho_aux, -- serie_cart_trabalho
+           to_date(v_data_emissao_cart_trabalho,'DD/MM/YYYY'), -- data_emissao_cart_trabalho 
+           to_number(v_num_tit_eleitor_aux,9999999999999), -- num_tit_eleitor
+           v_zona_tit_eleitor_aux, v_secao_tit_eleitor_aux, -- zona_tit_eleitor 
+           v_origem_gravacao, -- origem_gravao 
+           v_idpes_cad, -- idpes_cad
+           v_idsis_cad, -- idsis_cad 
+           CURRENT_TIMESTAMP, -- data_cad
+           'I' -- operacao
+          );
   RETURN 0;
 END;$_$
     LANGUAGE plpgsql;
