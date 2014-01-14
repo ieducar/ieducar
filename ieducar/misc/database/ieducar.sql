@@ -10920,7 +10920,7 @@ CREATE TABLE componente_curricular (
     id integer NOT NULL,
     instituicao_id integer NOT NULL,
     area_conhecimento_id integer NOT NULL,
-    nome character varying(100) NOT NULL,
+    nome text NOT NULL,
     abreviatura character varying(15) NOT NULL,
     tipo_base smallint NOT NULL
 );
@@ -13910,7 +13910,7 @@ ALTER TABLE pmieducar.escola_localizacao_cod_escola_localizacao_seq OWNER TO ied
 -- Name: escola_localizacao_cod_escola_localizacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
 --
 
-SELECT pg_catalog.setval('escola_localizacao_cod_escola_localizacao_seq', 1, true);
+SELECT pg_catalog.setval('escola_localizacao_cod_escola_localizacao_seq', 3, true);
 
 
 --
@@ -14848,7 +14848,8 @@ CREATE TABLE matricula (
     matricula_reclassificacao smallint DEFAULT (0)::smallint,
     ref_cod_curso integer,
     matricula_transferencia boolean DEFAULT false NOT NULL,
-    semestre smallint
+    semestre smallint,
+    observacao text default ''
 );
 
 

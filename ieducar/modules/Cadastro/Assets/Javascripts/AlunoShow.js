@@ -36,14 +36,12 @@ var handleGetMatriculas = function(dataResponse) {
     $j.each(dataResponse.matriculas, function(index, matricula) {
       var $tr = $j('<tr>');
 
+      var linkToMatricula = '';
       if (matricula.user_can_access) {
-        var linkToMatricula = $j('<a>').attr('href', 'educar_matricula_det.php?cod_matricula=' + matricula.id)
+        linkToMatricula = $j('<a>').attr('href', 'educar_matricula_det.php?cod_matricula=' + matricula.id)
                                        .html('Visualizar')
                                        .addClass('decorated');
-
       }
-      else
-        var linkToMatricula = '';
 
       $j('<td>').html(linkToMatricula).appendTo($tr).addClass('center');
       $j('<td>').html(matricula.ano).appendTo($tr);

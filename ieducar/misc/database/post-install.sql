@@ -2,13 +2,16 @@
 
 ALTER DATABASE ieducar SET search_path = "$user", public, portal, cadastro, acesso, alimentos, consistenciacao, historico, pmiacoes, pmicontrolesis, pmidrh, pmieducar, pmiotopic, urbano, modules;
 
--- Trim de tipo Date, removido nas vers√µes mais novas.
+-- Trim de tipo Date, removido nas versıes mais novas.
 CREATE FUNCTION pg_catalog.btrim(date) RETURNS TEXT LANGUAGE SQL STABLE
 as $f$ 
   SELECT trim($1::text); 
 $f$;
 
--- Grants de permiss√µes para o usu√°rio
+-- Ele vem com algumas linhas da tabela de acesso do portal.
+DELETE FROM portal.acesso;  
+
+-- Grants de permissıes para o usu·rio.
 GRANT USAGE ON SCHEMA public TO ieducar; 
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ieducar; 
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ieducar; 
