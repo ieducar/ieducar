@@ -22,6 +22,7 @@
 				color: #000000;
 				font-size: 11px;
 				margin: 0 0 0 0;
+				font-family : sans-serif;
 			}
 			body {
 				background-image: url("imagens/fundo_login.jpg");
@@ -77,9 +78,20 @@
 				background-color : #C0E0EE;
 				border : thin solid white;
 			}
+			.error {
+				padding : 1em;
+				background-color : white;
+				color : #BA0000;
+				width : 80%;
+				margin-left : 10%;
+			}
 		</style>
 	</head>
 	<body onload="loginpage_onload();">
+
+		<span id="login_error">
+		      <!-- #&ERROLOGIN&# -->
+		</span>
 	
 		<form action="" method="post" id="login_form">
 			<label for="login">Usu&aacute;rio:</label>
@@ -87,6 +99,7 @@
 				
 			<label for="senha">Senha:</label>
 			<input type="password" name="senha" id="senha" size="15" /><br />
+			<!-- #&RECAPTCHA&# -->
 
 			<input type="image" id="botao" src="imagens/bot_login.png" value="Entrar" />
 		</form>
