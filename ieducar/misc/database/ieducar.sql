@@ -26103,7 +26103,7 @@ menu_tipo_usuario	(1,999620,1,0,1)	2012-06-22 16:31:36.620354	1
 menu_tipo_usuario	(1,999621,1,0,1)	2012-06-22 16:31:36.620354	1
 menu_tipo_usuario	(1,999622,1,0,1)	2012-06-22 16:31:36.620354	1
 instituicao	(1,,1,RUA,SC,88888888,i-Educar,Centro,"Rua João Paulo Segundo",2013,Centro,"Secretaria de Educação e Cultura",48,99999999,"2010-01-04 08:00:00","2013-01-28 18:03:41.375419",1,"Prefeitura Municipal de i-Educar")	2013-01-28 18:03:41.375419	0
-instituicao	(1,,1,RUA,SC,88820000,Içara,Centro,"Coronel Marcos Rovaris",165,Centro,"Secretaria de Educação e Cultura",48,30553001,"2010-01-04 08:00:00","2013-01-31 23:07:02.374795",1,"Prefeitura Municipal de Portabilis Tecnologia")	2013-01-31 23:07:02.374795	0
+instituicao	(1,,1,RUA,SC,88820000,Içara,Centro,"Coronel Marcos Rovaris",165,Centro,"Secretaria de Educação e Cultura",48,30553001,"2010-01-04 08:00:00","2013-01-31 23:07:02.374795",1,"Serviço Federal de Processamento de Dados - SERPRO")	2013-01-31 23:07:02.374795	0
 \.
 
 
@@ -26154,7 +26154,7 @@ COPY infra_predio_comodo (cod_infra_predio_comodo, ref_usuario_exc, ref_usuario_
 --
 
 COPY instituicao (cod_instituicao, ref_usuario_exc, ref_usuario_cad, ref_idtlog, ref_sigla_uf, cep, cidade, bairro, logradouro, numero, complemento, nm_responsavel, ddd_telefone, telefone, data_cadastro, data_exclusao, ativo, nm_instituicao) FROM stdin;
-1	\N	1	RUA	SC	88820000	Içara	Centro	Coronel Marcos Rovaris	165	Centro	Secretaria de Educação e Cultura	48	30553001	2010-01-04 08:00:00	2013-01-31 23:07:02.374795	1	Prefeitura Municipal de Portabilis Tecnologia
+1	\N	1	RUA	SC	88820000	Içara	Centro	Coronel Marcos Rovaris	165	Centro	Secretaria de Educação e Cultura	48	30553001	2010-01-04 08:00:00	2013-01-31 23:07:02.374795	1	Serviço Federal de Processamento de Dados - SERPRO
 \.
 
 
@@ -26821,7 +26821,7 @@ COPY foto_secao (cod_foto_secao, nm_secao) FROM stdin;
 --
 
 COPY funcionario (ref_cod_pessoa_fj, matricula, senha, ativo, ref_sec, ramal, sequencial, opcao_menu, ref_cod_setor, ref_cod_funcionario_vinculo, tempo_expira_senha, tempo_expira_conta, data_troca_senha, data_reativa_conta, ref_ref_cod_pessoa_fj, proibido, ref_cod_setor_new, matricula_new, matricula_permanente, tipo_menu, ip_logado, data_login, email, status_token) FROM stdin;
-1	admin	21232f297a57a5a743894a0e4a801fc3	1	\N	\N	1  	1	\N	\N	\N	\N	\N	\N	\N	0	\N	\N	0	1	127.0.0.1	2013-03-05 18:39:01.990024	\N	\N
+1	admin	16ec96b29c14a92daffed3b7d77b9006	1	\N	\N	1  	1	\N	\N	\N	\N	\N	\N	\N	0	\N	\N	0	1	127.0.0.1	2013-03-05 18:39:01.990024	\N	\N
 \.
 
 
