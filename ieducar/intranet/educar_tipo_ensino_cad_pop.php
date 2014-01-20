@@ -210,8 +210,7 @@ $pagina->MakeAll();
 <script>
 
 <?
-if (!$_GET['precisa_lista'])
-{?>
+if (!$_GET['precisa_lista']) { ?>
 	
 	Event.observe(window, 'load', Init);
 	
@@ -220,6 +219,8 @@ if (!$_GET['precisa_lista'])
 		$('ref_cod_instituicao').value = parent.document.getElementById('ref_cod_instituicao').value;
 	}
 
-<?}?>
+<?
+  }
+?>
 
 </script>

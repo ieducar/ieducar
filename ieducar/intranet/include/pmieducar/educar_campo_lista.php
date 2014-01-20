@@ -610,9 +610,13 @@ if ( $get_curso )
 			var xml = new ajax( atualizaLstEscolaCurso );
 			<? if ($get_cursos_nao_padrao) {?>
 				xml.envia( "educar_curso_xml.php?esc="+campoEscola+"&padrao_ano_escolar=nao" );
-			<?} else {?>
+			<? 
+        } else {
+      ?>
 				xml.envia( "educar_curso_xml.php?esc="+campoEscola );
-			<?}?>
+			<?
+        }
+      ?>
 		}
 		else
 		{
@@ -1129,6 +1133,8 @@ if ($get_semestre)
 		}
 	}
 
-<?}?>
+<?
+  }
+?>
 
 </script>

@@ -258,8 +258,7 @@ $pagina->MakeAll();
 
 <? 
 
-if (!$_GET['precisa_lista'])
-{
+if (!$_GET['precisa_lista']) {
 ?>
 	Event.observe(window, 'load', Init, false);
 	
@@ -269,6 +268,8 @@ if (!$_GET['precisa_lista'])
 //		alert($F('ref_cod_escola'));
 	}
 	
-<?}?>
+<?
+ }
+?>
 
 </script>
