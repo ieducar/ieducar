@@ -145,26 +145,35 @@ class miolo1 extends clsListagem
         m.sigla_uf = u.sigla_uf';
 
     $params = array();
-
-    if (isset($_GET['nr_cep']))
-      $params['c.cep'] = idFederal2int($_GET['nr_cep']);
-
-    if (isset($_GET['nm_bairro']))
-      $params['b.nome'] = $_GET['nm_bairro'];
-
-    if (isset($_GET['nm_logradouro']))
-      $params['l.nome'] = $_GET['nm_logradouro'];
-
-    if (isset($_GET['ref_sigla_uf']))
-      $params['u.sigla_uf'] = $_GET['ref_sigla_uf'];
-
-    if (isset($_GET['cidade']))
-      $params['m.nome'] = $_GET['cidade'];
-
     $paramCount = 1;
 
-    foreach ($params as $name => $value) {
-      $select .= " AND $name ILIKE '%'||\$$paramCount||'%'";
+    if (array_key_exists('nr_cep', $_GET) && $_GET['nr_cep']) {
+      $params['c.cep'] = idFederal2int($_GET['nr_cep']);
+      $select .=  " AND c.cep = \$$paramCount ";
+      $paramCount++; 
+    }
+
+    if (array_key_exists('nm_bairro', $_GET) && $_GET['nm_bairro']) {
+      $params['b.nome'] = $_GET['nm_bairro'];
+      $select .= " AND b.nome ILIKE '%'||\$$paramCount||'%'";
+      $paramCount++;
+    }
+
+    if (array_key_exists('nm_logradouro', $_GET) && $_GET['nm_logradouro']) {
+      $params['l.nome'] = $_GET['nm_logradouro'];
+      $select .= " AND l.nome ILIKE '%'||\$$paramCount||'%'";
+      $paramCount++;
+    }
+
+    if (array_key_exists('ref_sigla_uf', $_GET) && $_GET['ref_sigla_uf']) {
+      $params['u.sigla_uf'] = $_GET['ref_sigla_uf'];
+      $select .= " AND u.sigla_uf ILIKE '%'||\$$paramCount||'%'";
+      $paramCount++;
+    }
+
+    if (array_key_exists('cidade', $_GET) && $_GET['cidade']) {
+      $params['m.nome'] = $_GET['cidade'];
+      $select .= " AND cidade ILIKE '%'||\$$paramCount||'%'";
       $paramCount++;
     }
 
