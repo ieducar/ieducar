@@ -173,6 +173,9 @@ class indice extends clsCadastro
     $this->campoOculto('cod_pessoa_fj', $this->cod_pessoa_fj);
     $this->campoTexto('nm_pessoa', 'Nome', $this->nm_pessoa, '50', '255', TRUE);
 
+    // TODO: Tornar configurável.
+    /* Não tem S3 nem quick-retrieval cloud file storage.
+       Nada de foto.
     $foto = false;
     if (is_numeric($this->cod_pessoa_fj)){
       $objFoto = new ClsCadastroFisicaFoto($this->cod_pessoa_fj);
@@ -187,6 +190,8 @@ class indice extends clsCadastro
       $this->campoArquivo('file','Trocar foto',$this->arquivoFoto,40,'<br/> <span style="font-style: italic; font-size= 10px;">* Recomenda-se imagens nos formatos jpeg, jpg, png e gif. Tamanho máximo: 150KB</span>');
     }else
       $this->campoArquivo('file','Foto',$this->arquivoFoto,40,'<br/> <span style="font-style: italic; font-size= 10px;">* Recomenda-se imagens nos formatos jpeg, jpg, png e gif. Tamanho máximo: 150KB</span>');
+      */
+    $this->campoOculto('file', null);
  
 
     // ao cadastrar pessoa do pai ou mãe apartir do cadastro de outra pessoa,
