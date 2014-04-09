@@ -2,6 +2,7 @@
 -- PostgreSQL database dump
 --
 
+SET statement_timeout = 0;
 SET client_encoding = 'LATIN1';
 SET standard_conforming_strings = off;
 SET check_function_bodies = false;
@@ -117,13 +118,6 @@ CREATE SCHEMA portal;
 ALTER SCHEMA portal OWNER TO ieducar;
 
 --
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: ieducar
---
-
-COMMENT ON SCHEMA public IS 'Standard public schema';
-
-
---
 -- Name: urbano; Type: SCHEMA; Schema: -; Owner: ieducar
 --
 
@@ -133,10 +127,17 @@ CREATE SCHEMA urbano;
 ALTER SCHEMA urbano OWNER TO ieducar;
 
 --
--- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: ieducar
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
 --
 
-CREATE PROCEDURAL LANGUAGE plpgsql;
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
 SET search_path = public, pg_catalog;
@@ -170,6 +171,7 @@ SET search_path = alimentos, pg_catalog;
 --
 
 CREATE FUNCTION fcn_calcular_qtde_cardapio(character varying, integer, integer, numeric) RETURNS character varying
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -204,8 +206,7 @@ BEGIN
   
   v_qtde_retorno := trim(to_char(v_qtde, '9999999999.99'));
   RETURN v_qtde_retorno;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION alimentos.fcn_calcular_qtde_cardapio(character varying, integer, integer, numeric) OWNER TO ieducar;
@@ -215,6 +216,7 @@ ALTER FUNCTION alimentos.fcn_calcular_qtde_cardapio(character varying, integer, 
 --
 
 CREATE FUNCTION fcn_calcular_qtde_percapita(character varying, integer, integer, integer, integer) RETURNS numeric
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -259,8 +261,7 @@ BEGIN
     END IF;
   END LOOP;
   RETURN v_qtde_produto_periodo;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION alimentos.fcn_calcular_qtde_percapita(character varying, integer, integer, integer, integer) OWNER TO ieducar;
@@ -270,6 +271,7 @@ ALTER FUNCTION alimentos.fcn_calcular_qtde_percapita(character varying, integer,
 --
 
 CREATE FUNCTION fcn_calcular_qtde_unidade(character varying, integer, integer, numeric, integer, integer) RETURNS numeric
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -330,8 +332,7 @@ BEGIN
     v_qtde := v_qtde_produto_periodo * v_num_matriculados * v_correcao * v_coccao;
   END IF;
   RETURN round(v_qtde/v_peso);
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION alimentos.fcn_calcular_qtde_unidade(character varying, integer, integer, numeric, integer, integer) OWNER TO ieducar;
@@ -341,6 +342,7 @@ ALTER FUNCTION alimentos.fcn_calcular_qtde_unidade(character varying, integer, i
 --
 
 CREATE FUNCTION fcn_gerar_guia_remessa(text, text, integer, integer, character varying, character varying, character varying, integer) RETURNS text
+    LANGUAGE plpgsql
     AS $_$DECLARE
    -- Parâmetro recebidos
    v_array_fornecedor ALIAS for $1;
@@ -1034,8 +1036,7 @@ BEGIN
       
    END IF;
    
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION alimentos.fcn_gerar_guia_remessa(text, text, integer, integer, character varying, character varying, character varying, integer) OWNER TO ieducar;
@@ -1046,7 +1047,8 @@ SET search_path = cadastro, pg_catalog;
 -- Name: fcn_aft_documento(); Type: FUNCTION; Schema: cadastro; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_aft_documento() RETURNS "trigger"
+CREATE FUNCTION fcn_aft_documento() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
   DECLARE
     v_idpes   numeric;
@@ -1074,8 +1076,7 @@ CREATE FUNCTION fcn_aft_documento() RETURNS "trigger"
 		idpes='||quote_literal(v_idpes)||' AND 
 		(certidao_nascimento is null)';
     RETURN NEW;
-  END; $$
-    LANGUAGE plpgsql;
+  END; $$;
 
 
 ALTER FUNCTION cadastro.fcn_aft_documento() OWNER TO ieducar;
@@ -1084,7 +1085,8 @@ ALTER FUNCTION cadastro.fcn_aft_documento() OWNER TO ieducar;
 -- Name: fcn_aft_documento_provisorio(); Type: FUNCTION; Schema: cadastro; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_aft_documento_provisorio() RETURNS "trigger"
+CREATE FUNCTION fcn_aft_documento_provisorio() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes       numeric;
@@ -1114,8 +1116,7 @@ DECLARE
       EXECUTE 'UPDATE cadastro.pessoa SET situacao='||quote_literal('A')||'WHERE idpes='||quote_literal(v_idpes)||';';
     END IF;
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION cadastro.fcn_aft_documento_provisorio() OWNER TO ieducar;
@@ -1124,7 +1125,8 @@ ALTER FUNCTION cadastro.fcn_aft_documento_provisorio() OWNER TO ieducar;
 -- Name: fcn_aft_fisica(); Type: FUNCTION; Schema: cadastro; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_aft_fisica() RETURNS "trigger"
+CREATE FUNCTION fcn_aft_fisica() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes       numeric;
@@ -1258,8 +1260,7 @@ DECLARE
       EXECUTE 'DELETE FROM cadastro.aviso_nome WHERE idpes='||quote_literal(v_idpes)||' AND aviso='||v_num_aviso_responsavel||';';
     END IF;
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION cadastro.fcn_aft_fisica() OWNER TO ieducar;
@@ -1268,7 +1269,8 @@ ALTER FUNCTION cadastro.fcn_aft_fisica() OWNER TO ieducar;
 -- Name: fcn_aft_fisica_cpf_provisorio(); Type: FUNCTION; Schema: cadastro; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_aft_fisica_cpf_provisorio() RETURNS "trigger"
+CREATE FUNCTION fcn_aft_fisica_cpf_provisorio() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes       numeric;
@@ -1296,8 +1298,7 @@ DECLARE
       EXECUTE 'UPDATE cadastro.pessoa SET situacao='||quote_literal('A')||'WHERE idpes='||quote_literal(v_idpes)||';';
     END IF;
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION cadastro.fcn_aft_fisica_cpf_provisorio() OWNER TO ieducar;
@@ -1306,7 +1307,8 @@ ALTER FUNCTION cadastro.fcn_aft_fisica_cpf_provisorio() OWNER TO ieducar;
 -- Name: fcn_aft_fisica_provisorio(); Type: FUNCTION; Schema: cadastro; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_aft_fisica_provisorio() RETURNS "trigger"
+CREATE FUNCTION fcn_aft_fisica_provisorio() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes       numeric;
@@ -1338,8 +1340,7 @@ DECLARE
       EXECUTE 'UPDATE cadastro.pessoa SET situacao='||quote_literal('A')||'WHERE idpes='||quote_literal(v_idpes)||';';
     END IF;
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION cadastro.fcn_aft_fisica_provisorio() OWNER TO ieducar;
@@ -1348,7 +1349,8 @@ ALTER FUNCTION cadastro.fcn_aft_fisica_provisorio() OWNER TO ieducar;
 -- Name: fcn_aft_ins_endereco_externo(); Type: FUNCTION; Schema: cadastro; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_aft_ins_endereco_externo() RETURNS "trigger"
+CREATE FUNCTION fcn_aft_ins_endereco_externo() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes   numeric;
@@ -1358,8 +1360,7 @@ DECLARE
     v_tipo_endereco := NEW.tipo;
     EXECUTE 'DELETE FROM cadastro.endereco_pessoa WHERE idpes='||quote_literal(v_idpes)||' AND tipo='||v_tipo_endereco||';';
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION cadastro.fcn_aft_ins_endereco_externo() OWNER TO ieducar;
@@ -1368,7 +1369,8 @@ ALTER FUNCTION cadastro.fcn_aft_ins_endereco_externo() OWNER TO ieducar;
 -- Name: fcn_aft_ins_endereco_pessoa(); Type: FUNCTION; Schema: cadastro; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_aft_ins_endereco_pessoa() RETURNS "trigger"
+CREATE FUNCTION fcn_aft_ins_endereco_pessoa() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes   numeric;
@@ -1378,8 +1380,7 @@ DECLARE
     v_tipo_endereco := NEW.tipo;
     EXECUTE 'DELETE FROM cadastro.endereco_externo WHERE idpes='||quote_literal(v_idpes)||' AND tipo='||v_tipo_endereco||';';
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION cadastro.fcn_aft_ins_endereco_pessoa() OWNER TO ieducar;
@@ -1391,6 +1392,7 @@ SET search_path = consistenciacao, pg_catalog;
 --
 
 CREATE FUNCTION fcn_delete_temp_cadastro_unificacao_cmf(integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parametro recebidos
@@ -1399,8 +1401,7 @@ BEGIN
   -- Deleta dados da tabela temp_cadastro_unificacao_cmf
   DELETE FROM consistenciacao.temp_cadastro_unificacao_cmf WHERE idpes = v_idpes;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION consistenciacao.fcn_delete_temp_cadastro_unificacao_cmf(integer) OWNER TO ieducar;
@@ -1410,6 +1411,7 @@ ALTER FUNCTION consistenciacao.fcn_delete_temp_cadastro_unificacao_cmf(integer) 
 --
 
 CREATE FUNCTION fcn_delete_temp_cadastro_unificacao_siam(integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parametro recebidos
@@ -1418,8 +1420,7 @@ BEGIN
   -- Deleta dados da tabela temp_cadastro_unificacao_siam
   DELETE FROM consistenciacao.temp_cadastro_unificacao_siam WHERE idpes = v_idpes;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION consistenciacao.fcn_delete_temp_cadastro_unificacao_siam(integer) OWNER TO ieducar;
@@ -1428,7 +1429,8 @@ ALTER FUNCTION consistenciacao.fcn_delete_temp_cadastro_unificacao_siam(integer)
 -- Name: fcn_documento_historico_campo(); Type: FUNCTION; Schema: consistenciacao; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_documento_historico_campo() RETURNS "trigger"
+CREATE FUNCTION fcn_documento_historico_campo() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes         numeric;
@@ -1781,8 +1783,7 @@ DECLARE
     END IF;
 
   RETURN NEW;
-END;$$
-    LANGUAGE plpgsql;
+END;$$;
 
 
 ALTER FUNCTION consistenciacao.fcn_documento_historico_campo() OWNER TO ieducar;
@@ -1791,7 +1792,8 @@ ALTER FUNCTION consistenciacao.fcn_documento_historico_campo() OWNER TO ieducar;
 -- Name: fcn_endereco_externo_historico_campo(); Type: FUNCTION; Schema: consistenciacao; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_endereco_externo_historico_campo() RETURNS "trigger"
+CREATE FUNCTION fcn_endereco_externo_historico_campo() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes       numeric;
@@ -2079,8 +2081,7 @@ DECLARE
     END IF;
     
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION consistenciacao.fcn_endereco_externo_historico_campo() OWNER TO ieducar;
@@ -2089,7 +2090,8 @@ ALTER FUNCTION consistenciacao.fcn_endereco_externo_historico_campo() OWNER TO i
 -- Name: fcn_endereco_pessoa_historico_campo(); Type: FUNCTION; Schema: consistenciacao; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_endereco_pessoa_historico_campo() RETURNS "trigger"
+CREATE FUNCTION fcn_endereco_pessoa_historico_campo() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes       numeric;
@@ -2292,8 +2294,7 @@ DECLARE
       EXECUTE 'SELECT consistenciacao.fcn_gravar_historico_campo('||v_idpes||','||v_idcam_complemento||','||v_sem_credibilidade||');';
     END IF;
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION consistenciacao.fcn_endereco_pessoa_historico_campo() OWNER TO ieducar;
@@ -2302,7 +2303,8 @@ ALTER FUNCTION consistenciacao.fcn_endereco_pessoa_historico_campo() OWNER TO ie
 -- Name: fcn_fisica_historico_campo(); Type: FUNCTION; Schema: consistenciacao; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_fisica_historico_campo() RETURNS "trigger"
+CREATE FUNCTION fcn_fisica_historico_campo() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes       numeric;
@@ -2592,8 +2594,7 @@ DECLARE
       EXECUTE 'SELECT consistenciacao.fcn_gravar_historico_campo('||v_idpes||','||v_idcam_pais_origem||','||v_sem_credibilidade||');';
     END IF;
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION consistenciacao.fcn_fisica_historico_campo() OWNER TO ieducar;
@@ -2602,7 +2603,8 @@ ALTER FUNCTION consistenciacao.fcn_fisica_historico_campo() OWNER TO ieducar;
 -- Name: fcn_fone_historico_campo(); Type: FUNCTION; Schema: consistenciacao; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_fone_historico_campo() RETURNS "trigger"
+CREATE FUNCTION fcn_fone_historico_campo() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes       numeric;
@@ -2713,8 +2715,7 @@ DECLARE
     END IF;
     
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION consistenciacao.fcn_fone_historico_campo() OWNER TO ieducar;
@@ -2724,6 +2725,7 @@ ALTER FUNCTION consistenciacao.fcn_fone_historico_campo() OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_gravar_historico_campo(numeric, numeric, numeric) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   v_idpes ALIAS for $1;
@@ -2746,8 +2748,7 @@ DECLARE
       EXECUTE 'INSERT INTO consistenciacao.historico_campo(idpes, idcam, credibilidade, data_hora) VALUES ('||quote_literal(v_idpes)||','|| quote_literal(v_idcam)||', '||quote_literal(v_credibilidade)||', CURRENT_TIMESTAMP);';
     END IF;
   RETURN 1;
-END; $_$
-    LANGUAGE plpgsql;
+END; $_$;
 
 
 ALTER FUNCTION consistenciacao.fcn_gravar_historico_campo(numeric, numeric, numeric) OWNER TO ieducar;
@@ -2756,7 +2757,8 @@ ALTER FUNCTION consistenciacao.fcn_gravar_historico_campo(numeric, numeric, nume
 -- Name: fcn_juridica_historico_campo(); Type: FUNCTION; Schema: consistenciacao; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_juridica_historico_campo() RETURNS "trigger"
+CREATE FUNCTION fcn_juridica_historico_campo() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes       numeric;
@@ -2856,8 +2858,7 @@ DECLARE
       EXECUTE 'SELECT consistenciacao.fcn_gravar_historico_campo('||v_idpes||','||v_idcam_inscricao_estadual||','||v_sem_credibilidade||');';
     END IF;
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION consistenciacao.fcn_juridica_historico_campo() OWNER TO ieducar;
@@ -2866,7 +2867,8 @@ ALTER FUNCTION consistenciacao.fcn_juridica_historico_campo() OWNER TO ieducar;
 -- Name: fcn_pessoa_historico_campo(); Type: FUNCTION; Schema: consistenciacao; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_pessoa_historico_campo() RETURNS "trigger"
+CREATE FUNCTION fcn_pessoa_historico_campo() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   v_idpes       numeric;
@@ -2965,8 +2967,7 @@ DECLARE
       EXECUTE 'SELECT consistenciacao.fcn_gravar_historico_campo('||v_idpes||','||v_idcam_url||','||v_sem_credibilidade||');';
     END IF;
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION consistenciacao.fcn_pessoa_historico_campo() OWNER TO ieducar;
@@ -2976,6 +2977,7 @@ ALTER FUNCTION consistenciacao.fcn_pessoa_historico_campo() OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_unifica_cadastro(numeric, numeric) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parametro recebidos
@@ -3052,8 +3054,7 @@ BEGIN
   --PESSOA--
   DELETE FROM pessoa WHERE idpes = v_idpesVelho;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION consistenciacao.fcn_unifica_cadastro(numeric, numeric) OWNER TO ieducar;
@@ -3063,6 +3064,7 @@ ALTER FUNCTION consistenciacao.fcn_unifica_cadastro(numeric, numeric) OWNER TO i
 --
 
 CREATE FUNCTION fcn_unifica_cmf(numeric, numeric) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parametro recebidos
@@ -3087,8 +3089,7 @@ BEGIN
   --Unificando registros das tabelas de cadastro--
    EXECUTE 'SELECT consistenciacao.fcn_unifica_cadastro('||v_idpesVelho||','||v_idpesNovo||');';
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION consistenciacao.fcn_unifica_cmf(numeric, numeric) OWNER TO ieducar;
@@ -3098,6 +3099,7 @@ ALTER FUNCTION consistenciacao.fcn_unifica_cmf(numeric, numeric) OWNER TO ieduca
 --
 
 CREATE FUNCTION fcn_unifica_sca(numeric, numeric) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   --Parametro recebidos--
@@ -3150,8 +3152,7 @@ BEGIN
   --USUARIO--
   EXECUTE 'DELETE FROM usuario WHERE idpes ='|| v_idpesVelho||';';
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION consistenciacao.fcn_unifica_sca(numeric, numeric) OWNER TO ieducar;
@@ -3161,6 +3162,7 @@ ALTER FUNCTION consistenciacao.fcn_unifica_sca(numeric, numeric) OWNER TO ieduca
 --
 
 CREATE FUNCTION fcn_unifica_scd(numeric, numeric) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parametro recebidos
@@ -3174,8 +3176,7 @@ BEGIN
   --CONFRONTACAO--
   UPDATE confrontacao SET idpes =  v_idpesNovo WHERE idpes = v_idpesVelho;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION consistenciacao.fcn_unifica_scd(numeric, numeric) OWNER TO ieducar;
@@ -3185,6 +3186,7 @@ ALTER FUNCTION consistenciacao.fcn_unifica_scd(numeric, numeric) OWNER TO ieduca
 --
 
 CREATE FUNCTION fcn_unifica_sgp(numeric, numeric) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parametro recebidos
@@ -3204,8 +3206,7 @@ BEGIN
   --TEMP_ATIVIDADE--
   UPDATE temp_atividade SET idpes = v_idpesNovo WHERE idpes = v_idpesVelho;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION consistenciacao.fcn_unifica_sgp(numeric, numeric) OWNER TO ieducar;
@@ -3215,6 +3216,7 @@ ALTER FUNCTION consistenciacao.fcn_unifica_sgp(numeric, numeric) OWNER TO ieduca
 --
 
 CREATE FUNCTION fcn_unifica_sgpa(numeric, numeric) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parametro recebidos
@@ -3253,8 +3255,7 @@ BEGIN
   --ATENDENTE--
   DELETE FROM atendente WHERE idpes = v_idpesVelho;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION consistenciacao.fcn_unifica_sgpa(numeric, numeric) OWNER TO ieducar;
@@ -3264,6 +3265,7 @@ ALTER FUNCTION consistenciacao.fcn_unifica_sgpa(numeric, numeric) OWNER TO ieduc
 --
 
 CREATE FUNCTION fcn_unifica_sgsp(numeric, numeric) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parametro recebidos
@@ -3296,8 +3298,7 @@ BEGIN
   --FUNCIONARIO_AUTORIZADO--
   DELETE FROM funcionario_autorizado WHERE idpes = v_idpesVelho;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION consistenciacao.fcn_unifica_sgsp(numeric, numeric) OWNER TO ieducar;
@@ -3308,7 +3309,8 @@ SET search_path = historico, pg_catalog;
 -- Name: fcn_delete_grava_historico_bairro(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_bairro() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_bairro() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idbai    numeric;
@@ -3344,8 +3346,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_bairro() OWNER TO ieducar;
@@ -3354,7 +3355,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_bairro() OWNER TO ieducar;
 -- Name: fcn_delete_grava_historico_cep_logradouro(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_cep_logradouro() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_cep_logradouro() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_cep    numeric;
@@ -3392,8 +3394,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_cep_logradouro() OWNER TO ieducar;
@@ -3402,7 +3403,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_cep_logradouro() OWNER TO ie
 -- Name: fcn_delete_grava_historico_cep_logradouro_bairro(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_cep_logradouro_bairro() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_cep_logradouro_bairro() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idbai    numeric;
@@ -3439,8 +3441,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_cep_logradouro_bairro() OWNER TO ieducar;
@@ -3449,7 +3450,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_cep_logradouro_bairro() OWNE
 -- Name: fcn_delete_grava_historico_documento(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_documento() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_documento() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes    numeric;
@@ -3517,8 +3519,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_documento() OWNER TO ieducar;
@@ -3527,7 +3528,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_documento() OWNER TO ieducar
 -- Name: fcn_delete_grava_historico_endereco_externo(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_endereco_externo() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_endereco_externo() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes    numeric;
@@ -3581,8 +3583,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_endereco_externo() OWNER TO ieducar;
@@ -3591,7 +3592,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_endereco_externo() OWNER TO 
 -- Name: fcn_delete_grava_historico_endereco_pessoa(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_endereco_pessoa() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_endereco_pessoa() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes    numeric;
@@ -3639,8 +3641,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_endereco_pessoa() OWNER TO ieducar;
@@ -3649,7 +3650,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_endereco_pessoa() OWNER TO i
 -- Name: fcn_delete_grava_historico_fisica(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_fisica() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_fisica() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes      numeric;
@@ -3723,8 +3725,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_fisica() OWNER TO ieducar;
@@ -3733,7 +3734,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_fisica() OWNER TO ieducar;
 -- Name: fcn_delete_grava_historico_fisica_cpf(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_fisica_cpf() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_fisica_cpf() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes      numeric;
@@ -3767,8 +3769,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_fisica_cpf() OWNER TO ieducar;
@@ -3777,7 +3778,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_fisica_cpf() OWNER TO ieduca
 -- Name: fcn_delete_grava_historico_fone_pessoa(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_fone_pessoa() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_fone_pessoa() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes      numeric;
@@ -3815,8 +3817,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_fone_pessoa() OWNER TO ieducar;
@@ -3825,7 +3826,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_fone_pessoa() OWNER TO ieduc
 -- Name: fcn_delete_grava_historico_funcionario(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_funcionario() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_funcionario() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_matricula      numeric;
@@ -3865,8 +3867,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_funcionario() OWNER TO ieducar;
@@ -3875,7 +3876,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_funcionario() OWNER TO ieduc
 -- Name: fcn_delete_grava_historico_juridica(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_juridica() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_juridica() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes      numeric;
@@ -3913,8 +3915,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_juridica() OWNER TO ieducar;
@@ -3923,7 +3924,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_juridica() OWNER TO ieducar;
 -- Name: fcn_delete_grava_historico_logradouro(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_logradouro() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_logradouro() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idlog      numeric;
@@ -3963,8 +3965,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_logradouro() OWNER TO ieducar;
@@ -3973,7 +3974,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_logradouro() OWNER TO ieduca
 -- Name: fcn_delete_grava_historico_municipio(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_municipio() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_municipio() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idmun      numeric;
@@ -4023,8 +4025,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_municipio() OWNER TO ieducar;
@@ -4033,7 +4034,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_municipio() OWNER TO ieducar
 -- Name: fcn_delete_grava_historico_pessoa(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_pessoa() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_pessoa() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes    numeric;
@@ -4075,8 +4077,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_pessoa() OWNER TO ieducar;
@@ -4085,7 +4086,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_pessoa() OWNER TO ieducar;
 -- Name: fcn_delete_grava_historico_socio(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_delete_grava_historico_socio() RETURNS "trigger"
+CREATE FUNCTION fcn_delete_grava_historico_socio() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes_juridica   numeric;
@@ -4119,8 +4121,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_delete_grava_historico_socio() OWNER TO ieducar;
@@ -4129,7 +4130,8 @@ ALTER FUNCTION historico.fcn_delete_grava_historico_socio() OWNER TO ieducar;
 -- Name: fcn_grava_historico_bairro(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_bairro() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_bairro() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idbai    numeric;
@@ -4167,8 +4169,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_bairro() OWNER TO ieducar;
@@ -4177,7 +4178,8 @@ ALTER FUNCTION historico.fcn_grava_historico_bairro() OWNER TO ieducar;
 -- Name: fcn_grava_historico_cep_logradouro(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_cep_logradouro() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_cep_logradouro() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_cep    numeric;
@@ -4217,8 +4219,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_cep_logradouro() OWNER TO ieducar;
@@ -4227,7 +4228,8 @@ ALTER FUNCTION historico.fcn_grava_historico_cep_logradouro() OWNER TO ieducar;
 -- Name: fcn_grava_historico_cep_logradouro_bairro(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_cep_logradouro_bairro() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_cep_logradouro_bairro() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idbai    numeric;
@@ -4265,8 +4267,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_cep_logradouro_bairro() OWNER TO ieducar;
@@ -4275,7 +4276,8 @@ ALTER FUNCTION historico.fcn_grava_historico_cep_logradouro_bairro() OWNER TO ie
 -- Name: fcn_grava_historico_documento(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_documento() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_documento() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes    numeric;
@@ -4345,8 +4347,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_documento() OWNER TO ieducar;
@@ -4355,7 +4356,8 @@ ALTER FUNCTION historico.fcn_grava_historico_documento() OWNER TO ieducar;
 -- Name: fcn_grava_historico_endereco_externo(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_endereco_externo() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_endereco_externo() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes    numeric;
@@ -4411,8 +4413,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_endereco_externo() OWNER TO ieducar;
@@ -4421,7 +4422,8 @@ ALTER FUNCTION historico.fcn_grava_historico_endereco_externo() OWNER TO ieducar
 -- Name: fcn_grava_historico_endereco_pessoa(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_endereco_pessoa() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_endereco_pessoa() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes    numeric;
@@ -4471,8 +4473,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_endereco_pessoa() OWNER TO ieducar;
@@ -4481,7 +4482,8 @@ ALTER FUNCTION historico.fcn_grava_historico_endereco_pessoa() OWNER TO ieducar;
 -- Name: fcn_grava_historico_fisica(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_fisica() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_fisica() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes      numeric;
@@ -4557,8 +4559,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_fisica() OWNER TO ieducar;
@@ -4567,7 +4568,8 @@ ALTER FUNCTION historico.fcn_grava_historico_fisica() OWNER TO ieducar;
 -- Name: fcn_grava_historico_fisica_cpf(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_fisica_cpf() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_fisica_cpf() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes      numeric;
@@ -4603,8 +4605,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_fisica_cpf() OWNER TO ieducar;
@@ -4613,7 +4614,8 @@ ALTER FUNCTION historico.fcn_grava_historico_fisica_cpf() OWNER TO ieducar;
 -- Name: fcn_grava_historico_fone_pessoa(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_fone_pessoa() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_fone_pessoa() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes      numeric;
@@ -4653,8 +4655,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_fone_pessoa() OWNER TO ieducar;
@@ -4663,7 +4664,8 @@ ALTER FUNCTION historico.fcn_grava_historico_fone_pessoa() OWNER TO ieducar;
 -- Name: fcn_grava_historico_funcionario(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_funcionario() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_funcionario() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_matricula      numeric;
@@ -4705,8 +4707,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_funcionario() OWNER TO ieducar;
@@ -4715,7 +4716,8 @@ ALTER FUNCTION historico.fcn_grava_historico_funcionario() OWNER TO ieducar;
 -- Name: fcn_grava_historico_juridica(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_juridica() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_juridica() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes      numeric;
@@ -4755,8 +4757,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_juridica() OWNER TO ieducar;
@@ -4765,7 +4766,8 @@ ALTER FUNCTION historico.fcn_grava_historico_juridica() OWNER TO ieducar;
 -- Name: fcn_grava_historico_logradouro(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_logradouro() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_logradouro() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idlog      numeric;
@@ -4807,8 +4809,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_logradouro() OWNER TO ieducar;
@@ -4817,7 +4818,8 @@ ALTER FUNCTION historico.fcn_grava_historico_logradouro() OWNER TO ieducar;
 -- Name: fcn_grava_historico_municipio(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_municipio() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_municipio() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idmun      numeric;
@@ -4869,8 +4871,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_municipio() OWNER TO ieducar;
@@ -4879,7 +4880,8 @@ ALTER FUNCTION historico.fcn_grava_historico_municipio() OWNER TO ieducar;
 -- Name: fcn_grava_historico_pessoa(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_pessoa() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_pessoa() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes    numeric;
@@ -4923,8 +4925,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_pessoa() OWNER TO ieducar;
@@ -4933,7 +4934,8 @@ ALTER FUNCTION historico.fcn_grava_historico_pessoa() OWNER TO ieducar;
 -- Name: fcn_grava_historico_socio(); Type: FUNCTION; Schema: historico; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_grava_historico_socio() RETURNS "trigger"
+CREATE FUNCTION fcn_grava_historico_socio() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
    v_idpes_juridica   numeric;
@@ -4969,8 +4971,7 @@ BEGIN
       
    RETURN NEW;
    
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION historico.fcn_grava_historico_socio() OWNER TO ieducar;
@@ -4981,7 +4982,8 @@ SET search_path = pmieducar, pg_catalog;
 -- Name: fcn_aft_update(); Type: FUNCTION; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_aft_update() RETURNS "trigger"
+CREATE FUNCTION fcn_aft_update() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
 DECLARE
   nm_tabela   varchar(255);
@@ -5000,8 +5002,7 @@ DECLARE
     END IF;
     insert into pmieducar.historico_educar (tabela, alteracao, data, insercao) values (nm_tabela, alteracoes, data_cadastro, v_insercao);
   RETURN NEW;
-END; $$
-    LANGUAGE plpgsql;
+END; $$;
 
 
 ALTER FUNCTION pmieducar.fcn_aft_update() OWNER TO ieducar;
@@ -5012,7 +5013,8 @@ SET search_path = public, pg_catalog;
 -- Name: fcn_aft_logradouro_fonetiza(); Type: FUNCTION; Schema: public; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_aft_logradouro_fonetiza() RETURNS "trigger"
+CREATE FUNCTION fcn_aft_logradouro_fonetiza() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
    DECLARE
     v_idlog    bigint;
@@ -5042,8 +5044,7 @@ CREATE FUNCTION fcn_aft_logradouro_fonetiza() RETURNS "trigger"
     END IF;
     RETURN NEW;
    END;
-  $$
-    LANGUAGE plpgsql;
+  $$;
 
 
 ALTER FUNCTION public.fcn_aft_logradouro_fonetiza() OWNER TO ieducar;
@@ -5052,7 +5053,8 @@ ALTER FUNCTION public.fcn_aft_logradouro_fonetiza() OWNER TO ieducar;
 -- Name: fcn_aft_pessoa_fonetiza(); Type: FUNCTION; Schema: public; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_aft_pessoa_fonetiza() RETURNS "trigger"
+CREATE FUNCTION fcn_aft_pessoa_fonetiza() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
    DECLARE
     v_idpes    bigint;
@@ -5083,8 +5085,7 @@ CREATE FUNCTION fcn_aft_pessoa_fonetiza() RETURNS "trigger"
     END IF;
     RETURN NEW;
    END;
-  $$
-    LANGUAGE plpgsql;
+  $$;
 
 
 ALTER FUNCTION public.fcn_aft_pessoa_fonetiza() OWNER TO ieducar;
@@ -5093,7 +5094,8 @@ ALTER FUNCTION public.fcn_aft_pessoa_fonetiza() OWNER TO ieducar;
 -- Name: fcn_bef_ins_fisica(); Type: FUNCTION; Schema: public; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_bef_ins_fisica() RETURNS "trigger"
+CREATE FUNCTION fcn_bef_ins_fisica() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
    DECLARE
     v_idpes    cadastro.fisica.idpes%TYPE;
@@ -5105,8 +5107,7 @@ CREATE FUNCTION fcn_bef_ins_fisica() RETURNS "trigger"
     END IF;
     RETURN NEW;
    END;
-  $$
-    LANGUAGE plpgsql;
+  $$;
 
 
 ALTER FUNCTION public.fcn_bef_ins_fisica() OWNER TO ieducar;
@@ -5115,7 +5116,8 @@ ALTER FUNCTION public.fcn_bef_ins_fisica() OWNER TO ieducar;
 -- Name: fcn_bef_ins_juridica(); Type: FUNCTION; Schema: public; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_bef_ins_juridica() RETURNS "trigger"
+CREATE FUNCTION fcn_bef_ins_juridica() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
    DECLARE
     v_idpes    cadastro.juridica.idpes%TYPE;
@@ -5127,8 +5129,7 @@ CREATE FUNCTION fcn_bef_ins_juridica() RETURNS "trigger"
     END IF;
     RETURN NEW;
    END;
-  $$
-    LANGUAGE plpgsql;
+  $$;
 
 
 ALTER FUNCTION public.fcn_bef_ins_juridica() OWNER TO ieducar;
@@ -5137,7 +5138,8 @@ ALTER FUNCTION public.fcn_bef_ins_juridica() OWNER TO ieducar;
 -- Name: fcn_bef_logradouro_fonetiza(); Type: FUNCTION; Schema: public; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_bef_logradouro_fonetiza() RETURNS "trigger"
+CREATE FUNCTION fcn_bef_logradouro_fonetiza() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
    DECLARE
     v_idlog    bigint;
@@ -5146,8 +5148,7 @@ CREATE FUNCTION fcn_bef_logradouro_fonetiza() RETURNS "trigger"
     EXECUTE 'DELETE FROM public.logradouro_fonetico WHERE idlog = '||quote_literal(v_idlog)||';';
     RETURN OLD;
    END;
-  $$
-    LANGUAGE plpgsql;
+  $$;
 
 
 ALTER FUNCTION public.fcn_bef_logradouro_fonetiza() OWNER TO ieducar;
@@ -5156,7 +5157,8 @@ ALTER FUNCTION public.fcn_bef_logradouro_fonetiza() OWNER TO ieducar;
 -- Name: fcn_bef_pessoa_fonetiza(); Type: FUNCTION; Schema: public; Owner: ieducar
 --
 
-CREATE FUNCTION fcn_bef_pessoa_fonetiza() RETURNS "trigger"
+CREATE FUNCTION fcn_bef_pessoa_fonetiza() RETURNS trigger
+    LANGUAGE plpgsql
     AS $$
    DECLARE
     v_idpes    bigint;
@@ -5165,8 +5167,7 @@ CREATE FUNCTION fcn_bef_pessoa_fonetiza() RETURNS "trigger"
     EXECUTE 'DELETE FROM cadastro.pessoa_fonetico WHERE idpes = '||quote_literal(v_idpes)||';';
     RETURN OLD;
    END;
-  $$
-    LANGUAGE plpgsql;
+  $$;
 
 
 ALTER FUNCTION public.fcn_bef_pessoa_fonetiza() OWNER TO ieducar;
@@ -5176,6 +5177,7 @@ ALTER FUNCTION public.fcn_bef_pessoa_fonetiza() OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_compara_nome_pessoa_fonetica(text, numeric) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   v_nome_parametro      ALIAS FOR $1;
@@ -5231,8 +5233,7 @@ DECLARE
     RETURN 0;
   END IF;
    END;
-  $_$
-    LANGUAGE plpgsql;
+  $_$;
 
 
 ALTER FUNCTION public.fcn_compara_nome_pessoa_fonetica(text, numeric) OWNER TO ieducar;
@@ -5242,6 +5243,7 @@ ALTER FUNCTION public.fcn_compara_nome_pessoa_fonetica(text, numeric) OWNER TO i
 --
 
 CREATE FUNCTION fcn_cons_log_fonetica(text, bigint) RETURNS SETOF typ_idlog
+    LANGUAGE plpgsql
     AS $_$
    DECLARE
     v_texto    ALIAS FOR $1;
@@ -5270,8 +5272,7 @@ CREATE FUNCTION fcn_cons_log_fonetica(text, bigint) RETURNS SETOF typ_idlog
     END LOOP;
     RETURN;
    END;
-  $_$
-    LANGUAGE plpgsql;
+  $_$;
 
 
 ALTER FUNCTION public.fcn_cons_log_fonetica(text, bigint) OWNER TO ieducar;
@@ -5281,6 +5282,7 @@ ALTER FUNCTION public.fcn_cons_log_fonetica(text, bigint) OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_consulta_fonetica(text) RETURNS SETOF typ_idpes
+    LANGUAGE plpgsql
     AS $_$
    DECLARE
     v_texto    ALIAS FOR $1;
@@ -5307,8 +5309,7 @@ CREATE FUNCTION fcn_consulta_fonetica(text) RETURNS SETOF typ_idpes
     END LOOP;
     RETURN;
    END;
-  $_$
-    LANGUAGE plpgsql;
+  $_$;
 
 
 ALTER FUNCTION public.fcn_consulta_fonetica(text) OWNER TO ieducar;
@@ -5318,6 +5319,7 @@ ALTER FUNCTION public.fcn_consulta_fonetica(text) OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_delete_endereco_externo(integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -5328,8 +5330,7 @@ BEGIN
   -- Deleta dados da tabela endereco_externo
   DELETE FROM cadastro.endereco_externo WHERE idpes = v_idpes AND tipo = v_tipo;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_delete_endereco_externo(integer, integer) OWNER TO ieducar;
@@ -5339,6 +5340,7 @@ ALTER FUNCTION public.fcn_delete_endereco_externo(integer, integer) OWNER TO ied
 --
 
 CREATE FUNCTION fcn_delete_endereco_pessoa(integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -5349,8 +5351,7 @@ BEGIN
   -- Deleta dados da tabela endereco_pessoa
   DELETE FROM cadastro.endereco_pessoa WHERE idpes = v_idpes AND tipo = v_tipo;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_delete_endereco_pessoa(integer, integer) OWNER TO ieducar;
@@ -5360,6 +5361,7 @@ ALTER FUNCTION public.fcn_delete_endereco_pessoa(integer, integer) OWNER TO iedu
 --
 
 CREATE FUNCTION fcn_delete_fone_pessoa(integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -5369,8 +5371,7 @@ BEGIN
   -- Deleta dados da tabela fone_pessoa
   DELETE FROM cadastro.fone_pessoa WHERE idpes = v_id_pes;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_delete_fone_pessoa(integer) OWNER TO ieducar;
@@ -5380,6 +5381,7 @@ ALTER FUNCTION public.fcn_delete_fone_pessoa(integer) OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_delete_funcionario(integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -5390,8 +5392,7 @@ BEGIN
   -- Deleta dados da tabela funcionário
   DELETE FROM cadastro.funcionario WHERE matricula = v_matricula AND idins = v_id_ins;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_delete_funcionario(integer, integer) OWNER TO ieducar;
@@ -5401,6 +5402,7 @@ ALTER FUNCTION public.fcn_delete_funcionario(integer, integer) OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_dia_util(date, date) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -5423,8 +5425,7 @@ BEGIN
     v_dt_ini_x := v_dt_ini_x + interval '1 day';
   END LOOP;
   RETURN v_qtde;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_dia_util(date, date) OWNER TO ieducar;
@@ -5434,6 +5435,7 @@ ALTER FUNCTION public.fcn_dia_util(date, date) OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_fonetiza(text) RETURNS SETOF text
+    LANGUAGE plpgsql
     AS $_$
    DECLARE
     v_array         ALIAS FOR $1;
@@ -5683,8 +5685,7 @@ CREATE FUNCTION fcn_fonetiza(text) RETURNS SETOF text
     dest := NULL;
     RETURN;
    END;
-  $_$
-    LANGUAGE plpgsql;
+  $_$;
 
 
 ALTER FUNCTION public.fcn_fonetiza(text) OWNER TO ieducar;
@@ -5694,6 +5695,7 @@ ALTER FUNCTION public.fcn_fonetiza(text) OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_fonetiza_logr_geral() RETURNS text
+    LANGUAGE plpgsql
     AS $$
    DECLARE
     v_fonema   text;
@@ -5715,8 +5717,7 @@ CREATE FUNCTION fcn_fonetiza_logr_geral() RETURNS text
     v_fonema := 'Foram gravados '||to_char(v_cont,'9999999')||' registros em logradouro_fonetico';
     RETURN v_fonema;
    END;
-  $$
-    LANGUAGE plpgsql;
+  $$;
 
 
 ALTER FUNCTION public.fcn_fonetiza_logr_geral() OWNER TO ieducar;
@@ -5726,6 +5727,7 @@ ALTER FUNCTION public.fcn_fonetiza_logr_geral() OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_fonetiza_palavra(text) RETURNS text
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
     v_array         ALIAS FOR $1;
@@ -5975,8 +5977,7 @@ DECLARE
     dest := NULL;
     RETURN;
    END;
-  $_$
-    LANGUAGE plpgsql;
+  $_$;
 
 
 ALTER FUNCTION public.fcn_fonetiza_palavra(text) OWNER TO ieducar;
@@ -5986,6 +5987,7 @@ ALTER FUNCTION public.fcn_fonetiza_palavra(text) OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_fonetiza_pessoa_geral() RETURNS text
+    LANGUAGE plpgsql
     AS $$
    DECLARE
     v_fonema   text;
@@ -6007,8 +6009,7 @@ CREATE FUNCTION fcn_fonetiza_pessoa_geral() RETURNS text
     v_fonema := 'Foram gravados '||to_char(v_cont,'999999')||' registros em pessoa_fonetico';
     RETURN v_fonema;
    END;
-  $$
-    LANGUAGE plpgsql;
+  $$;
 
 
 ALTER FUNCTION public.fcn_fonetiza_pessoa_geral() OWNER TO ieducar;
@@ -6018,6 +6019,7 @@ ALTER FUNCTION public.fcn_fonetiza_pessoa_geral() OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_fonetiza_primeiro_ultimo_nome(text) RETURNS text
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   v_nome_parametro    ALIAS FOR $1;
@@ -6039,8 +6041,7 @@ DECLARE
   END LOOP;
   RETURN v_nome_primeiro_ultimo_pessoa;
    END;
-  $_$
-    LANGUAGE plpgsql;
+  $_$;
 
 
 ALTER FUNCTION public.fcn_fonetiza_primeiro_ultimo_nome(text) OWNER TO ieducar;
@@ -6050,6 +6051,7 @@ ALTER FUNCTION public.fcn_fonetiza_primeiro_ultimo_nome(text) OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_insert_documento(integer, character varying, character varying, character varying, character varying, integer, integer, integer, integer, character varying, character varying, character varying, character varying, integer, integer, character varying, character varying, integer, integer, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -6220,8 +6222,7 @@ BEGIN
            'I' -- operacao
           );
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_insert_documento(integer, character varying, character varying, character varying, character varying, integer, integer, integer, integer, character varying, character varying, character varying, character varying, integer, integer, character varying, character varying, integer, integer, character, integer, integer) OWNER TO ieducar;
@@ -6231,6 +6232,7 @@ ALTER FUNCTION public.fcn_insert_documento(integer, character varying, character
 --
 
 CREATE FUNCTION fcn_insert_endereco_externo(integer, integer, character varying, character varying, character varying, integer, character varying, character varying, character varying, integer, character varying, character varying, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -6256,8 +6258,7 @@ BEGIN
     VALUES (v_id_pes, v_tipo, v_sigla_uf, v_idtlog, public.fcn_upper(v_logradouro), v_numero, public.fcn_upper(v_letra), public.fcn_upper(v_complemento), public.fcn_upper(v_bairro), v_cep, public.fcn_upper(v_cidade), to_date(v_reside_desde,'DD/MM/YYYY'), v_origem_gravacao, v_idpes_cad, v_idsis_cad, CURRENT_TIMESTAMP, 'I');
  
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_insert_endereco_externo(integer, integer, character varying, character varying, character varying, integer, character varying, character varying, character varying, integer, character varying, character varying, character, integer, integer) OWNER TO ieducar;
@@ -6267,6 +6268,7 @@ ALTER FUNCTION public.fcn_insert_endereco_externo(integer, integer, character va
 --
 
 CREATE FUNCTION fcn_insert_endereco_pessoa(integer, integer, integer, integer, integer, integer, character varying, character varying, character varying, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -6287,8 +6289,7 @@ BEGIN
     INSERT INTO cadastro.endereco_pessoa (idpes,tipo,cep,idlog,idbai,numero,letra,complemento,reside_desde, origem_gravacao, idpes_cad, idsis_cad, data_cad, operacao)
   VALUES(v_id_pes,v_tipo,v_cep,v_idlog,v_idbai,v_numero,public.fcn_upper(v_letra),public.fcn_upper(v_complemento),to_date(v_reside_desde,'DD/MM/YYYY'), v_origem_gravacao, v_idpes_cad, v_idsis_cad, CURRENT_TIMESTAMP, 'I');
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_insert_endereco_pessoa(integer, integer, integer, integer, integer, integer, character varying, character varying, character varying, character, integer, integer) OWNER TO ieducar;
@@ -6298,6 +6299,7 @@ ALTER FUNCTION public.fcn_insert_endereco_pessoa(integer, integer, integer, inte
 --
 
 CREATE FUNCTION fcn_insert_fisica(integer, character varying, character varying, integer, integer, integer, integer, integer, integer, character varying, character varying, integer, integer, character varying, integer, character varying, integer, character varying, character varying, character varying, character varying, character varying, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -6412,8 +6414,7 @@ BEGIN
            public.fcn_upper(v_nome_responsavel), v_justificativa_provisorio, v_origem_gravacao, v_idpes_cad, v_idsis_cad, CURRENT_TIMESTAMP, 'I');
  
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_insert_fisica(integer, character varying, character varying, integer, integer, integer, integer, integer, integer, character varying, character varying, integer, integer, character varying, integer, character varying, integer, character varying, character varying, character varying, character varying, character varying, character, integer, integer) OWNER TO ieducar;
@@ -6423,6 +6424,7 @@ ALTER FUNCTION public.fcn_insert_fisica(integer, character varying, character va
 --
 
 CREATE FUNCTION fcn_insert_fisica_cpf(integer, text, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -6434,8 +6436,7 @@ DECLARE
 BEGIN
   INSERT INTO cadastro.fisica_cpf (idpes,cpf, origem_gravacao, idpes_cad, idsis_cad, data_cad, operacao) VALUES (v_id_pes,to_number(v_cpf,99999999999), v_origem_gravacao, v_idpes_cad, v_idsis_cad, CURRENT_TIMESTAMP, 'I');
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_insert_fisica_cpf(integer, text, character, integer, integer) OWNER TO ieducar;
@@ -6445,6 +6446,7 @@ ALTER FUNCTION public.fcn_insert_fisica_cpf(integer, text, character, integer, i
 --
 
 CREATE FUNCTION fcn_insert_fone_pessoa(integer, integer, integer, integer, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -6460,8 +6462,7 @@ BEGIN
   INSERT INTO cadastro.fone_pessoa (idpes,tipo,ddd,fone, origem_gravacao, idpes_cad, idsis_cad, data_cad, operacao)
     VALUES (v_id_pes,v_tipo,v_ddd,v_fone, v_origem_gravacao, v_idpes_cad, v_idsis_cad, CURRENT_TIMESTAMP, 'I');
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_insert_fone_pessoa(integer, integer, integer, integer, character, integer, integer) OWNER TO ieducar;
@@ -6471,6 +6472,7 @@ ALTER FUNCTION public.fcn_insert_fone_pessoa(integer, integer, integer, integer,
 --
 
 CREATE FUNCTION fcn_insert_funcionario(integer, integer, integer, integer, character varying, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -6494,8 +6496,7 @@ BEGIN
     INSERT INTO cadastro.funcionario (matricula,idins,idset,idpes,situacao, origem_gravacao, idpes_cad, idsis_cad, data_cad, operacao)
     VALUES(v_matricula,v_id_ins,v_id_set_aux,v_id_pes,public.fcn_upper(v_situacao), v_origem_gravacao, v_idpes_cad, v_idsis_cad, CURRENT_TIMESTAMP, 'I');
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_insert_funcionario(integer, integer, integer, integer, character varying, character, integer, integer) OWNER TO ieducar;
@@ -6505,6 +6506,7 @@ ALTER FUNCTION public.fcn_insert_funcionario(integer, integer, integer, integer,
 --
 
 CREATE FUNCTION fcn_insert_juridica(integer, character varying, character varying, character varying, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -6521,8 +6523,7 @@ BEGIN
     INSERT INTO cadastro.juridica (idpes,cnpj,fantasia,insc_estadual, origem_gravacao, idpes_cad, idsis_cad, data_cad, operacao)
     VALUES (v_id_pes,to_number(v_cnpj,99999999999999),public.fcn_upper(v_fantasia),to_number(v_inscr_estadual,9999999999), v_origem_gravacao, v_idpes_cad, v_idsis_cad, CURRENT_TIMESTAMP, 'I');
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_insert_juridica(integer, character varying, character varying, character varying, character, integer, integer) OWNER TO ieducar;
@@ -6532,6 +6533,7 @@ ALTER FUNCTION public.fcn_insert_juridica(integer, character varying, character 
 --
 
 CREATE FUNCTION fcn_insert_pessoa(integer, character varying, character varying, character varying, character varying, integer, character varying, character varying, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -6555,8 +6557,7 @@ BEGIN
     INSERT INTO cadastro.pessoa (idpes,nome,idpes_cad,data_cad,url,tipo,email,situacao,origem_gravacao, idsis_cad, operacao) VALUES (v_id_pes,public.fcn_upper(v_razao_social),idpes_logado,CURRENT_TIMESTAMP,v_url,v_tipo,v_email,v_situacao,v_origem_gravacao, v_idsis_cad, 'I');
   END IF;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_insert_pessoa(integer, character varying, character varying, character varying, character varying, integer, character varying, character varying, integer, integer) OWNER TO ieducar;
@@ -6566,6 +6567,7 @@ ALTER FUNCTION public.fcn_insert_pessoa(integer, character varying, character va
 --
 
 CREATE FUNCTION fcn_obter_primeiro_ultimo_nome(text) RETURNS text
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   v_nome_parametro    ALIAS FOR $1;
@@ -6709,8 +6711,7 @@ DECLARE
   END IF;
   RETURN v_primeiro_nome || ' ' || v_ultimo_nome;
   END;
-  $_$
-    LANGUAGE plpgsql;
+  $_$;
 
 
 ALTER FUNCTION public.fcn_obter_primeiro_ultimo_nome(text) OWNER TO ieducar;
@@ -6720,6 +6721,7 @@ ALTER FUNCTION public.fcn_obter_primeiro_ultimo_nome(text) OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_obter_primeiro_ultimo_nome_juridica(text) RETURNS text
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   v_nome_parametro    ALIAS FOR $1;
@@ -6838,8 +6840,7 @@ DECLARE
   END LOOP;
   RETURN v_primeiro_nome || ' ' || v_ultimo_nome;
   END;
-  $_$
-    LANGUAGE plpgsql;
+  $_$;
 
 
 ALTER FUNCTION public.fcn_obter_primeiro_ultimo_nome_juridica(text) OWNER TO ieducar;
@@ -6849,6 +6850,7 @@ ALTER FUNCTION public.fcn_obter_primeiro_ultimo_nome_juridica(text) OWNER TO ied
 --
 
 CREATE FUNCTION fcn_update_documento(integer, character varying, character varying, character varying, character varying, integer, integer, integer, integer, character varying, character varying, character varying, character varying, integer, integer, character varying, character varying, integer, integer, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -6996,8 +6998,7 @@ BEGIN
    
  
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_update_documento(integer, character varying, character varying, character varying, character varying, integer, integer, integer, integer, character varying, character varying, character varying, character varying, integer, integer, character varying, character varying, integer, integer, character, integer, integer) OWNER TO ieducar;
@@ -7007,6 +7008,7 @@ ALTER FUNCTION public.fcn_update_documento(integer, character varying, character
 --
 
 CREATE FUNCTION fcn_update_endereco_externo(integer, integer, character varying, character varying, character varying, integer, character varying, character varying, character varying, integer, character varying, character varying, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -7047,8 +7049,7 @@ BEGIN
     WHERE idpes = v_id_pes
     AND tipo = v_tipo;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_update_endereco_externo(integer, integer, character varying, character varying, character varying, integer, character varying, character varying, character varying, integer, character varying, character varying, character, integer, integer) OWNER TO ieducar;
@@ -7058,6 +7059,7 @@ ALTER FUNCTION public.fcn_update_endereco_externo(integer, integer, character va
 --
 
 CREATE FUNCTION fcn_update_endereco_pessoa(integer, integer, integer, integer, integer, integer, character varying, character varying, character varying, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
     -- Parâmetro recebidos
@@ -7092,8 +7094,7 @@ BEGIN
     WHERE idpes = v_id_pes
     AND tipo = v_tipo;
     RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_update_endereco_pessoa(integer, integer, integer, integer, integer, integer, character varying, character varying, character varying, character, integer, integer) OWNER TO ieducar;
@@ -7103,6 +7104,7 @@ ALTER FUNCTION public.fcn_update_endereco_pessoa(integer, integer, integer, inte
 --
 
 CREATE FUNCTION fcn_update_fisica(integer, character varying, character varying, integer, integer, integer, integer, integer, integer, character varying, character varying, integer, integer, character varying, integer, character varying, integer, character varying, character varying, character varying, character varying, character varying, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -7231,8 +7233,7 @@ BEGIN
     WHERE idpes = v_id_pes;
  
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_update_fisica(integer, character varying, character varying, integer, integer, integer, integer, integer, integer, character varying, character varying, integer, integer, character varying, integer, character varying, integer, character varying, character varying, character varying, character varying, character varying, character, integer, integer) OWNER TO ieducar;
@@ -7242,6 +7243,7 @@ ALTER FUNCTION public.fcn_update_fisica(integer, character varying, character va
 --
 
 CREATE FUNCTION fcn_update_fisica_cpf(integer, text, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -7262,8 +7264,7 @@ BEGIN
     cpf = to_number(v_cpf,99999999999)
     WHERE cadastro.fisica_cpf.idpes = v_id_pes;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_update_fisica_cpf(integer, text, character, integer, integer) OWNER TO ieducar;
@@ -7273,6 +7274,7 @@ ALTER FUNCTION public.fcn_update_fisica_cpf(integer, text, character, integer, i
 --
 
 CREATE FUNCTION fcn_update_fone_pessoa(integer, integer, integer, integer, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -7297,8 +7299,7 @@ BEGIN
     WHERE idpes = v_id_pes
     AND tipo = v_tipo;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_update_fone_pessoa(integer, integer, integer, integer, character, integer, integer) OWNER TO ieducar;
@@ -7308,6 +7309,7 @@ ALTER FUNCTION public.fcn_update_fone_pessoa(integer, integer, integer, integer,
 --
 
 CREATE FUNCTION fcn_update_funcionario(numeric, integer, integer, character varying, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -7360,8 +7362,7 @@ BEGIN
   END IF;
   
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_update_funcionario(numeric, integer, integer, character varying, character, integer, integer) OWNER TO ieducar;
@@ -7371,6 +7372,7 @@ ALTER FUNCTION public.fcn_update_funcionario(numeric, integer, integer, characte
 --
 
 CREATE FUNCTION fcn_update_juridica(integer, character varying, character varying, character varying, character, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -7395,8 +7397,7 @@ BEGIN
   operacao = 'A'
     WHERE idpes = v_id_pes;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_update_juridica(integer, character varying, character varying, character varying, character, integer, integer) OWNER TO ieducar;
@@ -7406,6 +7407,7 @@ ALTER FUNCTION public.fcn_update_juridica(integer, character varying, character 
 --
 
 CREATE FUNCTION fcn_update_pessoa(integer, text, character varying, character varying, character varying, integer, character varying, integer, integer) RETURNS integer
+    LANGUAGE plpgsql
     AS $_$
 DECLARE
   -- Parâmetro recebidos
@@ -7450,8 +7452,7 @@ BEGIN
         WHERE idpes = v_id_pes;
     END IF;
   RETURN 0;
-END;$_$
-    LANGUAGE plpgsql;
+END;$_$;
 
 
 ALTER FUNCTION public.fcn_update_pessoa(integer, text, character varying, character varying, character varying, integer, character varying, integer, integer) OWNER TO ieducar;
@@ -7461,6 +7462,7 @@ ALTER FUNCTION public.fcn_update_pessoa(integer, text, character varying, charac
 --
 
 CREATE FUNCTION fcn_upper(text) RETURNS text
+    LANGUAGE plpgsql
     AS $_$
    DECLARE
     v_texto     ALIAS FOR $1;
@@ -7471,8 +7473,7 @@ CREATE FUNCTION fcn_upper(text) RETURNS text
     END IF;
     RETURN v_retorno;
    END;
-  $_$
-    LANGUAGE plpgsql;
+  $_$;
 
 
 ALTER FUNCTION public.fcn_upper(text) OWNER TO ieducar;
@@ -7482,6 +7483,7 @@ ALTER FUNCTION public.fcn_upper(text) OWNER TO ieducar;
 --
 
 CREATE FUNCTION fcn_upper_nrm(text) RETURNS text
+    LANGUAGE plpgsql
     AS $_$
    DECLARE
     v_texto     ALIAS FOR $1;
@@ -7492,8 +7494,7 @@ CREATE FUNCTION fcn_upper_nrm(text) RETURNS text
     END IF;
     RETURN v_retorno;
    END;
-  $_$
-    LANGUAGE plpgsql;
+  $_$;
 
 
 ALTER FUNCTION public.fcn_upper_nrm(text) OWNER TO ieducar;
@@ -7507,19 +7508,12 @@ SET search_path = acesso, pg_catalog;
 CREATE SEQUENCE funcao_idfunc_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE acesso.funcao_idfunc_seq OWNER TO ieducar;
-
---
--- Name: funcao_idfunc_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
---
-
-SELECT pg_catalog.setval('funcao_idfunc_seq', 1, false);
-
 
 SET default_tablespace = '';
 
@@ -7551,19 +7545,12 @@ ALTER TABLE acesso.funcao OWNER TO ieducar;
 CREATE SEQUENCE grupo_idgrp_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE acesso.grupo_idgrp_seq OWNER TO ieducar;
-
---
--- Name: grupo_idgrp_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
---
-
-SELECT pg_catalog.setval('grupo_idgrp_seq', 1, false);
-
 
 --
 -- Name: grupo; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -7639,7 +7626,7 @@ ALTER TABLE acesso.grupo_sistema OWNER TO ieducar;
 --
 
 CREATE TABLE historico_senha (
-    "login" character varying(16) NOT NULL,
+    login character varying(16) NOT NULL,
     senha character varying(60) NOT NULL,
     data_cad timestamp without time zone NOT NULL
 );
@@ -7654,19 +7641,12 @@ ALTER TABLE acesso.historico_senha OWNER TO ieducar;
 CREATE SEQUENCE instituicao_idins_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE acesso.instituicao_idins_seq OWNER TO ieducar;
-
---
--- Name: instituicao_idins_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
---
-
-SELECT pg_catalog.setval('instituicao_idins_seq', 1, false);
-
 
 --
 -- Name: instituicao; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -7723,19 +7703,12 @@ ALTER TABLE acesso.log_erro OWNER TO ieducar;
 CREATE SEQUENCE menu_idmen_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE acesso.menu_idmen_seq OWNER TO ieducar;
-
---
--- Name: menu_idmen_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
---
-
-SELECT pg_catalog.setval('menu_idmen_seq', 1, false);
-
 
 --
 -- Name: menu; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -7763,19 +7736,12 @@ ALTER TABLE acesso.menu OWNER TO ieducar;
 CREATE SEQUENCE operacao_idope_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE acesso.operacao_idope_seq OWNER TO ieducar;
-
---
--- Name: operacao_idope_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
---
-
-SELECT pg_catalog.setval('operacao_idope_seq', 1, false);
-
 
 --
 -- Name: operacao; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -7824,20 +7790,14 @@ ALTER TABLE acesso.pessoa_instituicao OWNER TO ieducar;
 --
 
 CREATE SEQUENCE sistema_idsis_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE acesso.sistema_idsis_seq OWNER TO ieducar;
-
---
--- Name: sistema_idsis_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
---
-
-SELECT pg_catalog.setval('sistema_idsis_seq', 17, true);
-
 
 --
 -- Name: sistema; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -7860,7 +7820,7 @@ ALTER TABLE acesso.sistema OWNER TO ieducar;
 --
 
 CREATE TABLE usuario (
-    "login" character varying(16) NOT NULL,
+    login character varying(16) NOT NULL,
     idpes numeric(8,0) NOT NULL,
     idpes_sga numeric(8,0),
     senha character varying(60) NOT NULL,
@@ -7889,7 +7849,7 @@ ALTER TABLE acesso.usuario OWNER TO ieducar;
 
 CREATE TABLE usuario_grupo (
     idgrp integer NOT NULL,
-    "login" character varying(16) NOT NULL
+    login character varying(16) NOT NULL
 );
 
 
@@ -7904,19 +7864,12 @@ SET search_path = alimentos, pg_catalog;
 CREATE SEQUENCE baixa_guia_produto_idbap_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.baixa_guia_produto_idbap_seq OWNER TO ieducar;
-
---
--- Name: baixa_guia_produto_idbap_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('baixa_guia_produto_idbap_seq', 1, false);
-
 
 --
 -- Name: baixa_guia_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -7942,19 +7895,12 @@ ALTER TABLE alimentos.baixa_guia_produto OWNER TO ieducar;
 CREATE SEQUENCE baixa_guia_remessa_idbai_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.baixa_guia_remessa_idbai_seq OWNER TO ieducar;
-
---
--- Name: baixa_guia_remessa_idbai_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('baixa_guia_remessa_idbai_seq', 1, false);
-
 
 --
 -- Name: baixa_guia_remessa; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -7980,19 +7926,12 @@ ALTER TABLE alimentos.baixa_guia_remessa OWNER TO ieducar;
 CREATE SEQUENCE calendario_idcad_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.calendario_idcad_seq OWNER TO ieducar;
-
---
--- Name: calendario_idcad_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('calendario_idcad_seq', 1, false);
-
 
 --
 -- Name: calendario; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8015,19 +7954,12 @@ ALTER TABLE alimentos.calendario OWNER TO ieducar;
 CREATE SEQUENCE cardapio_idcar_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.cardapio_idcar_seq OWNER TO ieducar;
-
---
--- Name: cardapio_idcar_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('cardapio_idcar_seq', 1, false);
-
 
 --
 -- Name: cardapio; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8069,19 +8001,12 @@ ALTER TABLE alimentos.cardapio_faixa_unidade OWNER TO ieducar;
 CREATE SEQUENCE cardapio_produto_idcpr_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.cardapio_produto_idcpr_seq OWNER TO ieducar;
-
---
--- Name: cardapio_produto_idcpr_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('cardapio_produto_idcpr_seq', 1, false);
-
 
 --
 -- Name: cardapio_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8147,19 +8072,12 @@ ALTER TABLE alimentos.cliente OWNER TO ieducar;
 CREATE SEQUENCE composto_quimico_idcom_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.composto_quimico_idcom_seq OWNER TO ieducar;
-
---
--- Name: composto_quimico_idcom_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('composto_quimico_idcom_seq', 1, false);
-
 
 --
 -- Name: composto_quimico; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8183,19 +8101,12 @@ ALTER TABLE alimentos.composto_quimico OWNER TO ieducar;
 CREATE SEQUENCE contrato_idcon_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.contrato_idcon_seq OWNER TO ieducar;
-
---
--- Name: contrato_idcon_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('contrato_idcon_seq', 1, false);
-
 
 --
 -- Name: contrato; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8205,7 +8116,7 @@ CREATE TABLE contrato (
     idcon integer DEFAULT nextval('contrato_idcon_seq'::regclass) NOT NULL,
     codigo character varying(20) NOT NULL,
     idcli character varying(10) NOT NULL,
-    "login" character varying(80) NOT NULL,
+    login character varying(80) NOT NULL,
     num_aditivo integer NOT NULL,
     idfor integer NOT NULL,
     dt_vigencia date NOT NULL,
@@ -8233,19 +8144,12 @@ ALTER TABLE alimentos.contrato OWNER TO ieducar;
 CREATE SEQUENCE contrato_produto_idcop_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.contrato_produto_idcop_seq OWNER TO ieducar;
-
---
--- Name: contrato_produto_idcop_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('contrato_produto_idcop_seq', 1, false);
-
 
 --
 -- Name: contrato_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8276,19 +8180,12 @@ ALTER TABLE alimentos.contrato_produto OWNER TO ieducar;
 CREATE SEQUENCE evento_ideve_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.evento_ideve_seq OWNER TO ieducar;
-
---
--- Name: evento_ideve_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('evento_ideve_seq', 1, false);
-
 
 --
 -- Name: evento; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8314,19 +8211,12 @@ ALTER TABLE alimentos.evento OWNER TO ieducar;
 CREATE SEQUENCE faixa_composto_quimico_idfcp_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.faixa_composto_quimico_idfcp_seq OWNER TO ieducar;
-
---
--- Name: faixa_composto_quimico_idfcp_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('faixa_composto_quimico_idfcp_seq', 1, false);
-
 
 --
 -- Name: faixa_composto_quimico; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8351,19 +8241,12 @@ ALTER TABLE alimentos.faixa_composto_quimico OWNER TO ieducar;
 CREATE SEQUENCE faixa_etaria_idfae_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.faixa_etaria_idfae_seq OWNER TO ieducar;
-
---
--- Name: faixa_etaria_idfae_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('faixa_etaria_idfae_seq', 1, false);
-
 
 --
 -- Name: faixa_etaria; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8386,19 +8269,12 @@ ALTER TABLE alimentos.faixa_etaria OWNER TO ieducar;
 CREATE SEQUENCE fornecedor_idfor_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.fornecedor_idfor_seq OWNER TO ieducar;
-
---
--- Name: fornecedor_idfor_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('fornecedor_idfor_seq', 1, false);
-
 
 --
 -- Name: fornecedor; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8449,19 +8325,12 @@ ALTER TABLE alimentos.fornecedor_unidade_atendida OWNER TO ieducar;
 CREATE SEQUENCE grupo_quimico_idgrpq_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.grupo_quimico_idgrpq_seq OWNER TO ieducar;
-
---
--- Name: grupo_quimico_idgrpq_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('grupo_quimico_idgrpq_seq', 1, false);
-
 
 --
 -- Name: grupo_quimico; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8483,19 +8352,12 @@ ALTER TABLE alimentos.grupo_quimico OWNER TO ieducar;
 CREATE SEQUENCE guia_produto_diario_idguiaprodiario_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.guia_produto_diario_idguiaprodiario_seq OWNER TO ieducar;
-
---
--- Name: guia_produto_diario_idguiaprodiario_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('guia_produto_diario_idguiaprodiario_seq', 1, false);
-
 
 --
 -- Name: guia_produto_diario; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8520,19 +8382,12 @@ ALTER TABLE alimentos.guia_produto_diario OWNER TO ieducar;
 CREATE SEQUENCE guia_remessa_idgui_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.guia_remessa_idgui_seq OWNER TO ieducar;
-
---
--- Name: guia_remessa_idgui_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('guia_remessa_idgui_seq', 1, false);
-
 
 --
 -- Name: guia_remessa; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8571,19 +8426,12 @@ ALTER TABLE alimentos.guia_remessa OWNER TO ieducar;
 CREATE SEQUENCE guia_remessa_produto_idgup_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.guia_remessa_produto_idgup_seq OWNER TO ieducar;
-
---
--- Name: guia_remessa_produto_idgup_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('guia_remessa_produto_idgup_seq', 1, false);
-
 
 --
 -- Name: guia_remessa_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8610,19 +8458,12 @@ ALTER TABLE alimentos.guia_remessa_produto OWNER TO ieducar;
 CREATE SEQUENCE log_guia_remessa_idlogguia_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.log_guia_remessa_idlogguia_seq OWNER TO ieducar;
-
---
--- Name: log_guia_remessa_idlogguia_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('log_guia_remessa_idlogguia_seq', 1, false);
-
 
 --
 -- Name: log_guia_remessa; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8630,7 +8471,7 @@ SELECT pg_catalog.setval('log_guia_remessa_idlogguia_seq', 1, false);
 
 CREATE TABLE log_guia_remessa (
     idlogguia integer DEFAULT nextval('log_guia_remessa_idlogguia_seq'::regclass) NOT NULL,
-    "login" character varying(80) NOT NULL,
+    login character varying(80) NOT NULL,
     idcli character varying(10) NOT NULL,
     dt_inicial date NOT NULL,
     dt_final date NOT NULL,
@@ -8664,19 +8505,12 @@ ALTER TABLE alimentos.medidas_caseiras OWNER TO ieducar;
 CREATE SEQUENCE pessoa_idpes_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.pessoa_idpes_seq OWNER TO ieducar;
-
---
--- Name: pessoa_idpes_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('pessoa_idpes_seq', 1, false);
-
 
 --
 -- Name: pessoa; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8698,19 +8532,12 @@ ALTER TABLE alimentos.pessoa OWNER TO ieducar;
 CREATE SEQUENCE produto_idpro_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.produto_idpro_seq OWNER TO ieducar;
-
---
--- Name: produto_idpro_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('produto_idpro_seq', 1, false);
-
 
 --
 -- Name: produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8749,19 +8576,12 @@ ALTER TABLE alimentos.produto OWNER TO ieducar;
 CREATE SEQUENCE produto_composto_quimico_idpcq_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.produto_composto_quimico_idpcq_seq OWNER TO ieducar;
-
---
--- Name: produto_composto_quimico_idpcq_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('produto_composto_quimico_idpcq_seq', 1, false);
-
 
 --
 -- Name: produto_composto_quimico; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8784,19 +8604,12 @@ ALTER TABLE alimentos.produto_composto_quimico OWNER TO ieducar;
 CREATE SEQUENCE produto_fornecedor_idprf_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.produto_fornecedor_idprf_seq OWNER TO ieducar;
-
---
--- Name: produto_fornecedor_idprf_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('produto_fornecedor_idprf_seq', 1, false);
-
 
 --
 -- Name: produto_fornecedor; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8819,19 +8632,12 @@ ALTER TABLE alimentos.produto_fornecedor OWNER TO ieducar;
 CREATE SEQUENCE produto_medida_caseira_idpmc_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.produto_medida_caseira_idpmc_seq OWNER TO ieducar;
-
---
--- Name: produto_medida_caseira_idpmc_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('produto_medida_caseira_idpmc_seq', 1, false);
-
 
 --
 -- Name: produto_medida_caseira; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8855,19 +8661,12 @@ ALTER TABLE alimentos.produto_medida_caseira OWNER TO ieducar;
 CREATE SEQUENCE receita_idrec_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.receita_idrec_seq OWNER TO ieducar;
-
---
--- Name: receita_idrec_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('receita_idrec_seq', 1, false);
-
 
 --
 -- Name: receita; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8893,19 +8692,12 @@ ALTER TABLE alimentos.receita OWNER TO ieducar;
 CREATE SEQUENCE receita_composto_quimico_idrcq_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.receita_composto_quimico_idrcq_seq OWNER TO ieducar;
-
---
--- Name: receita_composto_quimico_idrcq_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('receita_composto_quimico_idrcq_seq', 1, false);
-
 
 --
 -- Name: receita_composto_quimico; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8928,19 +8720,12 @@ ALTER TABLE alimentos.receita_composto_quimico OWNER TO ieducar;
 CREATE SEQUENCE receita_produto_idrpr_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.receita_produto_idrpr_seq OWNER TO ieducar;
-
---
--- Name: receita_produto_idrpr_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('receita_produto_idrpr_seq', 1, false);
-
 
 --
 -- Name: receita_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -8967,19 +8752,12 @@ ALTER TABLE alimentos.receita_produto OWNER TO ieducar;
 CREATE SEQUENCE tipo_produto_idtip_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.tipo_produto_idtip_seq OWNER TO ieducar;
-
---
--- Name: tipo_produto_idtip_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tipo_produto_idtip_seq', 1, false);
-
 
 --
 -- Name: tipo_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -9001,19 +8779,12 @@ ALTER TABLE alimentos.tipo_produto OWNER TO ieducar;
 CREATE SEQUENCE tipo_refeicao_idtre_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.tipo_refeicao_idtre_seq OWNER TO ieducar;
-
---
--- Name: tipo_refeicao_idtre_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tipo_refeicao_idtre_seq', 1, false);
-
 
 --
 -- Name: tipo_refeicao; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -9035,19 +8806,12 @@ ALTER TABLE alimentos.tipo_refeicao OWNER TO ieducar;
 CREATE SEQUENCE tipo_unidade_idtip_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.tipo_unidade_idtip_seq OWNER TO ieducar;
-
---
--- Name: tipo_unidade_idtip_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tipo_unidade_idtip_seq', 1, false);
-
 
 --
 -- Name: tipo_unidade; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -9069,19 +8833,12 @@ ALTER TABLE alimentos.tipo_unidade OWNER TO ieducar;
 CREATE SEQUENCE unidade_atendida_iduni_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.unidade_atendida_iduni_seq OWNER TO ieducar;
-
---
--- Name: unidade_atendida_iduni_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('unidade_atendida_iduni_seq', 1, false);
-
 
 --
 -- Name: unidade_atendida; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -9115,19 +8872,12 @@ ALTER TABLE alimentos.unidade_atendida OWNER TO ieducar;
 CREATE SEQUENCE unidade_faixa_etaria_idfeu_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE alimentos.unidade_faixa_etaria_idfeu_seq OWNER TO ieducar;
-
---
--- Name: unidade_faixa_etaria_idfeu_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
---
-
-SELECT pg_catalog.setval('unidade_faixa_etaria_idfeu_seq', 1, false);
-
 
 --
 -- Name: unidade_faixa_etaria; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -9180,19 +8930,12 @@ ALTER TABLE cadastro.aviso_nome OWNER TO ieducar;
 CREATE SEQUENCE deficiencia_cod_deficiencia_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE cadastro.deficiencia_cod_deficiencia_seq OWNER TO ieducar;
-
---
--- Name: deficiencia_cod_deficiencia_seq; Type: SEQUENCE SET; Schema: cadastro; Owner: ieducar
---
-
-SELECT pg_catalog.setval('deficiencia_cod_deficiencia_seq', 1, false);
-
 
 --
 -- Name: deficiencia; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -9570,19 +9313,12 @@ ALTER TABLE cadastro.ocupacao OWNER TO ieducar;
 CREATE SEQUENCE orgao_emissor_rg_idorg_rg_seq
     START WITH 30
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE cadastro.orgao_emissor_rg_idorg_rg_seq OWNER TO ieducar;
-
---
--- Name: orgao_emissor_rg_idorg_rg_seq; Type: SEQUENCE SET; Schema: cadastro; Owner: ieducar
---
-
-SELECT pg_catalog.setval('orgao_emissor_rg_idorg_rg_seq', 30, false);
-
 
 --
 -- Name: orgao_emissor_rg; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -9646,19 +9382,12 @@ ALTER TABLE cadastro.pessoa_fonetico OWNER TO ieducar;
 CREATE SEQUENCE raca_cod_raca_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE cadastro.raca_cod_raca_seq OWNER TO ieducar;
-
---
--- Name: raca_cod_raca_seq; Type: SEQUENCE SET; Schema: cadastro; Owner: ieducar
---
-
-SELECT pg_catalog.setval('raca_cod_raca_seq', 1, false);
-
 
 --
 -- Name: raca; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -9684,19 +9413,12 @@ ALTER TABLE cadastro.raca OWNER TO ieducar;
 CREATE SEQUENCE religiao_cod_religiao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE cadastro.religiao_cod_religiao_seq OWNER TO ieducar;
-
---
--- Name: religiao_cod_religiao_seq; Type: SEQUENCE SET; Schema: cadastro; Owner: ieducar
---
-
-SELECT pg_catalog.setval('religiao_cod_religiao_seq', 1, false);
-
 
 SET default_with_oids = false;
 
@@ -9722,20 +9444,14 @@ ALTER TABLE cadastro.religiao OWNER TO ieducar;
 --
 
 CREATE SEQUENCE seq_pessoa
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE cadastro.seq_pessoa OWNER TO ieducar;
-
---
--- Name: seq_pessoa; Type: SEQUENCE SET; Schema: cadastro; Owner: ieducar
---
-
-SELECT pg_catalog.setval('seq_pessoa', 3, true);
-
 
 SET default_with_oids = true;
 
@@ -9853,7 +9569,7 @@ SET search_path = cadastro, pg_catalog;
 --
 
 CREATE VIEW v_endereco AS
-    SELECT e.idpes, e.cep, e.idlog, e.numero, e.letra, e.complemento, e.idbai, e.bloco, e.andar, e.apartamento, l.nome AS logradouro, l.idtlog, b.nome AS bairro, m.nome AS cidade, m.sigla_uf, b.zona_localizacao FROM endereco_pessoa e, public.logradouro l, public.bairro b, public.municipio m WHERE ((((e.idlog = l.idlog) AND (e.idbai = b.idbai)) AND (b.idmun = m.idmun)) AND (e.tipo = (1)::numeric)) UNION SELECT e.idpes, e.cep, NULL::"unknown" AS idlog, e.numero, e.letra, e.complemento, NULL::"unknown" AS idbai, e.bloco, e.andar, e.apartamento, e.logradouro, e.idtlog, e.bairro, e.cidade, e.sigla_uf, e.zona_localizacao FROM endereco_externo e WHERE (e.tipo = (1)::numeric);
+    SELECT e.idpes, e.cep, e.idlog, e.numero, e.letra, e.complemento, e.idbai, e.bloco, e.andar, e.apartamento, l.nome AS logradouro, l.idtlog, b.nome AS bairro, m.nome AS cidade, m.sigla_uf, b.zona_localizacao FROM endereco_pessoa e, public.logradouro l, public.bairro b, public.municipio m WHERE ((((e.idlog = l.idlog) AND (e.idbai = b.idbai)) AND (b.idmun = m.idmun)) AND (e.tipo = (1)::numeric)) UNION SELECT e.idpes, e.cep, NULL::numeric AS idlog, e.numero, e.letra, e.complemento, NULL::numeric AS idbai, e.bloco, e.andar, e.apartamento, e.logradouro, e.idtlog, e.bairro, e.cidade, e.sigla_uf, e.zona_localizacao FROM endereco_externo e WHERE (e.tipo = (1)::numeric);
 
 
 ALTER TABLE cadastro.v_endereco OWNER TO ieducar;
@@ -9913,7 +9629,7 @@ ALTER TABLE cadastro.v_pessoa_juridica OWNER TO ieducar;
 --
 
 CREATE VIEW v_pessoafj_count AS
-    SELECT fisica.ref_cod_sistema, fisica.cpf AS id_federal FROM fisica UNION ALL SELECT NULL::"unknown" AS ref_cod_sistema, juridica.cnpj AS id_federal FROM juridica;
+    SELECT fisica.ref_cod_sistema, fisica.cpf AS id_federal FROM fisica UNION ALL SELECT NULL::integer AS ref_cod_sistema, juridica.cnpj AS id_federal FROM juridica;
 
 
 ALTER TABLE cadastro.v_pessoafj_count OWNER TO ieducar;
@@ -9942,19 +9658,12 @@ ALTER TABLE consistenciacao.campo_consistenciacao OWNER TO ieducar;
 CREATE SEQUENCE campo_metadado_id_campo_met_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE consistenciacao.campo_metadado_id_campo_met_seq OWNER TO ieducar;
-
---
--- Name: campo_metadado_id_campo_met_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
---
-
-SELECT pg_catalog.setval('campo_metadado_id_campo_met_seq', 1, false);
-
 
 --
 -- Name: campo_metadado; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -9984,19 +9693,12 @@ ALTER TABLE consistenciacao.campo_metadado OWNER TO ieducar;
 CREATE SEQUENCE confrontacao_idcon_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE consistenciacao.confrontacao_idcon_seq OWNER TO ieducar;
-
---
--- Name: confrontacao_idcon_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
---
-
-SELECT pg_catalog.setval('confrontacao_idcon_seq', 1, false);
-
 
 --
 -- Name: confrontacao; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -10023,19 +9725,12 @@ ALTER TABLE consistenciacao.confrontacao OWNER TO ieducar;
 CREATE SEQUENCE fonte_idfon_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE consistenciacao.fonte_idfon_seq OWNER TO ieducar;
-
---
--- Name: fonte_idfon_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
---
-
-SELECT pg_catalog.setval('fonte_idfon_seq', 1, false);
-
 
 --
 -- Name: fonte; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -10073,19 +9768,12 @@ ALTER TABLE consistenciacao.historico_campo OWNER TO ieducar;
 CREATE SEQUENCE incoerencia_idinc_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE consistenciacao.incoerencia_idinc_seq OWNER TO ieducar;
-
---
--- Name: incoerencia_idinc_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
---
-
-SELECT pg_catalog.setval('incoerencia_idinc_seq', 1, false);
-
 
 --
 -- Name: incoerencia; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -10128,19 +9816,12 @@ ALTER TABLE consistenciacao.incoerencia OWNER TO ieducar;
 CREATE SEQUENCE incoerencia_documento_id_inc_doc_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE consistenciacao.incoerencia_documento_id_inc_doc_seq OWNER TO ieducar;
-
---
--- Name: incoerencia_documento_id_inc_doc_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
---
-
-SELECT pg_catalog.setval('incoerencia_documento_id_inc_doc_seq', 1, false);
-
 
 --
 -- Name: incoerencia_documento; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -10179,19 +9860,12 @@ ALTER TABLE consistenciacao.incoerencia_documento OWNER TO ieducar;
 CREATE SEQUENCE incoerencia_endereco_id_inc_end_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE consistenciacao.incoerencia_endereco_id_inc_end_seq OWNER TO ieducar;
-
---
--- Name: incoerencia_endereco_id_inc_end_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
---
-
-SELECT pg_catalog.setval('incoerencia_endereco_id_inc_end_seq', 1, false);
-
 
 --
 -- Name: incoerencia_endereco; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -10223,19 +9897,12 @@ ALTER TABLE consistenciacao.incoerencia_endereco OWNER TO ieducar;
 CREATE SEQUENCE incoerencia_fone_id_inc_fone_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE consistenciacao.incoerencia_fone_id_inc_fone_seq OWNER TO ieducar;
-
---
--- Name: incoerencia_fone_id_inc_fone_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
---
-
-SELECT pg_catalog.setval('incoerencia_fone_id_inc_fone_seq', 1, false);
-
 
 --
 -- Name: incoerencia_fone; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -10284,19 +9951,12 @@ ALTER TABLE consistenciacao.incoerencia_tipo_incoerencia OWNER TO ieducar;
 CREATE SEQUENCE metadado_idmet_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE consistenciacao.metadado_idmet_seq OWNER TO ieducar;
-
---
--- Name: metadado_idmet_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
---
-
-SELECT pg_catalog.setval('metadado_idmet_seq', 1, false);
-
 
 --
 -- Name: metadado; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -10334,19 +9994,12 @@ ALTER TABLE consistenciacao.ocorrencia_regra_campo OWNER TO ieducar;
 CREATE SEQUENCE regra_campo_idreg_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE consistenciacao.regra_campo_idreg_seq OWNER TO ieducar;
-
---
--- Name: regra_campo_idreg_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
---
-
-SELECT pg_catalog.setval('regra_campo_idreg_seq', 1, false);
-
 
 --
 -- Name: regra_campo; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -10875,9 +10528,10 @@ ALTER TABLE modules.area_conhecimento OWNER TO ieducar;
 --
 
 CREATE SEQUENCE area_conhecimento_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -10888,13 +10542,6 @@ ALTER TABLE modules.area_conhecimento_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE area_conhecimento_id_seq OWNED BY area_conhecimento.id;
-
-
---
--- Name: area_conhecimento_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('area_conhecimento_id_seq', 2, true);
 
 
 --
@@ -10946,9 +10593,10 @@ ALTER TABLE modules.componente_curricular_ano_escolar OWNER TO ieducar;
 --
 
 CREATE SEQUENCE componente_curricular_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -10959,13 +10607,6 @@ ALTER TABLE modules.componente_curricular_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE componente_curricular_id_seq OWNED BY componente_curricular.id;
-
-
---
--- Name: componente_curricular_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('componente_curricular_id_seq', 2, true);
 
 
 --
@@ -11009,8 +10650,8 @@ ALTER TABLE modules.docente_licenciatura OWNER TO ieducar;
 CREATE SEQUENCE docente_licenciatura_id_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11021,13 +10662,6 @@ ALTER TABLE modules.docente_licenciatura_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE docente_licenciatura_id_seq OWNED BY docente_licenciatura.id;
-
-
---
--- Name: docente_licenciatura_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('docente_licenciatura_id_seq', 1, false);
 
 
 --
@@ -11116,9 +10750,10 @@ ALTER TABLE modules.educacenso_curso_superior OWNER TO ieducar;
 --
 
 CREATE SEQUENCE educacenso_curso_superior_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11129,13 +10764,6 @@ ALTER TABLE modules.educacenso_curso_superior_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE educacenso_curso_superior_id_seq OWNED BY educacenso_curso_superior.id;
-
-
---
--- Name: educacenso_curso_superior_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('educacenso_curso_superior_id_seq', 124, true);
 
 
 --
@@ -11162,9 +10790,10 @@ ALTER TABLE modules.educacenso_ies OWNER TO ieducar;
 --
 
 CREATE SEQUENCE educacenso_ies_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11178,11 +10807,36 @@ ALTER SEQUENCE educacenso_ies_id_seq OWNED BY educacenso_ies.id;
 
 
 --
--- Name: educacenso_ies_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+-- Name: empresa_transporte_escolar_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
 --
 
-SELECT pg_catalog.setval('educacenso_ies_id_seq', 5301, true);
+CREATE SEQUENCE empresa_transporte_escolar_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
+
+ALTER TABLE modules.empresa_transporte_escolar_seq OWNER TO ieducar;
+
+SET default_with_oids = true;
+
+--
+-- Name: empresa_transporte_escolar; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE empresa_transporte_escolar (
+    cod_empresa_transporte_escolar integer DEFAULT nextval('empresa_transporte_escolar_seq'::regclass) NOT NULL,
+    ref_idpes integer NOT NULL,
+    ref_resp_idpes integer NOT NULL,
+    observacao character varying(255)
+);
+
+
+ALTER TABLE modules.empresa_transporte_escolar OWNER TO ieducar;
+
+SET default_with_oids = false;
 
 --
 -- Name: falta_aluno; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -11202,9 +10856,10 @@ ALTER TABLE modules.falta_aluno OWNER TO ieducar;
 --
 
 CREATE SEQUENCE falta_aluno_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11215,13 +10870,6 @@ ALTER TABLE modules.falta_aluno_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE falta_aluno_id_seq OWNED BY falta_aluno.id;
-
-
---
--- Name: falta_aluno_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('falta_aluno_id_seq', 2, true);
 
 
 --
@@ -11244,9 +10892,10 @@ ALTER TABLE modules.falta_componente_curricular OWNER TO ieducar;
 --
 
 CREATE SEQUENCE falta_componente_curricular_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11257,13 +10906,6 @@ ALTER TABLE modules.falta_componente_curricular_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE falta_componente_curricular_id_seq OWNED BY falta_componente_curricular.id;
-
-
---
--- Name: falta_componente_curricular_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('falta_componente_curricular_id_seq', 1, true);
 
 
 --
@@ -11287,8 +10929,8 @@ ALTER TABLE modules.falta_geral OWNER TO ieducar;
 CREATE SEQUENCE falta_geral_id_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11299,13 +10941,6 @@ ALTER TABLE modules.falta_geral_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE falta_geral_id_seq OWNED BY falta_geral.id;
-
-
---
--- Name: falta_geral_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('falta_geral_id_seq', 1, false);
 
 
 --
@@ -11328,9 +10963,10 @@ ALTER TABLE modules.formula_media OWNER TO ieducar;
 --
 
 CREATE SEQUENCE formula_media_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11344,11 +10980,71 @@ ALTER SEQUENCE formula_media_id_seq OWNED BY formula_media.id;
 
 
 --
--- Name: formula_media_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+-- Name: itinerario_transporte_escolar_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
 --
 
-SELECT pg_catalog.setval('formula_media_id_seq', 2, true);
+CREATE SEQUENCE itinerario_transporte_escolar_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
+
+ALTER TABLE modules.itinerario_transporte_escolar_seq OWNER TO ieducar;
+
+SET default_with_oids = true;
+
+--
+-- Name: itinerario_transporte_escolar; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE itinerario_transporte_escolar (
+    cod_itinerario_transporte_escolar integer DEFAULT nextval('itinerario_transporte_escolar_seq'::regclass) NOT NULL,
+    ref_cod_rota_transporte_escolar integer NOT NULL,
+    seq integer NOT NULL,
+    ref_cod_ponto_transporte_escolar integer NOT NULL,
+    ref_cod_veiculo integer,
+    hora time without time zone,
+    tipo character(1) NOT NULL
+);
+
+
+ALTER TABLE modules.itinerario_transporte_escolar OWNER TO ieducar;
+
+--
+-- Name: motorista_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
+--
+
+CREATE SEQUENCE motorista_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE modules.motorista_seq OWNER TO ieducar;
+
+--
+-- Name: motorista; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE motorista (
+    cod_motorista integer DEFAULT nextval('motorista_seq'::regclass) NOT NULL,
+    ref_idpes integer NOT NULL,
+    cnh character varying(15) NOT NULL,
+    tipo_cnh character varying(2) NOT NULL,
+    dt_habilitacao date,
+    vencimento_cnh date,
+    ref_cod_empresa_transporte_escolar integer NOT NULL,
+    observacao character varying(255)
+);
+
+
+ALTER TABLE modules.motorista OWNER TO ieducar;
+
+SET default_with_oids = false;
 
 --
 -- Name: nota_aluno; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -11367,9 +11063,10 @@ ALTER TABLE modules.nota_aluno OWNER TO ieducar;
 --
 
 CREATE SEQUENCE nota_aluno_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11380,13 +11077,6 @@ ALTER TABLE modules.nota_aluno_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE nota_aluno_id_seq OWNED BY nota_aluno.id;
-
-
---
--- Name: nota_aluno_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('nota_aluno_id_seq', 2, true);
 
 
 --
@@ -11410,9 +11100,10 @@ ALTER TABLE modules.nota_componente_curricular OWNER TO ieducar;
 --
 
 CREATE SEQUENCE nota_componente_curricular_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11423,13 +11114,6 @@ ALTER TABLE modules.nota_componente_curricular_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE nota_componente_curricular_id_seq OWNED BY nota_componente_curricular.id;
-
-
---
--- Name: nota_componente_curricular_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('nota_componente_curricular_id_seq', 1, true);
 
 
 --
@@ -11467,8 +11151,8 @@ ALTER TABLE modules.parecer_aluno OWNER TO ieducar;
 CREATE SEQUENCE parecer_aluno_id_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11479,13 +11163,6 @@ ALTER TABLE modules.parecer_aluno_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE parecer_aluno_id_seq OWNED BY parecer_aluno.id;
-
-
---
--- Name: parecer_aluno_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('parecer_aluno_id_seq', 1, false);
 
 
 --
@@ -11510,8 +11187,8 @@ ALTER TABLE modules.parecer_componente_curricular OWNER TO ieducar;
 CREATE SEQUENCE parecer_componente_curricular_id_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11522,13 +11199,6 @@ ALTER TABLE modules.parecer_componente_curricular_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE parecer_componente_curricular_id_seq OWNED BY parecer_componente_curricular.id;
-
-
---
--- Name: parecer_componente_curricular_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('parecer_componente_curricular_id_seq', 1, false);
 
 
 --
@@ -11552,8 +11222,8 @@ ALTER TABLE modules.parecer_geral OWNER TO ieducar;
 CREATE SEQUENCE parecer_geral_id_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11567,11 +11237,64 @@ ALTER SEQUENCE parecer_geral_id_seq OWNED BY parecer_geral.id;
 
 
 --
--- Name: parecer_geral_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+-- Name: pessoa_transporte_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
 --
 
-SELECT pg_catalog.setval('parecer_geral_id_seq', 1, false);
+CREATE SEQUENCE pessoa_transporte_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
+
+ALTER TABLE modules.pessoa_transporte_seq OWNER TO ieducar;
+
+SET default_with_oids = true;
+
+--
+-- Name: pessoa_transporte; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE pessoa_transporte (
+    cod_pessoa_transporte integer DEFAULT nextval('pessoa_transporte_seq'::regclass) NOT NULL,
+    ref_idpes integer NOT NULL,
+    ref_cod_rota_transporte_escolar integer NOT NULL,
+    ref_cod_ponto_transporte_escolar integer,
+    ref_idpes_destino integer,
+    observacao character varying(255)
+);
+
+
+ALTER TABLE modules.pessoa_transporte OWNER TO ieducar;
+
+--
+-- Name: ponto_transporte_escolar_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
+--
+
+CREATE SEQUENCE ponto_transporte_escolar_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE modules.ponto_transporte_escolar_seq OWNER TO ieducar;
+
+--
+-- Name: ponto_transporte_escolar; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE ponto_transporte_escolar (
+    cod_ponto_transporte_escolar integer DEFAULT nextval('ponto_transporte_escolar_seq'::regclass) NOT NULL,
+    descricao character varying(70) NOT NULL
+);
+
+
+ALTER TABLE modules.ponto_transporte_escolar OWNER TO ieducar;
+
+SET default_with_oids = false;
 
 --
 -- Name: regra_avaliacao; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -11601,9 +11324,10 @@ ALTER TABLE modules.regra_avaliacao OWNER TO ieducar;
 --
 
 CREATE SEQUENCE regra_avaliacao_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11617,11 +11341,41 @@ ALTER SEQUENCE regra_avaliacao_id_seq OWNED BY regra_avaliacao.id;
 
 
 --
--- Name: regra_avaliacao_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+-- Name: rota_transporte_escolar_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
 --
 
-SELECT pg_catalog.setval('regra_avaliacao_id_seq', 2, true);
+CREATE SEQUENCE rota_transporte_escolar_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
+
+ALTER TABLE modules.rota_transporte_escolar_seq OWNER TO ieducar;
+
+SET default_with_oids = true;
+
+--
+-- Name: rota_transporte_escolar; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE rota_transporte_escolar (
+    cod_rota_transporte_escolar integer DEFAULT nextval('rota_transporte_escolar_seq'::regclass) NOT NULL,
+    ref_idpes_destino integer NOT NULL,
+    descricao character varying(50) NOT NULL,
+    ano integer NOT NULL,
+    tipo_rota character(1) NOT NULL,
+    km_pav double precision,
+    km_npav double precision,
+    ref_cod_empresa_transporte_escolar integer,
+    tercerizado character(1) NOT NULL
+);
+
+
+ALTER TABLE modules.rota_transporte_escolar OWNER TO ieducar;
+
+SET default_with_oids = false;
 
 --
 -- Name: tabela_arredondamento; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -11642,9 +11396,10 @@ ALTER TABLE modules.tabela_arredondamento OWNER TO ieducar;
 --
 
 CREATE SEQUENCE tabela_arredondamento_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11655,13 +11410,6 @@ ALTER TABLE modules.tabela_arredondamento_id_seq OWNER TO ieducar;
 --
 
 ALTER SEQUENCE tabela_arredondamento_id_seq OWNED BY tabela_arredondamento.id;
-
-
---
--- Name: tabela_arredondamento_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tabela_arredondamento_id_seq', 2, true);
 
 
 --
@@ -11685,9 +11433,10 @@ ALTER TABLE modules.tabela_arredondamento_valor OWNER TO ieducar;
 --
 
 CREATE SEQUENCE tabela_arredondamento_valor_id_seq
+    START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     NO MINVALUE
+    NO MAXVALUE
     CACHE 1;
 
 
@@ -11701,11 +11450,34 @@ ALTER SEQUENCE tabela_arredondamento_valor_id_seq OWNED BY tabela_arredondamento
 
 
 --
--- Name: tabela_arredondamento_valor_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+-- Name: tipo_veiculo_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
 --
 
-SELECT pg_catalog.setval('tabela_arredondamento_valor_id_seq', 26, true);
+CREATE SEQUENCE tipo_veiculo_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
+
+ALTER TABLE modules.tipo_veiculo_seq OWNER TO ieducar;
+
+SET default_with_oids = true;
+
+--
+-- Name: tipo_veiculo; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE tipo_veiculo (
+    cod_tipo_veiculo integer DEFAULT nextval('tipo_veiculo_seq'::regclass) NOT NULL,
+    descricao character varying(60)
+);
+
+
+ALTER TABLE modules.tipo_veiculo OWNER TO ieducar;
+
+SET default_with_oids = false;
 
 --
 -- Name: transporte_aluno; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -11722,6 +11494,50 @@ CREATE TABLE transporte_aluno (
 
 ALTER TABLE modules.transporte_aluno OWNER TO ieducar;
 
+--
+-- Name: veiculo_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
+--
+
+CREATE SEQUENCE veiculo_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE modules.veiculo_seq OWNER TO ieducar;
+
+SET default_with_oids = true;
+
+--
+-- Name: veiculo; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE veiculo (
+    cod_veiculo integer DEFAULT nextval('veiculo_seq'::regclass) NOT NULL,
+    descricao character varying(255) NOT NULL,
+    placa character varying(10) NOT NULL,
+    renavam character varying(15) NOT NULL,
+    chassi character varying(30),
+    marca character varying(50),
+    ano_fabricacao integer,
+    ano_modelo integer,
+    passageiros integer NOT NULL,
+    malha character(1) NOT NULL,
+    ref_cod_tipo_veiculo integer NOT NULL,
+    exclusivo_transporte_escolar character(1) NOT NULL,
+    adaptado_necessidades_especiais character(1) NOT NULL,
+    ativo character(1),
+    descricao_inativo character(155),
+    ref_cod_empresa_transporte_escolar integer NOT NULL,
+    ref_cod_motorista integer NOT NULL,
+    observacao character varying(255)
+);
+
+
+ALTER TABLE modules.veiculo OWNER TO ieducar;
+
 SET search_path = pmiacoes, pg_catalog;
 
 --
@@ -11731,21 +11547,12 @@ SET search_path = pmiacoes, pg_catalog;
 CREATE SEQUENCE acao_governo_cod_acao_governo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmiacoes.acao_governo_cod_acao_governo_seq OWNER TO ieducar;
-
---
--- Name: acao_governo_cod_acao_governo_seq; Type: SEQUENCE SET; Schema: pmiacoes; Owner: ieducar
---
-
-SELECT pg_catalog.setval('acao_governo_cod_acao_governo_seq', 1, false);
-
-
-SET default_with_oids = true;
 
 --
 -- Name: acao_governo; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -11777,19 +11584,12 @@ ALTER TABLE pmiacoes.acao_governo OWNER TO ieducar;
 CREATE SEQUENCE acao_governo_arquivo_cod_acao_governo_arquivo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmiacoes.acao_governo_arquivo_cod_acao_governo_arquivo_seq OWNER TO ieducar;
-
---
--- Name: acao_governo_arquivo_cod_acao_governo_arquivo_seq; Type: SEQUENCE SET; Schema: pmiacoes; Owner: ieducar
---
-
-SELECT pg_catalog.setval('acao_governo_arquivo_cod_acao_governo_arquivo_seq', 1, false);
-
 
 --
 -- Name: acao_governo_arquivo; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -11826,19 +11626,12 @@ ALTER TABLE pmiacoes.acao_governo_categoria OWNER TO ieducar;
 CREATE SEQUENCE acao_governo_foto_cod_acao_governo_foto_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmiacoes.acao_governo_foto_cod_acao_governo_foto_seq OWNER TO ieducar;
-
---
--- Name: acao_governo_foto_cod_acao_governo_foto_seq; Type: SEQUENCE SET; Schema: pmiacoes; Owner: ieducar
---
-
-SELECT pg_catalog.setval('acao_governo_foto_cod_acao_governo_foto_seq', 1, false);
-
 
 --
 -- Name: acao_governo_foto; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -11906,19 +11699,12 @@ ALTER TABLE pmiacoes.acao_governo_setor OWNER TO ieducar;
 CREATE SEQUENCE categoria_cod_categoria_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmiacoes.categoria_cod_categoria_seq OWNER TO ieducar;
-
---
--- Name: categoria_cod_categoria_seq; Type: SEQUENCE SET; Schema: pmiacoes; Owner: ieducar
---
-
-SELECT pg_catalog.setval('categoria_cod_categoria_seq', 1, false);
-
 
 --
 -- Name: categoria; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -11959,19 +11745,12 @@ SET search_path = pmicontrolesis, pg_catalog;
 CREATE SEQUENCE acontecimento_cod_acontecimento_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.acontecimento_cod_acontecimento_seq OWNER TO ieducar;
-
---
--- Name: acontecimento_cod_acontecimento_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('acontecimento_cod_acontecimento_seq', 1, false);
-
 
 --
 -- Name: acontecimento; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -11991,7 +11770,7 @@ CREATE TABLE acontecimento (
     data_cadastro timestamp without time zone NOT NULL,
     data_exclusao timestamp without time zone,
     ativo smallint DEFAULT (1)::smallint,
-    "local" character varying,
+    local character varying,
     contato character varying,
     link character varying
 );
@@ -12006,19 +11785,12 @@ ALTER TABLE pmicontrolesis.acontecimento OWNER TO ieducar;
 CREATE SEQUENCE artigo_cod_artigo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.artigo_cod_artigo_seq OWNER TO ieducar;
-
---
--- Name: artigo_cod_artigo_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('artigo_cod_artigo_seq', 1, false);
-
 
 --
 -- Name: artigo; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12042,19 +11814,12 @@ ALTER TABLE pmicontrolesis.artigo OWNER TO ieducar;
 CREATE SEQUENCE foto_evento_cod_foto_evento_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.foto_evento_cod_foto_evento_seq OWNER TO ieducar;
-
---
--- Name: foto_evento_cod_foto_evento_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('foto_evento_cod_foto_evento_seq', 1, false);
-
 
 --
 -- Name: foto_evento; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12082,19 +11847,12 @@ ALTER TABLE pmicontrolesis.foto_evento OWNER TO ieducar;
 CREATE SEQUENCE foto_vinc_cod_foto_vinc_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.foto_vinc_cod_foto_vinc_seq OWNER TO ieducar;
-
---
--- Name: foto_vinc_cod_foto_vinc_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('foto_vinc_cod_foto_vinc_seq', 1, false);
-
 
 SET default_with_oids = false;
 
@@ -12118,19 +11876,12 @@ ALTER TABLE pmicontrolesis.foto_vinc OWNER TO ieducar;
 CREATE SEQUENCE itinerario_cod_itinerario_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.itinerario_cod_itinerario_seq OWNER TO ieducar;
-
---
--- Name: itinerario_cod_itinerario_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('itinerario_cod_itinerario_seq', 1, false);
-
 
 SET default_with_oids = true;
 
@@ -12161,20 +11912,14 @@ ALTER TABLE pmicontrolesis.itinerario OWNER TO ieducar;
 --
 
 CREATE SEQUENCE menu_cod_menu_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.menu_cod_menu_seq OWNER TO ieducar;
-
---
--- Name: menu_cod_menu_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('menu_cod_menu_seq', 20709, true);
-
 
 --
 -- Name: menu; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12203,19 +11948,12 @@ ALTER TABLE pmicontrolesis.menu OWNER TO ieducar;
 CREATE SEQUENCE menu_portal_cod_menu_portal_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.menu_portal_cod_menu_portal_seq OWNER TO ieducar;
-
---
--- Name: menu_portal_cod_menu_portal_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('menu_portal_cod_menu_portal_seq', 1, false);
-
 
 --
 -- Name: menu_portal; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12247,19 +11985,12 @@ ALTER TABLE pmicontrolesis.menu_portal OWNER TO ieducar;
 CREATE SEQUENCE portais_cod_portais_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.portais_cod_portais_seq OWNER TO ieducar;
-
---
--- Name: portais_cod_portais_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('portais_cod_portais_seq', 1, false);
-
 
 --
 -- Name: portais; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12288,19 +12019,12 @@ ALTER TABLE pmicontrolesis.portais OWNER TO ieducar;
 CREATE SEQUENCE servicos_cod_servicos_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.servicos_cod_servicos_seq OWNER TO ieducar;
-
---
--- Name: servicos_cod_servicos_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('servicos_cod_servicos_seq', 1, false);
-
 
 --
 -- Name: servicos; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12329,19 +12053,12 @@ ALTER TABLE pmicontrolesis.servicos OWNER TO ieducar;
 CREATE SEQUENCE sistema_cod_sistema_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.sistema_cod_sistema_seq OWNER TO ieducar;
-
---
--- Name: sistema_cod_sistema_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('sistema_cod_sistema_seq', 1, false);
-
 
 --
 -- Name: sistema; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12367,19 +12084,12 @@ ALTER TABLE pmicontrolesis.sistema OWNER TO ieducar;
 CREATE SEQUENCE submenu_portal_cod_submenu_portal_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.submenu_portal_cod_submenu_portal_seq OWNER TO ieducar;
-
---
--- Name: submenu_portal_cod_submenu_portal_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('submenu_portal_cod_submenu_portal_seq', 1, false);
-
 
 --
 -- Name: submenu_portal; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12410,19 +12120,12 @@ ALTER TABLE pmicontrolesis.submenu_portal OWNER TO ieducar;
 CREATE SEQUENCE telefones_cod_telefones_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.telefones_cod_telefones_seq OWNER TO ieducar;
-
---
--- Name: telefones_cod_telefones_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('telefones_cod_telefones_seq', 1, false);
-
 
 --
 -- Name: telefones; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12449,19 +12152,12 @@ ALTER TABLE pmicontrolesis.telefones OWNER TO ieducar;
 CREATE SEQUENCE tipo_acontecimento_cod_tipo_acontecimento_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.tipo_acontecimento_cod_tipo_acontecimento_seq OWNER TO ieducar;
-
---
--- Name: tipo_acontecimento_cod_tipo_acontecimento_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tipo_acontecimento_cod_tipo_acontecimento_seq', 1, false);
-
 
 --
 -- Name: tipo_acontecimento; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12488,19 +12184,12 @@ ALTER TABLE pmicontrolesis.tipo_acontecimento OWNER TO ieducar;
 CREATE SEQUENCE topo_portal_cod_topo_portal_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.topo_portal_cod_topo_portal_seq OWNER TO ieducar;
-
---
--- Name: topo_portal_cod_topo_portal_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('topo_portal_cod_topo_portal_seq', 1, false);
-
 
 --
 -- Name: topo_portal; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12527,20 +12216,14 @@ ALTER TABLE pmicontrolesis.topo_portal OWNER TO ieducar;
 --
 
 CREATE SEQUENCE tutormenu_cod_tutormenu_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmicontrolesis.tutormenu_cod_tutormenu_seq OWNER TO ieducar;
-
---
--- Name: tutormenu_cod_tutormenu_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tutormenu_cod_tutormenu_seq', 16, true);
-
 
 --
 -- Name: tutormenu; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -12563,19 +12246,12 @@ SET search_path = pmidrh, pg_catalog;
 CREATE SEQUENCE diaria_cod_diaria_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmidrh.diaria_cod_diaria_seq OWNER TO ieducar;
-
---
--- Name: diaria_cod_diaria_seq; Type: SEQUENCE SET; Schema: pmidrh; Owner: ieducar
---
-
-SELECT pg_catalog.setval('diaria_cod_diaria_seq', 1, false);
-
 
 --
 -- Name: diaria; Type: TABLE; Schema: pmidrh; Owner: ieducar; Tablespace: 
@@ -12616,19 +12292,12 @@ ALTER TABLE pmidrh.diaria OWNER TO ieducar;
 CREATE SEQUENCE diaria_grupo_cod_diaria_grupo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmidrh.diaria_grupo_cod_diaria_grupo_seq OWNER TO ieducar;
-
---
--- Name: diaria_grupo_cod_diaria_grupo_seq; Type: SEQUENCE SET; Schema: pmidrh; Owner: ieducar
---
-
-SELECT pg_catalog.setval('diaria_grupo_cod_diaria_grupo_seq', 1, false);
-
 
 --
 -- Name: diaria_grupo; Type: TABLE; Schema: pmidrh; Owner: ieducar; Tablespace: 
@@ -12649,19 +12318,12 @@ ALTER TABLE pmidrh.diaria_grupo OWNER TO ieducar;
 CREATE SEQUENCE diaria_valores_cod_diaria_valores_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmidrh.diaria_valores_cod_diaria_valores_seq OWNER TO ieducar;
-
---
--- Name: diaria_valores_cod_diaria_valores_seq; Type: SEQUENCE SET; Schema: pmidrh; Owner: ieducar
---
-
-SELECT pg_catalog.setval('diaria_valores_cod_diaria_valores_seq', 1, false);
-
 
 --
 -- Name: diaria_valores; Type: TABLE; Schema: pmidrh; Owner: ieducar; Tablespace: 
@@ -12689,19 +12351,12 @@ ALTER TABLE pmidrh.diaria_valores OWNER TO ieducar;
 CREATE SEQUENCE setor_cod_setor_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmidrh.setor_cod_setor_seq OWNER TO ieducar;
-
---
--- Name: setor_cod_setor_seq; Type: SEQUENCE SET; Schema: pmidrh; Owner: ieducar
---
-
-SELECT pg_catalog.setval('setor_cod_setor_seq', 1, false);
-
 
 --
 -- Name: setor; Type: TABLE; Schema: pmidrh; Owner: ieducar; Tablespace: 
@@ -12736,19 +12391,12 @@ SET search_path = pmieducar, pg_catalog;
 CREATE SEQUENCE acervo_cod_acervo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.acervo_cod_acervo_seq OWNER TO ieducar;
-
---
--- Name: acervo_cod_acervo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('acervo_cod_acervo_seq', 1, false);
-
 
 --
 -- Name: acervo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -12815,19 +12463,12 @@ ALTER TABLE pmieducar.acervo_acervo_autor OWNER TO ieducar;
 CREATE SEQUENCE acervo_assunto_cod_acervo_assunto_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.acervo_assunto_cod_acervo_assunto_seq OWNER TO ieducar;
-
---
--- Name: acervo_assunto_cod_acervo_assunto_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('acervo_assunto_cod_acervo_assunto_seq', 1, false);
-
 
 --
 -- Name: acervo_assunto; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -12855,19 +12496,12 @@ ALTER TABLE pmieducar.acervo_assunto OWNER TO ieducar;
 CREATE SEQUENCE acervo_autor_cod_acervo_autor_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.acervo_autor_cod_acervo_autor_seq OWNER TO ieducar;
-
---
--- Name: acervo_autor_cod_acervo_autor_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('acervo_autor_cod_acervo_autor_seq', 1, false);
-
 
 --
 -- Name: acervo_autor; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -12895,19 +12529,12 @@ ALTER TABLE pmieducar.acervo_autor OWNER TO ieducar;
 CREATE SEQUENCE acervo_colecao_cod_acervo_colecao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.acervo_colecao_cod_acervo_colecao_seq OWNER TO ieducar;
-
---
--- Name: acervo_colecao_cod_acervo_colecao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('acervo_colecao_cod_acervo_colecao_seq', 1, false);
-
 
 --
 -- Name: acervo_colecao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -12935,19 +12562,12 @@ ALTER TABLE pmieducar.acervo_colecao OWNER TO ieducar;
 CREATE SEQUENCE acervo_editora_cod_acervo_editora_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.acervo_editora_cod_acervo_editora_seq OWNER TO ieducar;
-
---
--- Name: acervo_editora_cod_acervo_editora_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('acervo_editora_cod_acervo_editora_seq', 1, false);
-
 
 --
 -- Name: acervo_editora; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -12983,19 +12603,12 @@ ALTER TABLE pmieducar.acervo_editora OWNER TO ieducar;
 CREATE SEQUENCE acervo_idioma_cod_acervo_idioma_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.acervo_idioma_cod_acervo_idioma_seq OWNER TO ieducar;
-
---
--- Name: acervo_idioma_cod_acervo_idioma_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('acervo_idioma_cod_acervo_idioma_seq', 1, false);
-
 
 --
 -- Name: acervo_idioma; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13020,20 +12633,14 @@ ALTER TABLE pmieducar.acervo_idioma OWNER TO ieducar;
 --
 
 CREATE SEQUENCE aluno_cod_aluno_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.aluno_cod_aluno_seq OWNER TO ieducar;
-
---
--- Name: aluno_cod_aluno_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('aluno_cod_aluno_seq', 2, true);
-
 
 --
 -- Name: aluno; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13067,19 +12674,12 @@ ALTER TABLE pmieducar.aluno OWNER TO ieducar;
 CREATE SEQUENCE aluno_beneficio_cod_aluno_beneficio_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.aluno_beneficio_cod_aluno_beneficio_seq OWNER TO ieducar;
-
---
--- Name: aluno_beneficio_cod_aluno_beneficio_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('aluno_beneficio_cod_aluno_beneficio_seq', 1, false);
-
 
 --
 -- Name: aluno_beneficio; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13142,19 +12742,12 @@ ALTER TABLE pmieducar.avaliacao_desempenho OWNER TO ieducar;
 CREATE SEQUENCE biblioteca_cod_biblioteca_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.biblioteca_cod_biblioteca_seq OWNER TO ieducar;
-
---
--- Name: biblioteca_cod_biblioteca_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('biblioteca_cod_biblioteca_seq', 1, false);
-
 
 --
 -- Name: biblioteca; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13198,19 +12791,12 @@ ALTER TABLE pmieducar.biblioteca_dia OWNER TO ieducar;
 CREATE SEQUENCE biblioteca_feriados_cod_feriado_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.biblioteca_feriados_cod_feriado_seq OWNER TO ieducar;
-
---
--- Name: biblioteca_feriados_cod_feriado_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('biblioteca_feriados_cod_feriado_seq', 1, false);
-
 
 --
 -- Name: biblioteca_feriados; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13249,19 +12835,12 @@ ALTER TABLE pmieducar.biblioteca_usuario OWNER TO ieducar;
 CREATE SEQUENCE calendario_ano_letivo_cod_calendario_ano_letivo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.calendario_ano_letivo_cod_calendario_ano_letivo_seq OWNER TO ieducar;
-
---
--- Name: calendario_ano_letivo_cod_calendario_ano_letivo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('calendario_ano_letivo_cod_calendario_ano_letivo_seq', 1, false);
-
 
 --
 -- Name: calendario_ano_letivo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13288,19 +12867,12 @@ ALTER TABLE pmieducar.calendario_ano_letivo OWNER TO ieducar;
 CREATE SEQUENCE calendario_anotacao_cod_calendario_anotacao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.calendario_anotacao_cod_calendario_anotacao_seq OWNER TO ieducar;
-
---
--- Name: calendario_anotacao_cod_calendario_anotacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('calendario_anotacao_cod_calendario_anotacao_seq', 1, false);
-
 
 --
 -- Name: calendario_anotacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13361,19 +12933,12 @@ ALTER TABLE pmieducar.calendario_dia_anotacao OWNER TO ieducar;
 CREATE SEQUENCE calendario_dia_motivo_cod_calendario_dia_motivo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.calendario_dia_motivo_cod_calendario_dia_motivo_seq OWNER TO ieducar;
-
---
--- Name: calendario_dia_motivo_cod_calendario_dia_motivo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('calendario_dia_motivo_cod_calendario_dia_motivo_seq', 1, false);
-
 
 --
 -- Name: calendario_dia_motivo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13403,19 +12968,12 @@ ALTER TABLE pmieducar.calendario_dia_motivo OWNER TO ieducar;
 CREATE SEQUENCE categoria_nivel_cod_categoria_nivel_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.categoria_nivel_cod_categoria_nivel_seq OWNER TO ieducar;
-
---
--- Name: categoria_nivel_cod_categoria_nivel_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('categoria_nivel_cod_categoria_nivel_seq', 1, false);
-
 
 SET default_with_oids = false;
 
@@ -13443,19 +13001,12 @@ ALTER TABLE pmieducar.categoria_nivel OWNER TO ieducar;
 CREATE SEQUENCE cliente_cod_cliente_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.cliente_cod_cliente_seq OWNER TO ieducar;
-
---
--- Name: cliente_cod_cliente_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('cliente_cod_cliente_seq', 1, false);
-
 
 SET default_with_oids = true;
 
@@ -13468,7 +13019,7 @@ CREATE TABLE cliente (
     ref_usuario_exc integer,
     ref_usuario_cad integer NOT NULL,
     ref_idpes integer NOT NULL,
-    "login" integer,
+    login integer,
     senha character varying(255),
     data_cadastro timestamp without time zone NOT NULL,
     data_exclusao timestamp without time zone,
@@ -13503,19 +13054,12 @@ ALTER TABLE pmieducar.cliente_suspensao OWNER TO ieducar;
 CREATE SEQUENCE cliente_tipo_cod_cliente_tipo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.cliente_tipo_cod_cliente_tipo_seq OWNER TO ieducar;
-
---
--- Name: cliente_tipo_cod_cliente_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('cliente_tipo_cod_cliente_tipo_seq', 1, false);
-
 
 --
 -- Name: cliente_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13578,19 +13122,12 @@ ALTER TABLE pmieducar.cliente_tipo_exemplar_tipo OWNER TO ieducar;
 CREATE SEQUENCE coffebreak_tipo_cod_coffebreak_tipo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.coffebreak_tipo_cod_coffebreak_tipo_seq OWNER TO ieducar;
-
---
--- Name: coffebreak_tipo_cod_coffebreak_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('coffebreak_tipo_cod_coffebreak_tipo_seq', 1, false);
-
 
 --
 -- Name: coffebreak_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13616,20 +13153,14 @@ ALTER TABLE pmieducar.coffebreak_tipo OWNER TO ieducar;
 --
 
 CREATE SEQUENCE curso_cod_curso_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.curso_cod_curso_seq OWNER TO ieducar;
-
---
--- Name: curso_cod_curso_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('curso_cod_curso_seq', 1, true);
-
 
 --
 -- Name: curso; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13668,19 +13199,12 @@ ALTER TABLE pmieducar.curso OWNER TO ieducar;
 CREATE SEQUENCE disciplina_cod_disciplina_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.disciplina_cod_disciplina_seq OWNER TO ieducar;
-
---
--- Name: disciplina_cod_disciplina_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('disciplina_cod_disciplina_seq', 1, false);
-
 
 --
 -- Name: disciplina; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13727,19 +13251,12 @@ ALTER TABLE pmieducar.disciplina_serie OWNER TO ieducar;
 CREATE SEQUENCE disciplina_topico_cod_disciplina_topico_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.disciplina_topico_cod_disciplina_topico_seq OWNER TO ieducar;
-
---
--- Name: disciplina_topico_cod_disciplina_topico_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('disciplina_topico_cod_disciplina_topico_seq', 1, false);
-
 
 SET default_with_oids = true;
 
@@ -13790,20 +13307,14 @@ ALTER TABLE pmieducar.dispensa_disciplina OWNER TO ieducar;
 --
 
 CREATE SEQUENCE escola_cod_escola_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.escola_cod_escola_seq OWNER TO ieducar;
-
---
--- Name: escola_cod_escola_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('escola_cod_escola_seq', 1, true);
-
 
 SET default_with_oids = true;
 
@@ -13898,20 +13409,14 @@ ALTER TABLE pmieducar.escola_curso OWNER TO ieducar;
 --
 
 CREATE SEQUENCE escola_localizacao_cod_escola_localizacao_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.escola_localizacao_cod_escola_localizacao_seq OWNER TO ieducar;
-
---
--- Name: escola_localizacao_cod_escola_localizacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('escola_localizacao_cod_escola_localizacao_seq', 3, true);
-
 
 --
 -- Name: escola_localizacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -13936,20 +13441,14 @@ ALTER TABLE pmieducar.escola_localizacao OWNER TO ieducar;
 --
 
 CREATE SEQUENCE escola_rede_ensino_cod_escola_rede_ensino_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.escola_rede_ensino_cod_escola_rede_ensino_seq OWNER TO ieducar;
-
---
--- Name: escola_rede_ensino_cod_escola_rede_ensino_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('escola_rede_ensino_cod_escola_rede_ensino_seq', 1, true);
-
 
 --
 -- Name: escola_rede_ensino; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14016,19 +13515,12 @@ ALTER TABLE pmieducar.escola_serie_disciplina OWNER TO ieducar;
 CREATE SEQUENCE exemplar_cod_exemplar_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.exemplar_cod_exemplar_seq OWNER TO ieducar;
-
---
--- Name: exemplar_cod_exemplar_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('exemplar_cod_exemplar_seq', 1, false);
-
 
 SET default_with_oids = true;
 
@@ -14063,19 +13555,12 @@ ALTER TABLE pmieducar.exemplar OWNER TO ieducar;
 CREATE SEQUENCE exemplar_emprestimo_cod_emprestimo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.exemplar_emprestimo_cod_emprestimo_seq OWNER TO ieducar;
-
---
--- Name: exemplar_emprestimo_cod_emprestimo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('exemplar_emprestimo_cod_emprestimo_seq', 1, false);
-
 
 --
 -- Name: exemplar_emprestimo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14102,19 +13587,12 @@ ALTER TABLE pmieducar.exemplar_emprestimo OWNER TO ieducar;
 CREATE SEQUENCE exemplar_tipo_cod_exemplar_tipo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.exemplar_tipo_cod_exemplar_tipo_seq OWNER TO ieducar;
-
---
--- Name: exemplar_tipo_cod_exemplar_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('exemplar_tipo_cod_exemplar_tipo_seq', 1, false);
-
 
 --
 -- Name: exemplar_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14142,19 +13620,12 @@ ALTER TABLE pmieducar.exemplar_tipo OWNER TO ieducar;
 CREATE SEQUENCE falta_aluno_cod_falta_aluno_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.falta_aluno_cod_falta_aluno_seq OWNER TO ieducar;
-
---
--- Name: falta_aluno_cod_falta_aluno_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('falta_aluno_cod_falta_aluno_seq', 1, false);
-
 
 SET default_with_oids = false;
 
@@ -14188,19 +13659,12 @@ ALTER TABLE pmieducar.falta_aluno OWNER TO ieducar;
 CREATE SEQUENCE falta_atraso_cod_falta_atraso_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.falta_atraso_cod_falta_atraso_seq OWNER TO ieducar;
-
---
--- Name: falta_atraso_cod_falta_atraso_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('falta_atraso_cod_falta_atraso_seq', 1, false);
-
 
 SET default_with_oids = true;
 
@@ -14235,19 +13699,12 @@ ALTER TABLE pmieducar.falta_atraso OWNER TO ieducar;
 CREATE SEQUENCE falta_atraso_compensado_cod_compensado_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.falta_atraso_compensado_cod_compensado_seq OWNER TO ieducar;
-
---
--- Name: falta_atraso_compensado_cod_compensado_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('falta_atraso_compensado_cod_compensado_seq', 1, false);
-
 
 --
 -- Name: falta_atraso_compensado; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14277,19 +13734,12 @@ ALTER TABLE pmieducar.falta_atraso_compensado OWNER TO ieducar;
 CREATE SEQUENCE faltas_sequencial_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.faltas_sequencial_seq OWNER TO ieducar;
-
---
--- Name: faltas_sequencial_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('faltas_sequencial_seq', 1, false);
-
 
 SET default_with_oids = false;
 
@@ -14315,19 +13765,12 @@ ALTER TABLE pmieducar.faltas OWNER TO ieducar;
 CREATE SEQUENCE fonte_cod_fonte_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.fonte_cod_fonte_seq OWNER TO ieducar;
-
---
--- Name: fonte_cod_fonte_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('fonte_cod_fonte_seq', 1, false);
-
 
 SET default_with_oids = true;
 
@@ -14357,19 +13800,12 @@ ALTER TABLE pmieducar.fonte OWNER TO ieducar;
 CREATE SEQUENCE funcao_cod_funcao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.funcao_cod_funcao_seq OWNER TO ieducar;
-
---
--- Name: funcao_cod_funcao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('funcao_cod_funcao_seq', 1, false);
-
 
 --
 -- Name: funcao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14398,19 +13834,12 @@ ALTER TABLE pmieducar.funcao OWNER TO ieducar;
 CREATE SEQUENCE habilitacao_cod_habilitacao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.habilitacao_cod_habilitacao_seq OWNER TO ieducar;
-
---
--- Name: habilitacao_cod_habilitacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('habilitacao_cod_habilitacao_seq', 1, false);
-
 
 --
 -- Name: habilitacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14524,19 +13953,12 @@ ALTER TABLE pmieducar.historico_escolar OWNER TO ieducar;
 CREATE SEQUENCE historico_grade_curso_seq
     START WITH 3
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.historico_grade_curso_seq OWNER TO ieducar;
-
---
--- Name: historico_grade_curso_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('historico_grade_curso_seq', 3, false);
-
 
 --
 -- Name: historico_grade_curso; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14559,20 +13981,14 @@ ALTER TABLE pmieducar.historico_grade_curso OWNER TO ieducar;
 --
 
 CREATE SEQUENCE infra_comodo_funcao_cod_infra_comodo_funcao_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.infra_comodo_funcao_cod_infra_comodo_funcao_seq OWNER TO ieducar;
-
---
--- Name: infra_comodo_funcao_cod_infra_comodo_funcao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('infra_comodo_funcao_cod_infra_comodo_funcao_seq', 1, true);
-
 
 --
 -- Name: infra_comodo_funcao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14598,20 +14014,14 @@ ALTER TABLE pmieducar.infra_comodo_funcao OWNER TO ieducar;
 --
 
 CREATE SEQUENCE infra_predio_cod_infra_predio_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.infra_predio_cod_infra_predio_seq OWNER TO ieducar;
-
---
--- Name: infra_predio_cod_infra_predio_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('infra_predio_cod_infra_predio_seq', 1, true);
-
 
 --
 -- Name: infra_predio; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14638,20 +14048,14 @@ ALTER TABLE pmieducar.infra_predio OWNER TO ieducar;
 --
 
 CREATE SEQUENCE infra_predio_comodo_cod_infra_predio_comodo_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.infra_predio_comodo_cod_infra_predio_comodo_seq OWNER TO ieducar;
-
---
--- Name: infra_predio_comodo_cod_infra_predio_comodo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('infra_predio_comodo_cod_infra_predio_comodo_seq', 1, true);
-
 
 --
 -- Name: infra_predio_comodo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14679,20 +14083,14 @@ ALTER TABLE pmieducar.infra_predio_comodo OWNER TO ieducar;
 --
 
 CREATE SEQUENCE instituicao_cod_instituicao_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.instituicao_cod_instituicao_seq OWNER TO ieducar;
-
---
--- Name: instituicao_cod_instituicao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('instituicao_cod_instituicao_seq', 1, true);
-
 
 --
 -- Name: instituicao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14729,19 +14127,12 @@ ALTER TABLE pmieducar.instituicao OWNER TO ieducar;
 CREATE SEQUENCE material_didatico_cod_material_didatico_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.material_didatico_cod_material_didatico_seq OWNER TO ieducar;
-
---
--- Name: material_didatico_cod_material_didatico_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('material_didatico_cod_material_didatico_seq', 1, false);
-
 
 --
 -- Name: material_didatico; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14771,19 +14162,12 @@ ALTER TABLE pmieducar.material_didatico OWNER TO ieducar;
 CREATE SEQUENCE material_tipo_cod_material_tipo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.material_tipo_cod_material_tipo_seq OWNER TO ieducar;
-
---
--- Name: material_tipo_cod_material_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('material_tipo_cod_material_tipo_seq', 1, false);
-
 
 --
 -- Name: material_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14809,20 +14193,14 @@ ALTER TABLE pmieducar.material_tipo OWNER TO ieducar;
 --
 
 CREATE SEQUENCE matricula_cod_matricula_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.matricula_cod_matricula_seq OWNER TO ieducar;
-
---
--- Name: matricula_cod_matricula_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('matricula_cod_matricula_seq', 2, true);
-
 
 --
 -- Name: matricula; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14849,7 +14227,7 @@ CREATE TABLE matricula (
     ref_cod_curso integer,
     matricula_transferencia boolean DEFAULT false NOT NULL,
     semestre smallint,
-    observacao text default ''
+    observacao text DEFAULT ''::text
 );
 
 
@@ -14862,19 +14240,12 @@ ALTER TABLE pmieducar.matricula OWNER TO ieducar;
 CREATE SEQUENCE matricula_excessao_cod_aluno_excessao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.matricula_excessao_cod_aluno_excessao_seq OWNER TO ieducar;
-
---
--- Name: matricula_excessao_cod_aluno_excessao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('matricula_excessao_cod_aluno_excessao_seq', 1, false);
-
 
 SET default_with_oids = false;
 
@@ -14958,20 +14329,14 @@ ALTER TABLE pmieducar.menu_tipo_usuario OWNER TO ieducar;
 --
 
 CREATE SEQUENCE modulo_cod_modulo_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.modulo_cod_modulo_seq OWNER TO ieducar;
-
---
--- Name: modulo_cod_modulo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('modulo_cod_modulo_seq', 1, true);
-
 
 --
 -- Name: modulo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15001,19 +14366,12 @@ ALTER TABLE pmieducar.modulo OWNER TO ieducar;
 CREATE SEQUENCE motivo_afastamento_cod_motivo_afastamento_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.motivo_afastamento_cod_motivo_afastamento_seq OWNER TO ieducar;
-
---
--- Name: motivo_afastamento_cod_motivo_afastamento_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('motivo_afastamento_cod_motivo_afastamento_seq', 1, false);
-
 
 --
 -- Name: motivo_afastamento; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15041,19 +14399,12 @@ ALTER TABLE pmieducar.motivo_afastamento OWNER TO ieducar;
 CREATE SEQUENCE motivo_baixa_cod_motivo_baixa_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.motivo_baixa_cod_motivo_baixa_seq OWNER TO ieducar;
-
---
--- Name: motivo_baixa_cod_motivo_baixa_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('motivo_baixa_cod_motivo_baixa_seq', 1, false);
-
 
 --
 -- Name: motivo_baixa; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15081,19 +14432,12 @@ ALTER TABLE pmieducar.motivo_baixa OWNER TO ieducar;
 CREATE SEQUENCE motivo_suspensao_cod_motivo_suspensao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.motivo_suspensao_cod_motivo_suspensao_seq OWNER TO ieducar;
-
---
--- Name: motivo_suspensao_cod_motivo_suspensao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('motivo_suspensao_cod_motivo_suspensao_seq', 1, false);
-
 
 --
 -- Name: motivo_suspensao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15121,19 +14465,12 @@ ALTER TABLE pmieducar.motivo_suspensao OWNER TO ieducar;
 CREATE SEQUENCE nivel_cod_nivel_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.nivel_cod_nivel_seq OWNER TO ieducar;
-
---
--- Name: nivel_cod_nivel_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('nivel_cod_nivel_seq', 1, false);
-
 
 SET default_with_oids = false;
 
@@ -15162,20 +14499,14 @@ ALTER TABLE pmieducar.nivel OWNER TO ieducar;
 --
 
 CREATE SEQUENCE nivel_ensino_cod_nivel_ensino_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.nivel_ensino_cod_nivel_ensino_seq OWNER TO ieducar;
-
---
--- Name: nivel_ensino_cod_nivel_ensino_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('nivel_ensino_cod_nivel_ensino_seq', 1, true);
-
 
 SET default_with_oids = true;
 
@@ -15205,19 +14536,12 @@ ALTER TABLE pmieducar.nivel_ensino OWNER TO ieducar;
 CREATE SEQUENCE nota_aluno_cod_nota_aluno_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.nota_aluno_cod_nota_aluno_seq OWNER TO ieducar;
-
---
--- Name: nota_aluno_cod_nota_aluno_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('nota_aluno_cod_nota_aluno_seq', 1, false);
-
 
 SET default_with_oids = false;
 
@@ -15253,19 +14577,12 @@ ALTER TABLE pmieducar.nota_aluno OWNER TO ieducar;
 CREATE SEQUENCE operador_cod_operador_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.operador_cod_operador_seq OWNER TO ieducar;
-
---
--- Name: operador_cod_operador_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('operador_cod_operador_seq', 1, false);
-
 
 SET default_with_oids = true;
 
@@ -15295,19 +14612,12 @@ ALTER TABLE pmieducar.operador OWNER TO ieducar;
 CREATE SEQUENCE pagamento_multa_cod_pagamento_multa_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.pagamento_multa_cod_pagamento_multa_seq OWNER TO ieducar;
-
---
--- Name: pagamento_multa_cod_pagamento_multa_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('pagamento_multa_cod_pagamento_multa_seq', 1, false);
-
 
 --
 -- Name: pagamento_multa; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15332,19 +14642,12 @@ ALTER TABLE pmieducar.pagamento_multa OWNER TO ieducar;
 CREATE SEQUENCE pre_requisito_cod_pre_requisito_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.pre_requisito_cod_pre_requisito_seq OWNER TO ieducar;
-
---
--- Name: pre_requisito_cod_pre_requisito_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('pre_requisito_cod_pre_requisito_seq', 1, false);
-
 
 --
 -- Name: pre_requisito; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15373,19 +14676,12 @@ ALTER TABLE pmieducar.pre_requisito OWNER TO ieducar;
 CREATE SEQUENCE quadro_horario_cod_quadro_horario_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.quadro_horario_cod_quadro_horario_seq OWNER TO ieducar;
-
---
--- Name: quadro_horario_cod_quadro_horario_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('quadro_horario_cod_quadro_horario_seq', 1, false);
-
 
 --
 -- Name: quadro_horario; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15460,19 +14756,12 @@ ALTER TABLE pmieducar.quadro_horario_horarios_aux OWNER TO ieducar;
 CREATE SEQUENCE religiao_cod_religiao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.religiao_cod_religiao_seq OWNER TO ieducar;
-
---
--- Name: religiao_cod_religiao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('religiao_cod_religiao_seq', 1, false);
-
 
 SET default_with_oids = true;
 
@@ -15500,19 +14789,12 @@ ALTER TABLE pmieducar.religiao OWNER TO ieducar;
 CREATE SEQUENCE reserva_vaga_cod_reserva_vaga_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.reserva_vaga_cod_reserva_vaga_seq OWNER TO ieducar;
-
---
--- Name: reserva_vaga_cod_reserva_vaga_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('reserva_vaga_cod_reserva_vaga_seq', 1, false);
-
 
 --
 -- Name: reserva_vaga; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15542,19 +14824,12 @@ ALTER TABLE pmieducar.reserva_vaga OWNER TO ieducar;
 CREATE SEQUENCE reservas_cod_reserva_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.reservas_cod_reserva_seq OWNER TO ieducar;
-
---
--- Name: reservas_cod_reserva_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('reservas_cod_reserva_seq', 1, false);
-
 
 --
 -- Name: reservas; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15597,20 +14872,14 @@ ALTER TABLE pmieducar.sequencia_serie OWNER TO ieducar;
 --
 
 CREATE SEQUENCE serie_cod_serie_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.serie_cod_serie_seq OWNER TO ieducar;
-
---
--- Name: serie_cod_serie_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('serie_cod_serie_seq', 2, true);
-
 
 --
 -- Name: serie; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15700,19 +14969,12 @@ ALTER TABLE pmieducar.servidor_afastamento OWNER TO ieducar;
 CREATE SEQUENCE servidor_alocacao_cod_servidor_alocacao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.servidor_alocacao_cod_servidor_alocacao_seq OWNER TO ieducar;
-
---
--- Name: servidor_alocacao_cod_servidor_alocacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('servidor_alocacao_cod_servidor_alocacao_seq', 1, false);
-
 
 --
 -- Name: servidor_alocacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15745,19 +15007,12 @@ ALTER TABLE pmieducar.servidor_alocacao OWNER TO ieducar;
 CREATE SEQUENCE servidor_curso_cod_servidor_curso_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.servidor_curso_cod_servidor_curso_seq OWNER TO ieducar;
-
---
--- Name: servidor_curso_cod_servidor_curso_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('servidor_curso_cod_servidor_curso_seq', 1, false);
-
 
 --
 -- Name: servidor_curso; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15810,19 +15065,12 @@ ALTER TABLE pmieducar.servidor_disciplina OWNER TO ieducar;
 CREATE SEQUENCE servidor_formacao_cod_formacao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.servidor_formacao_cod_formacao_seq OWNER TO ieducar;
-
---
--- Name: servidor_formacao_cod_formacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('servidor_formacao_cod_formacao_seq', 1, false);
-
 
 SET default_with_oids = true;
 
@@ -15869,19 +15117,12 @@ ALTER TABLE pmieducar.servidor_funcao OWNER TO ieducar;
 CREATE SEQUENCE servidor_titulo_concurso_cod_servidor_titulo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.servidor_titulo_concurso_cod_servidor_titulo_seq OWNER TO ieducar;
-
---
--- Name: servidor_titulo_concurso_cod_servidor_titulo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('servidor_titulo_concurso_cod_servidor_titulo_seq', 1, false);
-
 
 SET default_with_oids = true;
 
@@ -15906,19 +15147,12 @@ ALTER TABLE pmieducar.servidor_titulo_concurso OWNER TO ieducar;
 CREATE SEQUENCE situacao_cod_situacao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.situacao_cod_situacao_seq OWNER TO ieducar;
-
---
--- Name: situacao_cod_situacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('situacao_cod_situacao_seq', 1, false);
-
 
 --
 -- Name: situacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15949,19 +15183,12 @@ ALTER TABLE pmieducar.situacao OWNER TO ieducar;
 CREATE SEQUENCE subnivel_cod_subnivel_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.subnivel_cod_subnivel_seq OWNER TO ieducar;
-
---
--- Name: subnivel_cod_subnivel_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('subnivel_cod_subnivel_seq', 1, false);
-
 
 SET default_with_oids = false;
 
@@ -15992,19 +15219,12 @@ ALTER TABLE pmieducar.subnivel OWNER TO ieducar;
 CREATE SEQUENCE tipo_avaliacao_cod_tipo_avaliacao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.tipo_avaliacao_cod_tipo_avaliacao_seq OWNER TO ieducar;
-
---
--- Name: tipo_avaliacao_cod_tipo_avaliacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tipo_avaliacao_cod_tipo_avaliacao_seq', 1, false);
-
 
 SET default_with_oids = true;
 
@@ -16051,19 +15271,12 @@ ALTER TABLE pmieducar.tipo_avaliacao_valores OWNER TO ieducar;
 CREATE SEQUENCE tipo_dispensa_cod_tipo_dispensa_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.tipo_dispensa_cod_tipo_dispensa_seq OWNER TO ieducar;
-
---
--- Name: tipo_dispensa_cod_tipo_dispensa_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tipo_dispensa_cod_tipo_dispensa_seq', 1, false);
-
 
 --
 -- Name: tipo_dispensa; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16089,20 +15302,14 @@ ALTER TABLE pmieducar.tipo_dispensa OWNER TO ieducar;
 --
 
 CREATE SEQUENCE tipo_ensino_cod_tipo_ensino_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.tipo_ensino_cod_tipo_ensino_seq OWNER TO ieducar;
-
---
--- Name: tipo_ensino_cod_tipo_ensino_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tipo_ensino_cod_tipo_ensino_seq', 1, true);
-
 
 --
 -- Name: tipo_ensino; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16129,19 +15336,12 @@ ALTER TABLE pmieducar.tipo_ensino OWNER TO ieducar;
 CREATE SEQUENCE tipo_ocorrencia_disciplinar_cod_tipo_ocorrencia_disciplinar_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.tipo_ocorrencia_disciplinar_cod_tipo_ocorrencia_disciplinar_seq OWNER TO ieducar;
-
---
--- Name: tipo_ocorrencia_disciplinar_cod_tipo_ocorrencia_disciplinar_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tipo_ocorrencia_disciplinar_cod_tipo_ocorrencia_disciplinar_seq', 1, false);
-
 
 --
 -- Name: tipo_ocorrencia_disciplinar; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16170,19 +15370,12 @@ ALTER TABLE pmieducar.tipo_ocorrencia_disciplinar OWNER TO ieducar;
 CREATE SEQUENCE tipo_regime_cod_tipo_regime_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.tipo_regime_cod_tipo_regime_seq OWNER TO ieducar;
-
---
--- Name: tipo_regime_cod_tipo_regime_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tipo_regime_cod_tipo_regime_seq', 1, false);
-
 
 --
 -- Name: tipo_regime; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16207,20 +15400,14 @@ ALTER TABLE pmieducar.tipo_regime OWNER TO ieducar;
 --
 
 CREATE SEQUENCE tipo_usuario_cod_tipo_usuario_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.tipo_usuario_cod_tipo_usuario_seq OWNER TO ieducar;
-
---
--- Name: tipo_usuario_cod_tipo_usuario_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('tipo_usuario_cod_tipo_usuario_seq', 3, true);
-
 
 --
 -- Name: tipo_usuario; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16248,19 +15435,12 @@ ALTER TABLE pmieducar.tipo_usuario OWNER TO ieducar;
 CREATE SEQUENCE transferencia_solicitacao_cod_transferencia_solicitacao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.transferencia_solicitacao_cod_transferencia_solicitacao_seq OWNER TO ieducar;
-
---
--- Name: transferencia_solicitacao_cod_transferencia_solicitacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('transferencia_solicitacao_cod_transferencia_solicitacao_seq', 1, false);
-
 
 --
 -- Name: transferencia_solicitacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16290,19 +15470,12 @@ ALTER TABLE pmieducar.transferencia_solicitacao OWNER TO ieducar;
 CREATE SEQUENCE transferencia_tipo_cod_transferencia_tipo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.transferencia_tipo_cod_transferencia_tipo_seq OWNER TO ieducar;
-
---
--- Name: transferencia_tipo_cod_transferencia_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('transferencia_tipo_cod_transferencia_tipo_seq', 1, false);
-
 
 --
 -- Name: transferencia_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16328,20 +15501,14 @@ ALTER TABLE pmieducar.transferencia_tipo OWNER TO ieducar;
 --
 
 CREATE SEQUENCE turma_cod_turma_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.turma_cod_turma_seq OWNER TO ieducar;
-
---
--- Name: turma_cod_turma_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('turma_cod_turma_seq', 2, true);
-
 
 --
 -- Name: turma; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16415,20 +15582,14 @@ ALTER TABLE pmieducar.turma_modulo OWNER TO ieducar;
 --
 
 CREATE SEQUENCE turma_tipo_cod_turma_tipo_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.turma_tipo_cod_turma_tipo_seq OWNER TO ieducar;
-
---
--- Name: turma_tipo_cod_turma_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('turma_tipo_cod_turma_tipo_seq', 1, true);
-
 
 --
 -- Name: turma_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16456,19 +15617,12 @@ ALTER TABLE pmieducar.turma_tipo OWNER TO ieducar;
 CREATE SEQUENCE turma_turno_id_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmieducar.turma_turno_id_seq OWNER TO ieducar;
-
---
--- Name: turma_turno_id_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
---
-
-SELECT pg_catalog.setval('turma_turno_id_seq', 1, false);
-
 
 --
 -- Name: turma_turno; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16570,19 +15724,12 @@ ALTER TABLE pmiotopic.grupopessoa OWNER TO ieducar;
 CREATE SEQUENCE grupos_cod_grupos_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmiotopic.grupos_cod_grupos_seq OWNER TO ieducar;
-
---
--- Name: grupos_cod_grupos_seq; Type: SEQUENCE SET; Schema: pmiotopic; Owner: ieducar
---
-
-SELECT pg_catalog.setval('grupos_cod_grupos_seq', 1, false);
-
 
 --
 -- Name: grupos; Type: TABLE; Schema: pmiotopic; Owner: ieducar; Tablespace: 
@@ -16643,19 +15790,12 @@ ALTER TABLE pmiotopic.participante OWNER TO ieducar;
 CREATE SEQUENCE reuniao_cod_reuniao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmiotopic.reuniao_cod_reuniao_seq OWNER TO ieducar;
-
---
--- Name: reuniao_cod_reuniao_seq; Type: SEQUENCE SET; Schema: pmiotopic; Owner: ieducar
---
-
-SELECT pg_catalog.setval('reuniao_cod_reuniao_seq', 1, false);
-
 
 --
 -- Name: reuniao; Type: TABLE; Schema: pmiotopic; Owner: ieducar; Tablespace: 
@@ -16684,19 +15824,12 @@ ALTER TABLE pmiotopic.reuniao OWNER TO ieducar;
 CREATE SEQUENCE topico_cod_topico_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE pmiotopic.topico_cod_topico_seq OWNER TO ieducar;
-
---
--- Name: topico_cod_topico_seq; Type: SEQUENCE SET; Schema: pmiotopic; Owner: ieducar
---
-
-SELECT pg_catalog.setval('topico_cod_topico_seq', 1, false);
-
 
 --
 -- Name: topico; Type: TABLE; Schema: pmiotopic; Owner: ieducar; Tablespace: 
@@ -16739,20 +15872,14 @@ SET search_path = portal, pg_catalog;
 --
 
 CREATE SEQUENCE acesso_cod_acesso_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.acesso_cod_acesso_seq OWNER TO ieducar;
-
---
--- Name: acesso_cod_acesso_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('acesso_cod_acesso_seq', 26, true);
-
 
 --
 -- Name: acesso; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -16776,20 +15903,14 @@ ALTER TABLE portal.acesso OWNER TO ieducar;
 --
 
 CREATE SEQUENCE agenda_cod_agenda_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.agenda_cod_agenda_seq OWNER TO ieducar;
-
---
--- Name: agenda_cod_agenda_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('agenda_cod_agenda_seq', 1, true);
-
 
 --
 -- Name: agenda; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -16839,19 +15960,12 @@ ALTER TABLE portal.agenda_compromisso OWNER TO ieducar;
 CREATE SEQUENCE agenda_pref_cod_comp_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.agenda_pref_cod_comp_seq OWNER TO ieducar;
-
---
--- Name: agenda_pref_cod_comp_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('agenda_pref_cod_comp_seq', 1, false);
-
 
 --
 -- Name: agenda_pref; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -16894,19 +16008,12 @@ ALTER TABLE portal.agenda_responsavel OWNER TO ieducar;
 CREATE SEQUENCE compras_editais_editais_cod_compras_editais_editais_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.compras_editais_editais_cod_compras_editais_editais_seq OWNER TO ieducar;
-
---
--- Name: compras_editais_editais_cod_compras_editais_editais_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('compras_editais_editais_cod_compras_editais_editais_seq', 1, false);
-
 
 --
 -- Name: compras_editais_editais; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -16946,19 +16053,12 @@ ALTER TABLE portal.compras_editais_editais_empresas OWNER TO ieducar;
 CREATE SEQUENCE compras_editais_empresa_cod_compras_editais_empresa_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.compras_editais_empresa_cod_compras_editais_empresa_seq OWNER TO ieducar;
-
---
--- Name: compras_editais_empresa_cod_compras_editais_empresa_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('compras_editais_empresa_cod_compras_editais_empresa_seq', 1, false);
-
 
 --
 -- Name: compras_editais_empresa; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -16991,19 +16091,12 @@ ALTER TABLE portal.compras_editais_empresa OWNER TO ieducar;
 CREATE SEQUENCE compras_final_pregao_cod_compras_final_pregao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.compras_final_pregao_cod_compras_final_pregao_seq OWNER TO ieducar;
-
---
--- Name: compras_final_pregao_cod_compras_final_pregao_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('compras_final_pregao_cod_compras_final_pregao_seq', 1, false);
-
 
 --
 -- Name: compras_final_pregao; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17035,19 +16128,12 @@ ALTER TABLE portal.compras_funcionarios OWNER TO ieducar;
 CREATE SEQUENCE compras_licitacoes_cod_compras_licitacoes_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.compras_licitacoes_cod_compras_licitacoes_seq OWNER TO ieducar;
-
---
--- Name: compras_licitacoes_cod_compras_licitacoes_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('compras_licitacoes_cod_compras_licitacoes_seq', 1, false);
-
 
 --
 -- Name: compras_licitacoes; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17074,19 +16160,12 @@ ALTER TABLE portal.compras_licitacoes OWNER TO ieducar;
 CREATE SEQUENCE compras_modalidade_cod_compras_modalidade_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.compras_modalidade_cod_compras_modalidade_seq OWNER TO ieducar;
-
---
--- Name: compras_modalidade_cod_compras_modalidade_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('compras_modalidade_cod_compras_modalidade_seq', 1, false);
-
 
 --
 -- Name: compras_modalidade; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17107,19 +16186,12 @@ ALTER TABLE portal.compras_modalidade OWNER TO ieducar;
 CREATE SEQUENCE compras_pregao_execucao_cod_compras_pregao_execucao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.compras_pregao_execucao_cod_compras_pregao_execucao_seq OWNER TO ieducar;
-
---
--- Name: compras_pregao_execucao_cod_compras_pregao_execucao_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('compras_pregao_execucao_cod_compras_pregao_execucao_seq', 1, false);
-
 
 --
 -- Name: compras_pregao_execucao; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17152,19 +16224,12 @@ ALTER TABLE portal.compras_pregao_execucao OWNER TO ieducar;
 CREATE SEQUENCE compras_prestacao_contas_cod_compras_prestacao_contas_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.compras_prestacao_contas_cod_compras_prestacao_contas_seq OWNER TO ieducar;
-
---
--- Name: compras_prestacao_contas_cod_compras_prestacao_contas_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('compras_prestacao_contas_cod_compras_prestacao_contas_seq', 1, false);
-
 
 --
 -- Name: compras_prestacao_contas; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17187,19 +16252,12 @@ ALTER TABLE portal.compras_prestacao_contas OWNER TO ieducar;
 CREATE SEQUENCE foto_portal_cod_foto_portal_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.foto_portal_cod_foto_portal_seq OWNER TO ieducar;
-
---
--- Name: foto_portal_cod_foto_portal_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('foto_portal_cod_foto_portal_seq', 1, false);
-
 
 --
 -- Name: foto_portal; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17230,19 +16288,12 @@ ALTER TABLE portal.foto_portal OWNER TO ieducar;
 CREATE SEQUENCE foto_secao_cod_foto_secao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.foto_secao_cod_foto_secao_seq OWNER TO ieducar;
-
---
--- Name: foto_secao_cod_foto_secao_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('foto_secao_cod_foto_secao_seq', 1, false);
-
 
 --
 -- Name: foto_secao; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17297,19 +16348,12 @@ ALTER TABLE portal.funcionario OWNER TO ieducar;
 CREATE SEQUENCE funcionario_vinculo_cod_funcionario_vinculo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.funcionario_vinculo_cod_funcionario_vinculo_seq OWNER TO ieducar;
-
---
--- Name: funcionario_vinculo_cod_funcionario_vinculo_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('funcionario_vinculo_cod_funcionario_vinculo_seq', 1, false);
-
 
 --
 -- Name: funcionario_vinculo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17328,20 +16372,14 @@ ALTER TABLE portal.funcionario_vinculo OWNER TO ieducar;
 --
 
 CREATE SEQUENCE imagem_cod_imagem_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.imagem_cod_imagem_seq OWNER TO ieducar;
-
---
--- Name: imagem_cod_imagem_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('imagem_cod_imagem_seq', 186, true);
-
 
 --
 -- Name: imagem; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17369,20 +16407,14 @@ ALTER TABLE portal.imagem OWNER TO ieducar;
 --
 
 CREATE SEQUENCE imagem_tipo_cod_imagem_tipo_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.imagem_tipo_cod_imagem_tipo_seq OWNER TO ieducar;
-
---
--- Name: imagem_tipo_cod_imagem_tipo_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('imagem_tipo_cod_imagem_tipo_seq', 6, true);
-
 
 --
 -- Name: imagem_tipo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17403,19 +16435,12 @@ ALTER TABLE portal.imagem_tipo OWNER TO ieducar;
 CREATE SEQUENCE intranet_segur_permissao_nega_cod_intranet_segur_permissao__seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.intranet_segur_permissao_nega_cod_intranet_segur_permissao__seq OWNER TO ieducar;
-
---
--- Name: intranet_segur_permissao_nega_cod_intranet_segur_permissao__seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('intranet_segur_permissao_nega_cod_intranet_segur_permissao__seq', 1, false);
-
 
 --
 -- Name: intranet_segur_permissao_negada; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17454,19 +16479,12 @@ ALTER TABLE portal.jor_arquivo OWNER TO ieducar;
 CREATE SEQUENCE jor_edicao_cod_jor_edicao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.jor_edicao_cod_jor_edicao_seq OWNER TO ieducar;
-
---
--- Name: jor_edicao_cod_jor_edicao_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('jor_edicao_cod_jor_edicao_seq', 1, false);
-
 
 --
 -- Name: jor_edicao; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17492,19 +16510,12 @@ ALTER TABLE portal.jor_edicao OWNER TO ieducar;
 CREATE SEQUENCE mailling_email_cod_mailling_email_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.mailling_email_cod_mailling_email_seq OWNER TO ieducar;
-
---
--- Name: mailling_email_cod_mailling_email_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('mailling_email_cod_mailling_email_seq', 1, false);
-
 
 --
 -- Name: mailling_email; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17526,19 +16537,12 @@ ALTER TABLE portal.mailling_email OWNER TO ieducar;
 CREATE SEQUENCE mailling_email_conteudo_cod_mailling_email_conteudo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.mailling_email_conteudo_cod_mailling_email_conteudo_seq OWNER TO ieducar;
-
---
--- Name: mailling_email_conteudo_cod_mailling_email_conteudo_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('mailling_email_conteudo_cod_mailling_email_conteudo_seq', 1, false);
-
 
 --
 -- Name: mailling_email_conteudo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17563,19 +16567,12 @@ ALTER TABLE portal.mailling_email_conteudo OWNER TO ieducar;
 CREATE SEQUENCE mailling_fila_envio_cod_mailling_fila_envio_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.mailling_fila_envio_cod_mailling_fila_envio_seq OWNER TO ieducar;
-
---
--- Name: mailling_fila_envio_cod_mailling_fila_envio_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('mailling_fila_envio_cod_mailling_fila_envio_seq', 1, false);
-
 
 --
 -- Name: mailling_fila_envio; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17600,19 +16597,12 @@ ALTER TABLE portal.mailling_fila_envio OWNER TO ieducar;
 CREATE SEQUENCE mailling_grupo_cod_mailling_grupo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.mailling_grupo_cod_mailling_grupo_seq OWNER TO ieducar;
-
---
--- Name: mailling_grupo_cod_mailling_grupo_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('mailling_grupo_cod_mailling_grupo_seq', 1, false);
-
 
 --
 -- Name: mailling_grupo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17645,19 +16635,12 @@ ALTER TABLE portal.mailling_grupo_email OWNER TO ieducar;
 CREATE SEQUENCE mailling_historico_cod_mailling_historico_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.mailling_historico_cod_mailling_historico_seq OWNER TO ieducar;
-
---
--- Name: mailling_historico_cod_mailling_historico_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('mailling_historico_cod_mailling_historico_seq', 1, false);
-
 
 --
 -- Name: mailling_historico; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17693,20 +16676,14 @@ ALTER TABLE portal.menu_funcionario OWNER TO ieducar;
 --
 
 CREATE SEQUENCE menu_menu_cod_menu_menu_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.menu_menu_cod_menu_menu_seq OWNER TO ieducar;
-
---
--- Name: menu_menu_cod_menu_menu_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('menu_menu_cod_menu_menu_seq', 68, true);
-
 
 --
 -- Name: menu_menu; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17727,20 +16704,14 @@ ALTER TABLE portal.menu_menu OWNER TO ieducar;
 --
 
 CREATE SEQUENCE menu_submenu_cod_menu_submenu_seq
+    START WITH 0
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.menu_submenu_cod_menu_submenu_seq OWNER TO ieducar;
-
---
--- Name: menu_submenu_cod_menu_submenu_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('menu_submenu_cod_menu_submenu_seq', 944, true);
-
 
 --
 -- Name: menu_submenu; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17766,19 +16737,12 @@ ALTER TABLE portal.menu_submenu OWNER TO ieducar;
 CREATE SEQUENCE not_portal_cod_not_portal_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.not_portal_cod_not_portal_seq OWNER TO ieducar;
-
---
--- Name: not_portal_cod_not_portal_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('not_portal_cod_not_portal_seq', 1, false);
-
 
 --
 -- Name: not_portal; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17814,19 +16778,12 @@ ALTER TABLE portal.not_portal_tipo OWNER TO ieducar;
 CREATE SEQUENCE not_tipo_cod_not_tipo_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.not_tipo_cod_not_tipo_seq OWNER TO ieducar;
-
---
--- Name: not_tipo_cod_not_tipo_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('not_tipo_cod_not_tipo_seq', 1, false);
-
 
 --
 -- Name: not_tipo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17863,19 +16820,12 @@ ALTER TABLE portal.not_vinc_portal OWNER TO ieducar;
 CREATE SEQUENCE notificacao_cod_notificacao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.notificacao_cod_notificacao_seq OWNER TO ieducar;
-
---
--- Name: notificacao_cod_notificacao_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('notificacao_cod_notificacao_seq', 1, false);
-
 
 --
 -- Name: notificacao; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17901,19 +16851,12 @@ ALTER TABLE portal.notificacao OWNER TO ieducar;
 CREATE SEQUENCE pessoa_atividade_cod_pessoa_atividade_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.pessoa_atividade_cod_pessoa_atividade_seq OWNER TO ieducar;
-
---
--- Name: pessoa_atividade_cod_pessoa_atividade_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('pessoa_atividade_cod_pessoa_atividade_seq', 1, false);
-
 
 --
 -- Name: pessoa_atividade; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -17935,19 +16878,12 @@ ALTER TABLE portal.pessoa_atividade OWNER TO ieducar;
 CREATE SEQUENCE pessoa_fj_cod_pessoa_fj_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.pessoa_fj_cod_pessoa_fj_seq OWNER TO ieducar;
-
---
--- Name: pessoa_fj_cod_pessoa_fj_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('pessoa_fj_cod_pessoa_fj_seq', 1, false);
-
 
 --
 -- Name: pessoa_fj; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18004,19 +16940,12 @@ ALTER TABLE portal.pessoa_fj_pessoa_atividade OWNER TO ieducar;
 CREATE SEQUENCE pessoa_ramo_atividade_cod_ramo_atividade_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.pessoa_ramo_atividade_cod_ramo_atividade_seq OWNER TO ieducar;
-
---
--- Name: pessoa_ramo_atividade_cod_ramo_atividade_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('pessoa_ramo_atividade_cod_ramo_atividade_seq', 1, false);
-
 
 --
 -- Name: pessoa_ramo_atividade; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18037,19 +16966,12 @@ ALTER TABLE portal.pessoa_ramo_atividade OWNER TO ieducar;
 CREATE SEQUENCE portal_banner_cod_portal_banner_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.portal_banner_cod_portal_banner_seq OWNER TO ieducar;
-
---
--- Name: portal_banner_cod_portal_banner_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('portal_banner_cod_portal_banner_seq', 1, false);
-
 
 --
 -- Name: portal_banner; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18075,19 +16997,12 @@ ALTER TABLE portal.portal_banner OWNER TO ieducar;
 CREATE SEQUENCE portal_concurso_cod_portal_concurso_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.portal_concurso_cod_portal_concurso_seq OWNER TO ieducar;
-
---
--- Name: portal_concurso_cod_portal_concurso_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('portal_concurso_cod_portal_concurso_seq', 1, false);
-
 
 --
 -- Name: portal_concurso; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18113,19 +17028,12 @@ ALTER TABLE portal.portal_concurso OWNER TO ieducar;
 CREATE SEQUENCE sistema_cod_sistema_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE portal.sistema_cod_sistema_seq OWNER TO ieducar;
-
---
--- Name: sistema_cod_sistema_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
---
-
-SELECT pg_catalog.setval('sistema_cod_sistema_seq', 1, false);
-
 
 --
 -- Name: sistema; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18135,7 +17043,7 @@ CREATE TABLE sistema (
     cod_sistema integer DEFAULT nextval('sistema_cod_sistema_seq'::regclass) NOT NULL,
     nome character varying(255),
     versao smallint NOT NULL,
-    "release" smallint NOT NULL,
+    release smallint NOT NULL,
     patch smallint NOT NULL,
     tipo character varying(255)
 );
@@ -18219,19 +17127,12 @@ ALTER TABLE public.pais OWNER TO ieducar;
 CREATE SEQUENCE regiao_cod_regiao_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE public.regiao_cod_regiao_seq OWNER TO ieducar;
-
---
--- Name: regiao_cod_regiao_seq; Type: SEQUENCE SET; Schema: public; Owner: ieducar
---
-
-SELECT pg_catalog.setval('regiao_cod_regiao_seq', 1, false);
-
 
 --
 -- Name: regiao; Type: TABLE; Schema: public; Owner: ieducar; Tablespace: 
@@ -18252,19 +17153,12 @@ ALTER TABLE public.regiao OWNER TO ieducar;
 CREATE SEQUENCE seq_bairro
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE public.seq_bairro OWNER TO ieducar;
-
---
--- Name: seq_bairro; Type: SEQUENCE SET; Schema: public; Owner: ieducar
---
-
-SELECT pg_catalog.setval('seq_bairro', 1, false);
-
 
 --
 -- Name: seq_logradouro; Type: SEQUENCE; Schema: public; Owner: ieducar
@@ -18273,19 +17167,12 @@ SELECT pg_catalog.setval('seq_bairro', 1, false);
 CREATE SEQUENCE seq_logradouro
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE public.seq_logradouro OWNER TO ieducar;
-
---
--- Name: seq_logradouro; Type: SEQUENCE SET; Schema: public; Owner: ieducar
---
-
-SELECT pg_catalog.setval('seq_logradouro', 1, false);
-
 
 --
 -- Name: seq_municipio; Type: SEQUENCE; Schema: public; Owner: ieducar
@@ -18294,19 +17181,12 @@ SELECT pg_catalog.setval('seq_logradouro', 1, false);
 CREATE SEQUENCE seq_municipio
     START WITH 5565
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE public.seq_municipio OWNER TO ieducar;
-
---
--- Name: seq_municipio; Type: SEQUENCE SET; Schema: public; Owner: ieducar
---
-
-SELECT pg_catalog.setval('seq_municipio', 5565, false);
-
 
 --
 -- Name: setor_idset_seq; Type: SEQUENCE; Schema: public; Owner: ieducar
@@ -18315,19 +17195,12 @@ SELECT pg_catalog.setval('seq_municipio', 5565, false);
 CREATE SEQUENCE setor_idset_seq
     START WITH 1
     INCREMENT BY 1
-    NO MAXVALUE
     MINVALUE 0
+    NO MAXVALUE
     CACHE 1;
 
 
 ALTER TABLE public.setor_idset_seq OWNER TO ieducar;
-
---
--- Name: setor_idset_seq; Type: SEQUENCE SET; Schema: public; Owner: ieducar
---
-
-SELECT pg_catalog.setval('setor_idset_seq', 1, false);
-
 
 --
 -- Name: setor; Type: TABLE; Schema: public; Owner: ieducar; Tablespace: 
@@ -18444,119 +17317,119 @@ SET search_path = modules, pg_catalog;
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE area_conhecimento ALTER COLUMN id SET DEFAULT nextval('area_conhecimento_id_seq'::regclass);
+ALTER TABLE ONLY area_conhecimento ALTER COLUMN id SET DEFAULT nextval('area_conhecimento_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE componente_curricular ALTER COLUMN id SET DEFAULT nextval('componente_curricular_id_seq'::regclass);
+ALTER TABLE ONLY componente_curricular ALTER COLUMN id SET DEFAULT nextval('componente_curricular_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE docente_licenciatura ALTER COLUMN id SET DEFAULT nextval('docente_licenciatura_id_seq'::regclass);
+ALTER TABLE ONLY docente_licenciatura ALTER COLUMN id SET DEFAULT nextval('docente_licenciatura_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE educacenso_curso_superior ALTER COLUMN id SET DEFAULT nextval('educacenso_curso_superior_id_seq'::regclass);
+ALTER TABLE ONLY educacenso_curso_superior ALTER COLUMN id SET DEFAULT nextval('educacenso_curso_superior_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE educacenso_ies ALTER COLUMN id SET DEFAULT nextval('educacenso_ies_id_seq'::regclass);
+ALTER TABLE ONLY educacenso_ies ALTER COLUMN id SET DEFAULT nextval('educacenso_ies_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE falta_aluno ALTER COLUMN id SET DEFAULT nextval('falta_aluno_id_seq'::regclass);
+ALTER TABLE ONLY falta_aluno ALTER COLUMN id SET DEFAULT nextval('falta_aluno_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE falta_componente_curricular ALTER COLUMN id SET DEFAULT nextval('falta_componente_curricular_id_seq'::regclass);
+ALTER TABLE ONLY falta_componente_curricular ALTER COLUMN id SET DEFAULT nextval('falta_componente_curricular_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE falta_geral ALTER COLUMN id SET DEFAULT nextval('falta_geral_id_seq'::regclass);
+ALTER TABLE ONLY falta_geral ALTER COLUMN id SET DEFAULT nextval('falta_geral_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE formula_media ALTER COLUMN id SET DEFAULT nextval('formula_media_id_seq'::regclass);
+ALTER TABLE ONLY formula_media ALTER COLUMN id SET DEFAULT nextval('formula_media_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE nota_aluno ALTER COLUMN id SET DEFAULT nextval('nota_aluno_id_seq'::regclass);
+ALTER TABLE ONLY nota_aluno ALTER COLUMN id SET DEFAULT nextval('nota_aluno_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE nota_componente_curricular ALTER COLUMN id SET DEFAULT nextval('nota_componente_curricular_id_seq'::regclass);
+ALTER TABLE ONLY nota_componente_curricular ALTER COLUMN id SET DEFAULT nextval('nota_componente_curricular_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE parecer_aluno ALTER COLUMN id SET DEFAULT nextval('parecer_aluno_id_seq'::regclass);
+ALTER TABLE ONLY parecer_aluno ALTER COLUMN id SET DEFAULT nextval('parecer_aluno_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE parecer_componente_curricular ALTER COLUMN id SET DEFAULT nextval('parecer_componente_curricular_id_seq'::regclass);
+ALTER TABLE ONLY parecer_componente_curricular ALTER COLUMN id SET DEFAULT nextval('parecer_componente_curricular_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE parecer_geral ALTER COLUMN id SET DEFAULT nextval('parecer_geral_id_seq'::regclass);
+ALTER TABLE ONLY parecer_geral ALTER COLUMN id SET DEFAULT nextval('parecer_geral_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE regra_avaliacao ALTER COLUMN id SET DEFAULT nextval('regra_avaliacao_id_seq'::regclass);
+ALTER TABLE ONLY regra_avaliacao ALTER COLUMN id SET DEFAULT nextval('regra_avaliacao_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE tabela_arredondamento ALTER COLUMN id SET DEFAULT nextval('tabela_arredondamento_id_seq'::regclass);
+ALTER TABLE ONLY tabela_arredondamento ALTER COLUMN id SET DEFAULT nextval('tabela_arredondamento_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: modules; Owner: ieducar
 --
 
-ALTER TABLE tabela_arredondamento_valor ALTER COLUMN id SET DEFAULT nextval('tabela_arredondamento_valor_id_seq'::regclass);
+ALTER TABLE ONLY tabela_arredondamento_valor ALTER COLUMN id SET DEFAULT nextval('tabela_arredondamento_valor_id_seq'::regclass);
 
 
 SET search_path = acesso, pg_catalog;
@@ -18567,6 +17440,13 @@ SET search_path = acesso, pg_catalog;
 
 COPY funcao (idfunc, idsis, idmen, nome, situacao, url, ordem, descricao) FROM stdin;
 \.
+
+
+--
+-- Name: funcao_idfunc_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('funcao_idfunc_seq', 1, false);
 
 
 --
@@ -18583,6 +17463,13 @@ COPY grupo (idgrp, nome, situacao, descricao) FROM stdin;
 
 COPY grupo_funcao (idmen, idsis, idgrp, idfunc) FROM stdin;
 \.
+
+
+--
+-- Name: grupo_idgrp_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('grupo_idgrp_seq', 1, false);
 
 
 --
@@ -18613,7 +17500,7 @@ COPY grupo_sistema (idsis, idgrp) FROM stdin;
 -- Data for Name: historico_senha; Type: TABLE DATA; Schema: acesso; Owner: ieducar
 --
 
-COPY historico_senha ("login", senha, data_cad) FROM stdin;
+COPY historico_senha (login, senha, data_cad) FROM stdin;
 \.
 
 
@@ -18623,6 +17510,13 @@ COPY historico_senha ("login", senha, data_cad) FROM stdin;
 
 COPY instituicao (idins, nome, situacao) FROM stdin;
 \.
+
+
+--
+-- Name: instituicao_idins_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('instituicao_idins_seq', 1, false);
 
 
 --
@@ -18650,6 +17544,13 @@ COPY menu (idmen, idsis, menu_idsis, menu_idmen, nome, descricao, situacao, orde
 
 
 --
+-- Name: menu_idmen_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('menu_idmen_seq', 1, false);
+
+
+--
 -- Data for Name: operacao; Type: TABLE DATA; Schema: acesso; Owner: ieducar
 --
 
@@ -18663,6 +17564,13 @@ COPY operacao (idope, idsis, nome, situacao, descricao) FROM stdin;
 
 COPY operacao_funcao (idmen, idsis, idfunc, idope) FROM stdin;
 \.
+
+
+--
+-- Name: operacao_idope_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('operacao_idope_seq', 1, false);
 
 
 --
@@ -18685,10 +17593,17 @@ COPY sistema (idsis, nome, descricao, contexto, situacao) FROM stdin;
 
 
 --
+-- Name: sistema_idsis_seq; Type: SEQUENCE SET; Schema: acesso; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('sistema_idsis_seq', 17, true);
+
+
+--
 -- Data for Name: usuario; Type: TABLE DATA; Schema: acesso; Owner: ieducar
 --
 
-COPY usuario ("login", idpes, idpes_sga, senha, datacad, lastlogin, dica, situacao, data_alt_senha, exp_senha, mudar_senha, num_sessao_atual, prazo_exp, estilo_menu) FROM stdin;
+COPY usuario (login, idpes, idpes_sga, senha, datacad, lastlogin, dica, situacao, data_alt_senha, exp_senha, mudar_senha, num_sessao_atual, prazo_exp, estilo_menu) FROM stdin;
 \.
 
 
@@ -18696,7 +17611,7 @@ COPY usuario ("login", idpes, idpes_sga, senha, datacad, lastlogin, dica, situac
 -- Data for Name: usuario_grupo; Type: TABLE DATA; Schema: acesso; Owner: ieducar
 --
 
-COPY usuario_grupo (idgrp, "login") FROM stdin;
+COPY usuario_grupo (idgrp, login) FROM stdin;
 \.
 
 
@@ -18711,6 +17626,13 @@ COPY baixa_guia_produto (idbap, idgup, idbai, dt_validade, qtde_recebida, dt_ope
 
 
 --
+-- Name: baixa_guia_produto_idbap_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('baixa_guia_produto_idbap_seq', 1, false);
+
+
+--
 -- Data for Name: baixa_guia_remessa; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
@@ -18719,11 +17641,25 @@ COPY baixa_guia_remessa (idbai, login_baixa, idgui, dt_recebimento, nome_recebed
 
 
 --
+-- Name: baixa_guia_remessa_idbai_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('baixa_guia_remessa_idbai_seq', 1, false);
+
+
+--
 -- Data for Name: calendario; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
 COPY calendario (idcad, idcli, ano, descricao) FROM stdin;
 \.
+
+
+--
+-- Name: calendario_idcad_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('calendario_idcad_seq', 1, false);
 
 
 --
@@ -18743,11 +17679,25 @@ COPY cardapio_faixa_unidade (idfeu, idcar) FROM stdin;
 
 
 --
+-- Name: cardapio_idcar_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('cardapio_idcar_seq', 1, false);
+
+
+--
 -- Data for Name: cardapio_produto; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
 COPY cardapio_produto (idcpr, idpro, idcar, quantidade, valor) FROM stdin;
 \.
+
+
+--
+-- Name: cardapio_produto_idcpr_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('cardapio_produto_idcpr_seq', 1, false);
 
 
 --
@@ -18775,11 +17725,25 @@ COPY composto_quimico (idcom, idcli, idgrpq, descricao, unidade) FROM stdin;
 
 
 --
+-- Name: composto_quimico_idcom_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('composto_quimico_idcom_seq', 1, false);
+
+
+--
 -- Data for Name: contrato; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
-COPY contrato (idcon, codigo, idcli, "login", num_aditivo, idfor, dt_vigencia, tipo, vlr_atual, cancelado, dt_cancelamento, dt_inclusao, ultimo_contrato, vlr_original, finalizado) FROM stdin;
+COPY contrato (idcon, codigo, idcli, login, num_aditivo, idfor, dt_vigencia, tipo, vlr_atual, cancelado, dt_cancelamento, dt_inclusao, ultimo_contrato, vlr_original, finalizado) FROM stdin;
 \.
+
+
+--
+-- Name: contrato_idcon_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('contrato_idcon_seq', 1, false);
 
 
 --
@@ -18791,11 +17755,25 @@ COPY contrato_produto (idcop, idcon, idpro, qtde_contratada, vlr_unitario_atual,
 
 
 --
+-- Name: contrato_produto_idcop_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('contrato_produto_idcop_seq', 1, false);
+
+
+--
 -- Data for Name: evento; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
 COPY evento (ideve, idcad, mes, dia, dia_util, descricao) FROM stdin;
 \.
+
+
+--
+-- Name: evento_ideve_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('evento_ideve_seq', 1, false);
 
 
 --
@@ -18807,6 +17785,13 @@ COPY faixa_composto_quimico (idfcp, idcom, idfae, quantidade, qtde_max_min) FROM
 
 
 --
+-- Name: faixa_composto_quimico_idfcp_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('faixa_composto_quimico_idfcp_seq', 1, false);
+
+
+--
 -- Data for Name: faixa_etaria; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
@@ -18815,11 +17800,25 @@ COPY faixa_etaria (idfae, idcli, descricao, vlr_base_refeicao) FROM stdin;
 
 
 --
+-- Name: faixa_etaria_idfae_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('faixa_etaria_idfae_seq', 1, false);
+
+
+--
 -- Data for Name: fornecedor; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
 COPY fornecedor (idfor, idpes, idcli, razao_social, nome_fantasia, endereco, complemento, bairro, cep, cidade, uf, telefone, fax, email, contato, cpf_cnpj, inscr_estadual, inscr_municipal, tipo) FROM stdin;
 \.
+
+
+--
+-- Name: fornecedor_idfor_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('fornecedor_idfor_seq', 1, false);
 
 
 --
@@ -18839,11 +17838,25 @@ COPY grupo_quimico (idgrpq, idcli, descricao) FROM stdin;
 
 
 --
+-- Name: grupo_quimico_idgrpq_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('grupo_quimico_idgrpq_seq', 1, false);
+
+
+--
 -- Data for Name: guia_produto_diario; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
 COPY guia_produto_diario (idguiaprodiario, idgui, idpro, iduni, dt_guia, qtde) FROM stdin;
 \.
+
+
+--
+-- Name: guia_produto_diario_idguiaprodiario_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('guia_produto_diario_idguiaprodiario_seq', 1, false);
 
 
 --
@@ -18855,6 +17868,13 @@ COPY guia_remessa (idgui, idcon, login_cancelamento, login_emissao, idfor, iduni
 
 
 --
+-- Name: guia_remessa_idgui_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('guia_remessa_idgui_seq', 1, false);
+
+
+--
 -- Data for Name: guia_remessa_produto; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
@@ -18863,11 +17883,25 @@ COPY guia_remessa_produto (idgup, idgui, idpro, qtde_per_capita, qtde_guia, peso
 
 
 --
+-- Name: guia_remessa_produto_idgup_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('guia_remessa_produto_idgup_seq', 1, false);
+
+
+--
 -- Data for Name: log_guia_remessa; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
-COPY log_guia_remessa (idlogguia, "login", idcli, dt_inicial, dt_final, unidade, fornecedor, classe, dt_geracao, mensagem) FROM stdin;
+COPY log_guia_remessa (idlogguia, login, idcli, dt_inicial, dt_final, unidade, fornecedor, classe, dt_geracao, mensagem) FROM stdin;
 \.
+
+
+--
+-- Name: log_guia_remessa_idlogguia_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('log_guia_remessa_idlogguia_seq', 1, false);
 
 
 --
@@ -18887,6 +17921,13 @@ COPY pessoa (idpes, tipo) FROM stdin;
 
 
 --
+-- Name: pessoa_idpes_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('pessoa_idpes_seq', 1, false);
+
+
+--
 -- Data for Name: produto; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
@@ -18903,6 +17944,13 @@ COPY produto_composto_quimico (idpcq, idpro, idcom, quantidade) FROM stdin;
 
 
 --
+-- Name: produto_composto_quimico_idpcq_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('produto_composto_quimico_idpcq_seq', 1, false);
+
+
+--
 -- Data for Name: produto_fornecedor; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
@@ -18911,11 +17959,32 @@ COPY produto_fornecedor (idprf, idfor, idpro, codigo_ean) FROM stdin;
 
 
 --
+-- Name: produto_fornecedor_idprf_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('produto_fornecedor_idprf_seq', 1, false);
+
+
+--
+-- Name: produto_idpro_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('produto_idpro_seq', 1, false);
+
+
+--
 -- Data for Name: produto_medida_caseira; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
 COPY produto_medida_caseira (idpmc, idcli, idmedcas, idpro, peso) FROM stdin;
 \.
+
+
+--
+-- Name: produto_medida_caseira_idpmc_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('produto_medida_caseira_idpmc_seq', 1, false);
 
 
 --
@@ -18935,11 +18004,32 @@ COPY receita_composto_quimico (idrcq, idcom, idrec, quantidade) FROM stdin;
 
 
 --
+-- Name: receita_composto_quimico_idrcq_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('receita_composto_quimico_idrcq_seq', 1, false);
+
+
+--
+-- Name: receita_idrec_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('receita_idrec_seq', 1, false);
+
+
+--
 -- Data for Name: receita_produto; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
 COPY receita_produto (idrpr, idpro, idrec, idmedcas, quantidade, valor, qtdemedidacaseira, valor_percapita) FROM stdin;
 \.
+
+
+--
+-- Name: receita_produto_idrpr_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('receita_produto_idrpr_seq', 1, false);
 
 
 --
@@ -18951,11 +18041,25 @@ COPY tipo_produto (idtip, idcli, descricao) FROM stdin;
 
 
 --
+-- Name: tipo_produto_idtip_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tipo_produto_idtip_seq', 1, false);
+
+
+--
 -- Data for Name: tipo_refeicao; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
 COPY tipo_refeicao (idtre, idcli, descricao) FROM stdin;
 \.
+
+
+--
+-- Name: tipo_refeicao_idtre_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tipo_refeicao_idtre_seq', 1, false);
 
 
 --
@@ -18967,6 +18071,13 @@ COPY tipo_unidade (idtip, idcli, descricao) FROM stdin;
 
 
 --
+-- Name: tipo_unidade_idtip_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tipo_unidade_idtip_seq', 1, false);
+
+
+--
 -- Data for Name: unidade_atendida; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
@@ -18975,11 +18086,25 @@ COPY unidade_atendida (iduni, idcad, idtip, codigo, idcli, nome, endereco, compl
 
 
 --
+-- Name: unidade_atendida_iduni_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('unidade_atendida_iduni_seq', 1, false);
+
+
+--
 -- Data for Name: unidade_faixa_etaria; Type: TABLE DATA; Schema: alimentos; Owner: ieducar
 --
 
 COPY unidade_faixa_etaria (idfeu, iduni, idfae, num_inscritos, num_matriculados) FROM stdin;
 \.
+
+
+--
+-- Name: unidade_faixa_etaria_idfeu_seq; Type: SEQUENCE SET; Schema: alimentos; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('unidade_faixa_etaria_idfeu_seq', 1, false);
 
 
 --
@@ -19020,6 +18145,13 @@ COPY deficiencia (cod_deficiencia, nm_deficiencia) FROM stdin;
 13	Transtorno desintegrativo da infância (psicose infantil)
 14	Altas Habilidades/Superdotação
 \.
+
+
+--
+-- Name: deficiencia_cod_deficiencia_seq; Type: SEQUENCE SET; Schema: cadastro; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('deficiencia_cod_deficiencia_seq', 1, false);
 
 
 --
@@ -19201,6 +18333,13 @@ COPY orgao_emissor_rg (idorg_rg, sigla, descricao, situacao) FROM stdin;
 
 
 --
+-- Name: orgao_emissor_rg_idorg_rg_seq; Type: SEQUENCE SET; Schema: cadastro; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('orgao_emissor_rg_idorg_rg_seq', 30, false);
+
+
+--
 -- Data for Name: pessoa; Type: TABLE DATA; Schema: cadastro; Owner: ieducar
 --
 
@@ -19232,11 +18371,32 @@ COPY raca (cod_raca, idpes_exc, idpes_cad, nm_raca, data_cadastro, data_exclusao
 
 
 --
+-- Name: raca_cod_raca_seq; Type: SEQUENCE SET; Schema: cadastro; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('raca_cod_raca_seq', 1, false);
+
+
+--
 -- Data for Name: religiao; Type: TABLE DATA; Schema: cadastro; Owner: ieducar
 --
 
 COPY religiao (cod_religiao, idpes_exc, idpes_cad, nm_religiao, data_cadastro, data_exclusao, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: religiao_cod_religiao_seq; Type: SEQUENCE SET; Schema: cadastro; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('religiao_cod_religiao_seq', 1, false);
+
+
+--
+-- Name: seq_pessoa; Type: SEQUENCE SET; Schema: cadastro; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('seq_pessoa', 3, true);
 
 
 --
@@ -19361,6 +18521,13 @@ COPY campo_metadado (id_campo_met, idmet, idreg, idcam, posicao_inicial, posicao
 
 
 --
+-- Name: campo_metadado_id_campo_met_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('campo_metadado_id_campo_met_seq', 1, false);
+
+
+--
 -- Data for Name: confrontacao; Type: TABLE DATA; Schema: consistenciacao; Owner: ieducar
 --
 
@@ -19369,11 +18536,25 @@ COPY confrontacao (idcon, idins, idpes, idmet, arquivo_fonte_dados, ignorar_reg_
 
 
 --
+-- Name: confrontacao_idcon_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('confrontacao_idcon_seq', 1, false);
+
+
+--
 -- Data for Name: fonte; Type: TABLE DATA; Schema: consistenciacao; Owner: ieducar
 --
 
 COPY fonte (idfon, nome, situacao) FROM stdin;
 \.
+
+
+--
+-- Name: fonte_idfon_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('fonte_idfon_seq', 1, false);
 
 
 --
@@ -19401,6 +18582,13 @@ COPY incoerencia_documento (id_inc_doc, idinc, rg, orgao_exp_rg, data_exp_rg, si
 
 
 --
+-- Name: incoerencia_documento_id_inc_doc_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('incoerencia_documento_id_inc_doc_seq', 1, false);
+
+
+--
 -- Data for Name: incoerencia_endereco; Type: TABLE DATA; Schema: consistenciacao; Owner: ieducar
 --
 
@@ -19409,11 +18597,32 @@ COPY incoerencia_endereco (id_inc_end, idinc, tipo, tipo_logradouro, logradouro,
 
 
 --
+-- Name: incoerencia_endereco_id_inc_end_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('incoerencia_endereco_id_inc_end_seq', 1, false);
+
+
+--
 -- Data for Name: incoerencia_fone; Type: TABLE DATA; Schema: consistenciacao; Owner: ieducar
 --
 
 COPY incoerencia_fone (id_inc_fone, idinc, tipo, ddd, fone) FROM stdin;
 \.
+
+
+--
+-- Name: incoerencia_fone_id_inc_fone_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('incoerencia_fone_id_inc_fone_seq', 1, false);
+
+
+--
+-- Name: incoerencia_idinc_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('incoerencia_idinc_seq', 1, false);
 
 
 --
@@ -19441,6 +18650,13 @@ COPY metadado (idmet, idfon, nome, situacao, separador) FROM stdin;
 
 
 --
+-- Name: metadado_idmet_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('metadado_idmet_seq', 1, false);
+
+
+--
 -- Data for Name: ocorrencia_regra_campo; Type: TABLE DATA; Schema: consistenciacao; Owner: ieducar
 --
 
@@ -19454,6 +18670,13 @@ COPY ocorrencia_regra_campo (idreg, conteudo_padrao, ocorrencias) FROM stdin;
 
 COPY regra_campo (idreg, nome, tipo) FROM stdin;
 \.
+
+
+--
+-- Name: regra_campo_idreg_seq; Type: SEQUENCE SET; Schema: consistenciacao; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('regra_campo_idreg_seq', 1, false);
 
 
 --
@@ -19613,6 +18836,13 @@ COPY area_conhecimento (id, instituicao_id, nome) FROM stdin;
 
 
 --
+-- Name: area_conhecimento_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('area_conhecimento_id_seq', 2, true);
+
+
+--
 -- Data for Name: calendario_turma; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
@@ -19637,6 +18867,13 @@ COPY componente_curricular_ano_escolar (componente_curricular_id, ano_escolar_id
 
 
 --
+-- Name: componente_curricular_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('componente_curricular_id_seq', 2, true);
+
+
+--
 -- Data for Name: componente_curricular_turma; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
@@ -19650,6 +18887,13 @@ COPY componente_curricular_turma (componente_curricular_id, ano_escolar_id, esco
 
 COPY docente_licenciatura (id, servidor_id, licenciatura, curso_id, ano_conclusao, ies_id, user_id, created_at, updated_at) FROM stdin;
 \.
+
+
+--
+-- Name: docente_licenciatura_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('docente_licenciatura_id_seq', 1, false);
 
 
 --
@@ -19814,6 +19058,13 @@ COPY educacenso_curso_superior (id, curso_id, nome, classe_id, user_id, created_
 123	863999	Setor militar e de defesa	8	1	2010-09-20 11:45:07.078	\N
 124	999999	Outro curso de formação superior	9	1	2010-09-20 11:45:07.078	\N
 \.
+
+
+--
+-- Name: educacenso_curso_superior_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('educacenso_curso_superior_id_seq', 124, true);
 
 
 --
@@ -20249,6 +19500,7 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 426	548	UNIVERSIDADE FEDERAL DO MARANHÃO	1	1	MA	1	2010-09-20 11:44:14.453	\N
 427	549	UNIVERSIDADE FEDERAL DO ACRE	1	1	AC	1	2010-09-20 11:44:14.453	\N
 428	550	UNIVERSIDADE ESTADUAL DA PARAÍBA	2	1	PB	1	2010-09-20 11:44:14.453	\N
+500	641	CENTRO UNIVERSITÁRIO LA SALLE	4	2	RS	1	2010-09-20 11:44:14.453	\N
 429	552	FACULDADE DE FILOSOFIA CIÊNCIAS E LETRAS DE CARATINGA	4	2	MG	1	2010-09-20 11:44:14.453	\N
 430	553	FACULDADE DE CIÊNCIAS ADMINISTRATIVAS DE CARATINGA	4	2	MG	1	2010-09-20 11:44:14.453	\N
 431	554	FACULDADE DE FILOSOFIA, CIÊNCIAS E LETRAS DE BOA ESPERANÇA	4	2	MG	1	2010-09-20 11:44:14.453	\N
@@ -20320,7 +19572,6 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 497	638	FACULDADE DE DIREITO MILTON CAMPOS	4	2	MG	1	2010-09-20 11:44:14.453	\N
 498	639	FACULDADE DE DESENHO INDUSTRIAL DE MAUÁ	4	2	SP	1	2010-09-20 11:44:14.453	\N
 499	640	FACULDADES INTEGRADAS MARIA THEREZA	4	2	RJ	1	2010-09-20 11:44:14.453	\N
-500	641	CENTRO UNIVERSITÁRIO LA SALLE	4	2	RS	1	2010-09-20 11:44:14.453	\N
 501	645	CENTRO UNIVERSITÁRIO DE JARAGUÁ DO SUL	4	2	SC	1	2010-09-20 11:44:14.453	\N
 502	646	FACULDADES ASSOCIADAS DE SÃO PAULO	4	2	SP	1	2010-09-20 11:44:14.453	\N
 503	647	FACULDADE DE ENFERMAGEM LUIZA DE MARILLAC	4	2	RJ	1	2010-09-20 11:44:14.453	\N
@@ -20752,6 +20003,7 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 929	1209	FACULDADE DE ADMINISTRAÇÃO DE EMPRESAS DE CACOAL	4	2	RO	1	2010-09-20 11:44:14.453	\N
 930	1210	FACULDADE DE CIÊNCIAS DA COMUNICAÇÃO DE TAQUARA	4	2	RS	1	2010-09-20 11:44:14.453	\N
 931	1211	INSTITUTO DE ENSINO SUPERIOR DE SOROCABA	4	2	SP	1	2010-09-20 11:44:14.453	\N
+1007	1297	FACULDADE DOURADOS	4	2	MS	1	2010-09-20 11:44:14.453	\N
 932	1212	FACULDADE DE CIÊNCIAS CONTÁBEIS DE ASSIS	4	2	SP	1	2010-09-20 11:44:14.453	\N
 933	1213	FACULDADE FLEMING	4	2	SP	1	2010-09-20 11:44:14.453	\N
 934	1215	FACULDADE ANGLO LATINO	4	2	SP	1	2010-09-20 11:44:14.453	\N
@@ -20827,7 +20079,6 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 1004	1294	FACULDADE DAS AMÉRICAS	4	2	SP	1	2010-09-20 11:44:14.453	\N
 1005	1295	FACULDADE MORUMBI SUL	4	2	SP	1	2010-09-20 11:44:14.453	\N
 1006	1296	ESCOLA SUPERIOR DE MARKETING	4	2	PE	1	2010-09-20 11:44:14.453	\N
-1007	1297	FACULDADE DOURADOS	4	2	MS	1	2010-09-20 11:44:14.453	\N
 1008	1298	FACULDADE DE ALAGOAS	4	2	AL	1	2010-09-20 11:44:14.453	\N
 1009	1299	FACULDADES INTEGRADAS DE FERNANDÓPOLIS	4	2	SP	1	2010-09-20 11:44:14.453	\N
 1010	1300	INSTITUTO TAQUARITINGUENSE DE ENSINO SUPERIOR DR. ARISTIDES DE CARVALHO SCHLOBACH	4	2	SP	1	2010-09-20 11:44:14.453	\N
@@ -21128,6 +20379,7 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 1305	1600	INSTITUTO DE CIÊNCIAS DA SAÚDE	4	2	MG	1	2010-09-20 11:44:14.453	\N
 1306	1601	FACULDADE CIDADE DE COROMANDEL	4	2	MG	1	2010-09-20 11:44:14.453	\N
 1307	1602	FACULDADE DE CIÊNCIAS GERENCIAIS DO OESTE DE MINAS	4	2	MG	1	2010-09-20 11:44:14.453	\N
+1532	1827	FACULDADE LUTERANA DE TEOLOGIA	4	2	SC	1	2010-09-20 11:44:14.453	\N
 1308	1603	FACULDADE DE COMUNICAÇÃO SOCIAL DO OESTE DE MINAS	4	2	MG	1	2010-09-20 11:44:14.453	\N
 1309	1604	FACULDADE MAGNUN DE EDUCAÇÃO FÍSICA E ESPORTE	4	2	MG	1	2010-09-20 11:44:14.453	\N
 1310	1605	FACULDADE DE ADMINISTRAÇÃO DE NOVA ANDRADINA - FANOVA	4	2	MS	1	2010-09-20 11:44:14.453	\N
@@ -21352,7 +20604,6 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 1529	1824	FACULDADE DE CIÊNCIAS CONTÁBEIS DE ITABIRITO	4	2	MG	1	2010-09-20 11:44:14.453	\N
 1530	1825	FACULDADE DE ESTUDOS SUPERIORES DE MINAS GERAIS	4	2	MG	1	2010-09-20 11:44:14.453	\N
 1531	1826	FACULDADE DE DIREITO DE LEOPOLDINA	4	2	MG	1	2010-09-20 11:44:14.453	\N
-1532	1827	FACULDADE LUTERANA DE TEOLOGIA	4	2	SC	1	2010-09-20 11:44:14.453	\N
 1533	1828	ESCOLA DA CIDADE - FACULDADE DE ARQUITETURA E URBANISMO	4	2	SP	1	2010-09-20 11:44:14.453	\N
 1534	1829	FACULDADE DE TECNOLOGIA UIRAPURU	4	2	SP	1	2010-09-20 11:44:14.453	\N
 1535	1830	FACULDADE ANHANGUERA DE PASSO FUNDO	4	2	RS	1	2010-09-20 11:44:14.453	\N
@@ -21877,6 +21128,7 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 2054	2350	ESCOLA SUPERIOR MADRE CELESTE	4	2	PA	1	2010-09-20 11:44:14.453	\N
 2055	2351	FACULDADE ESPÍRITO SANTENSE DE CIÊNCIAS JURÍDICAS	4	2	ES	1	2010-09-20 11:44:14.453	\N
 2056	2352	INSTITUTO DE EDUCAÇÃO SUPERIOR PIO XII	4	2	ES	1	2010-09-20 11:44:14.453	\N
+2427	2723	FACULDADE MARISTA	4	2	PE	1	2010-09-20 11:44:14.453	\N
 2057	2353	FACULDADE DE ADMINISTRAÇÃO DO CENTRO EDUCACIONAL DE SANTOS	4	2	SP	1	2010-09-20 11:44:14.453	\N
 2058	2354	INSTITUTO SUPERIOR DE EDUCAÇÃO DO BRASIL	4	2	PI	1	2010-09-20 11:44:14.453	\N
 2059	2355	FACULDADE ANHANGUERA DE MATÃO	4	2	SP	1	2010-09-20 11:44:14.453	\N
@@ -22247,7 +21499,6 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 2424	2720	FACULDADE AUGUSTO MAIA	4	2	SP	1	2010-09-20 11:44:14.453	\N
 2425	2721	FACULDADE IMPACTA DE TECNOLOGIA DA INFORMAÇÃO - FITI	4	2	SP	1	2010-09-20 11:44:14.453	\N
 2426	2722	FACULDADE CATÓLICA DO CEARÁ	4	2	CE	1	2010-09-20 11:44:14.453	\N
-2427	2723	FACULDADE MARISTA	4	2	PE	1	2010-09-20 11:44:14.453	\N
 2428	2724	INSTITUTO DE ENSINO SUPERIOR DO SUL DO MARANHÃO	4	2	MA	1	2010-09-20 11:44:14.453	\N
 2429	2725	INSTITUTO SUPERIOR DE EDUCAÇÃO DA BAHIA	4	2	BA	1	2010-09-20 11:44:14.453	\N
 2430	2726	ESCOLA SUPERIOR DE ADMINISTRAÇÃO DE EMPRESAS	4	2	SP	1	2010-09-20 11:44:14.453	\N
@@ -22616,6 +21867,7 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 2793	3090	INSTITUTO SUPERIOR NORMAL AURELINA PALMEIRA	4	2	AL	1	2010-09-20 11:44:14.453	\N
 2794	3091	CENTRO DE ENSINO LEIDE TORRES	4	2	PI	1	2010-09-20 11:44:14.453	\N
 2795	3092	FACULDADE DE BEM ESTAR SOCIAL E SAÚDE DE ITAPECERICA	4	2	MG	1	2010-09-20 11:44:14.453	\N
+2937	3234	URN. FACULDADE DE ALAGOINHAS	4	2	BA	1	2010-09-20 11:44:14.453	\N
 2796	3093	FACULDADE DE ENFERMAGEM JOÃO FRANCISCO DA SILVA	4	2	MG	1	2010-09-20 11:44:14.453	\N
 2797	3094	FACULDADE DE DIREITO DESEMBARGADOR AFFONSO TEIXEIRA LAGES	4	2	MG	1	2010-09-20 11:44:14.453	\N
 2798	3095	FACULDADE DE CIÊNCIAS AGRÁRIAS DOM ORIONE	4	2	MG	1	2010-09-20 11:44:14.453	\N
@@ -22757,7 +22009,6 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 2934	3231	INSTITUTO SUPERIOR DE EDUCAÇÃO PADRE ANCHIETA	4	2	SP	1	2010-09-20 11:44:14.453	\N
 2935	3232	FACULDADE IGUAÇU	4	2	PR	1	2010-09-20 11:44:14.453	\N
 2936	3233	FACULDADE AMÉRICA DO SUL	4	2	PR	1	2010-09-20 11:44:14.453	\N
-2937	3234	URN. FACULDADE DE ALAGOINHAS	4	2	BA	1	2010-09-20 11:44:14.453	\N
 2938	3235	INSTITUTO SUPERIOR DE EDUCAÇÃO JOÃO PAULO PRIMEIRO	4	2	SP	1	2010-09-20 11:44:14.453	\N
 2939	3236	INSITUTO DE TEOLOGIA DA DIOCESE DE SANTO ANDRÉ	4	2	SP	1	2010-09-20 11:44:14.453	\N
 2940	3237	FACULDADE SENAC DE ADMINISTRAÇÃO E NEGÓCIOS	4	2	SP	1	2010-09-20 11:44:14.453	\N
@@ -22983,6 +22234,7 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 3160	3459	INSTITUTO DE ENSINO SUPERIOR E PESQUISA	4	2	MG	1	2010-09-20 11:44:14.453	\N
 3161	3460	INSTITUTO SUPERIOR DE ENSINO E PESQUISA DE ITUIUTABA	4	2	MG	1	2010-09-20 11:44:14.453	\N
 3162	3461	FACULDADE DE FILOSOFIA DE PASSOS	4	2	MG	1	2010-09-20 11:44:14.453	\N
+3450	3752	FACULDADE DE TECNOLOGIA CONTEC	4	2	ES	1	2010-09-20 11:44:14.453	\N
 3163	3462	FACULDADE DE ENFERMAGEM DE PASSOS	4	2	MG	1	2010-09-20 11:44:14.453	\N
 3164	3463	FACULDADE DE DIREITO DE PASSOS	4	2	MG	1	2010-09-20 11:44:14.453	\N
 3165	3464	FACULDADE DE ENGENHARIA DE PASSOS	4	2	MG	1	2010-09-20 11:44:14.453	\N
@@ -23270,7 +22522,6 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 3447	3749	FACULDADE DE TECNOLOGIA BRASÍLIA DE SÃO PAULO	4	2	SP	1	2010-09-20 11:44:14.453	\N
 3448	3750	FACULDADE DE TECNOLOGIA DO PARÁ	4	2	PA	1	2010-09-20 11:44:14.453	\N
 3449	3751	FACULDADE DE TECNOLOGIA DO CEARÁ	4	2	CE	1	2010-09-20 11:44:14.453	\N
-3450	3752	FACULDADE DE TECNOLOGIA CONTEC	4	2	ES	1	2010-09-20 11:44:14.453	\N
 3451	3753	FACULDADES INTEGRADAS DOM PEDRO II	4	2	SP	1	2010-09-20 11:44:14.453	\N
 3452	3754	FACULDADES INTEGRADAS ADVENTISTAS DE MINAS GERAIS	4	2	MG	1	2010-09-20 11:44:14.453	\N
 3453	3755	FACULDADE EM AUTOCONHECIMENTO	4	2	DF	1	2010-09-20 11:44:14.453	\N
@@ -24440,6 +23691,7 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 4617	4940	CENTRO DE ESTUDOS, PESQUISAS E PÓS-GRADUAÇÃO EM ODONTOLOGIA - CEPPO	4	2	MG	1	2010-09-20 11:44:14.453	\N
 4618	4941	FACULDADES INTEGRADAS DE GUARAPARI	4	2	ES	1	2010-09-20 11:44:14.453	\N
 4619	4942	FAEME - FACULDADE EVANGÉLICA DO MEIO NORTE DE MARITUBA	4	2	PA	1	2010-09-20 11:44:14.453	\N
+4909	5235	FACULDADE DE TECNOLOGIA IBRATEC	4	2	PE	1	2010-09-20 11:44:14.453	\N
 4620	4943	ESCOLA SUPERIOR DE ADMINISTRAÇÃO E GESTÃO DA BAIXADA SANTISTA	4	2	SP	1	2010-09-20 11:44:14.453	\N
 4621	4944	DENTAL PRESS - CENTRO DE PESQUISA E PÓS-GRADUAÇÃO	4	2	PR	1	2010-09-20 11:44:14.453	\N
 4622	4945	FACULDADE INTERNACIONAL DO DELTA	4	2	PI	1	2010-09-20 11:44:14.453	\N
@@ -24729,7 +23981,6 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 4906	5232	INSTITUTO TOCANTINENSE DE EDUCAÇÃO À DISTÂNCIA	4	2	TO	1	2010-09-20 11:44:14.453	\N
 4907	5233	FUNDAÇÃO DE APOIO À PESQUISA E ESTUDO NA ÁREA DE SAÚDE - FAPES	4	2	SP	1	2010-09-20 11:44:14.453	\N
 4908	5234	FASS - SISTEMA DE ENSINO A DISTÂNCIA	4	2	SP	1	2010-09-20 11:44:14.453	\N
-4909	5235	FACULDADE DE TECNOLOGIA IBRATEC	4	2	PE	1	2010-09-20 11:44:14.453	\N
 4910	5236	CENTRO DE ESTUDOS SUPERIORES DA FUNDACOR	4	2	RJ	1	2010-09-20 11:44:14.453	\N
 4911	5237	INSTITUTO SUPERIOR DE FORMAÇÃO CONTINUADA DOUGLAS ANDREANI	4	2	SP	1	2010-09-20 11:44:14.453	\N
 4912	5238	INSTITUTO SAPIENTIA DE EDUCAÇÃO SUPERIOR - ISES	4	2	CE	1	2010-09-20 11:44:14.453	\N
@@ -25126,11 +24377,40 @@ COPY educacenso_ies (id, ies_id, nome, dependencia_administrativa_id, tipo_insti
 
 
 --
+-- Name: educacenso_ies_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('educacenso_ies_id_seq', 5301, true);
+
+
+--
+-- Data for Name: empresa_transporte_escolar; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY empresa_transporte_escolar (cod_empresa_transporte_escolar, ref_idpes, ref_resp_idpes, observacao) FROM stdin;
+\.
+
+
+--
+-- Name: empresa_transporte_escolar_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('empresa_transporte_escolar_seq', 1, false);
+
+
+--
 -- Data for Name: falta_aluno; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
 COPY falta_aluno (id, matricula_id, tipo_falta) FROM stdin;
 \.
+
+
+--
+-- Name: falta_aluno_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('falta_aluno_id_seq', 2, true);
 
 
 --
@@ -25142,11 +24422,25 @@ COPY falta_componente_curricular (id, falta_aluno_id, componente_curricular_id, 
 
 
 --
+-- Name: falta_componente_curricular_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('falta_componente_curricular_id_seq', 1, true);
+
+
+--
 -- Data for Name: falta_geral; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
 COPY falta_geral (id, falta_aluno_id, quantidade, etapa) FROM stdin;
 \.
+
+
+--
+-- Name: falta_geral_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('falta_geral_id_seq', 1, false);
 
 
 --
@@ -25160,6 +24454,43 @@ COPY formula_media (id, instituicao_id, nome, formula_media, tipo_formula) FROM 
 
 
 --
+-- Name: formula_media_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('formula_media_id_seq', 2, true);
+
+
+--
+-- Data for Name: itinerario_transporte_escolar; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY itinerario_transporte_escolar (cod_itinerario_transporte_escolar, ref_cod_rota_transporte_escolar, seq, ref_cod_ponto_transporte_escolar, ref_cod_veiculo, hora, tipo) FROM stdin;
+\.
+
+
+--
+-- Name: itinerario_transporte_escolar_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('itinerario_transporte_escolar_seq', 1, false);
+
+
+--
+-- Data for Name: motorista; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY motorista (cod_motorista, ref_idpes, cnh, tipo_cnh, dt_habilitacao, vencimento_cnh, ref_cod_empresa_transporte_escolar, observacao) FROM stdin;
+\.
+
+
+--
+-- Name: motorista_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('motorista_seq', 1, false);
+
+
+--
 -- Data for Name: nota_aluno; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
@@ -25168,11 +24499,25 @@ COPY nota_aluno (id, matricula_id) FROM stdin;
 
 
 --
+-- Name: nota_aluno_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('nota_aluno_id_seq', 2, true);
+
+
+--
 -- Data for Name: nota_componente_curricular; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
 COPY nota_componente_curricular (id, nota_aluno_id, componente_curricular_id, nota, nota_arredondada, etapa) FROM stdin;
 \.
+
+
+--
+-- Name: nota_componente_curricular_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('nota_componente_curricular_id_seq', 1, true);
 
 
 --
@@ -25192,6 +24537,13 @@ COPY parecer_aluno (id, matricula_id, parecer_descritivo) FROM stdin;
 
 
 --
+-- Name: parecer_aluno_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('parecer_aluno_id_seq', 1, false);
+
+
+--
 -- Data for Name: parecer_componente_curricular; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
@@ -25200,11 +24552,55 @@ COPY parecer_componente_curricular (id, parecer_aluno_id, componente_curricular_
 
 
 --
+-- Name: parecer_componente_curricular_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('parecer_componente_curricular_id_seq', 1, false);
+
+
+--
 -- Data for Name: parecer_geral; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
 COPY parecer_geral (id, parecer_aluno_id, parecer, etapa) FROM stdin;
 \.
+
+
+--
+-- Name: parecer_geral_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('parecer_geral_id_seq', 1, false);
+
+
+--
+-- Data for Name: pessoa_transporte; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY pessoa_transporte (cod_pessoa_transporte, ref_idpes, ref_cod_rota_transporte_escolar, ref_cod_ponto_transporte_escolar, ref_idpes_destino, observacao) FROM stdin;
+\.
+
+
+--
+-- Name: pessoa_transporte_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('pessoa_transporte_seq', 1, false);
+
+
+--
+-- Data for Name: ponto_transporte_escolar; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY ponto_transporte_escolar (cod_ponto_transporte_escolar, descricao) FROM stdin;
+\.
+
+
+--
+-- Name: ponto_transporte_escolar_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('ponto_transporte_escolar_seq', 1, false);
 
 
 --
@@ -25218,6 +24614,28 @@ COPY regra_avaliacao (id, instituicao_id, formula_media_id, formula_recuperacao_
 
 
 --
+-- Name: regra_avaliacao_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('regra_avaliacao_id_seq', 2, true);
+
+
+--
+-- Data for Name: rota_transporte_escolar; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY rota_transporte_escolar (cod_rota_transporte_escolar, ref_idpes_destino, descricao, ano, tipo_rota, km_pav, km_npav, ref_cod_empresa_transporte_escolar, tercerizado) FROM stdin;
+\.
+
+
+--
+-- Name: rota_transporte_escolar_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('rota_transporte_escolar_seq', 1, false);
+
+
+--
 -- Data for Name: tabela_arredondamento; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
@@ -25225,6 +24643,13 @@ COPY tabela_arredondamento (id, instituicao_id, nome, tipo_nota) FROM stdin;
 1	1	Tabela padrão de notas numéricas	1
 2	1	Tabela padrão de notas conceituais	2
 \.
+
+
+--
+-- Name: tabela_arredondamento_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tabela_arredondamento_id_seq', 2, true);
 
 
 --
@@ -25262,11 +24687,59 @@ COPY tabela_arredondamento_valor (id, tabela_arredondamento_id, nome, descricao,
 
 
 --
+-- Name: tabela_arredondamento_valor_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tabela_arredondamento_valor_id_seq', 26, true);
+
+
+--
+-- Data for Name: tipo_veiculo; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY tipo_veiculo (cod_tipo_veiculo, descricao) FROM stdin;
+1	Vans/Kombis
+2	MicroÃ´nibus
+3	Ã”nibus
+4	Bicicleta
+5	TraÃ§Ã£o Animal
+6	Outro
+7	Capacidade de atÃ© 5 Alunos
+8	Capacidade entre 5 a 15 Alunos
+9	Capacidade entre 15 a 35 Alunos
+10	Capacidade acima de 35 Alunos
+11	Trem/MetrÃ´
+\.
+
+
+--
+-- Name: tipo_veiculo_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tipo_veiculo_seq', 1, false);
+
+
+--
 -- Data for Name: transporte_aluno; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
 COPY transporte_aluno (aluno_id, responsavel, user_id, created_at, updated_at) FROM stdin;
 \.
+
+
+--
+-- Data for Name: veiculo; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY veiculo (cod_veiculo, descricao, placa, renavam, chassi, marca, ano_fabricacao, ano_modelo, passageiros, malha, ref_cod_tipo_veiculo, exclusivo_transporte_escolar, adaptado_necessidades_especiais, ativo, descricao_inativo, ref_cod_empresa_transporte_escolar, ref_cod_motorista, observacao) FROM stdin;
+\.
+
+
+--
+-- Name: veiculo_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('veiculo_seq', 1, false);
 
 
 SET search_path = pmiacoes, pg_catalog;
@@ -25288,6 +24761,13 @@ COPY acao_governo_arquivo (cod_acao_governo_arquivo, ref_funcionario_cad, ref_co
 
 
 --
+-- Name: acao_governo_arquivo_cod_acao_governo_arquivo_seq; Type: SEQUENCE SET; Schema: pmiacoes; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('acao_governo_arquivo_cod_acao_governo_arquivo_seq', 1, false);
+
+
+--
 -- Data for Name: acao_governo_categoria; Type: TABLE DATA; Schema: pmiacoes; Owner: ieducar
 --
 
@@ -25296,11 +24776,25 @@ COPY acao_governo_categoria (ref_cod_categoria, ref_cod_acao_governo) FROM stdin
 
 
 --
+-- Name: acao_governo_cod_acao_governo_seq; Type: SEQUENCE SET; Schema: pmiacoes; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('acao_governo_cod_acao_governo_seq', 1, false);
+
+
+--
 -- Data for Name: acao_governo_foto; Type: TABLE DATA; Schema: pmiacoes; Owner: ieducar
 --
 
 COPY acao_governo_foto (cod_acao_governo_foto, ref_funcionario_cad, ref_cod_acao_governo, nm_foto, caminho, data_foto, data_cadastro) FROM stdin;
 \.
+
+
+--
+-- Name: acao_governo_foto_cod_acao_governo_foto_seq; Type: SEQUENCE SET; Schema: pmiacoes; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('acao_governo_foto_cod_acao_governo_foto_seq', 1, false);
 
 
 --
@@ -25336,6 +24830,13 @@ COPY categoria (cod_categoria, ref_funcionario_exc, ref_funcionario_cad, nm_cate
 
 
 --
+-- Name: categoria_cod_categoria_seq; Type: SEQUENCE SET; Schema: pmiacoes; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('categoria_cod_categoria_seq', 1, false);
+
+
+--
 -- Data for Name: secretaria_responsavel; Type: TABLE DATA; Schema: pmiacoes; Owner: ieducar
 --
 
@@ -25349,8 +24850,15 @@ SET search_path = pmicontrolesis, pg_catalog;
 -- Data for Name: acontecimento; Type: TABLE DATA; Schema: pmicontrolesis; Owner: ieducar
 --
 
-COPY acontecimento (cod_acontecimento, ref_cod_tipo_acontecimento, ref_cod_funcionario_cad, ref_cod_funcionario_exc, titulo, descricao, dt_inicio, dt_fim, hr_inicio, hr_fim, data_cadastro, data_exclusao, ativo, "local", contato, link) FROM stdin;
+COPY acontecimento (cod_acontecimento, ref_cod_tipo_acontecimento, ref_cod_funcionario_cad, ref_cod_funcionario_exc, titulo, descricao, dt_inicio, dt_fim, hr_inicio, hr_fim, data_cadastro, data_exclusao, ativo, local, contato, link) FROM stdin;
 \.
+
+
+--
+-- Name: acontecimento_cod_acontecimento_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('acontecimento_cod_acontecimento_seq', 1, false);
 
 
 --
@@ -25362,11 +24870,25 @@ COPY artigo (cod_artigo, texto, data_cadastro, data_exclusao, ativo) FROM stdin;
 
 
 --
+-- Name: artigo_cod_artigo_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('artigo_cod_artigo_seq', 1, false);
+
+
+--
 -- Data for Name: foto_evento; Type: TABLE DATA; Schema: pmicontrolesis; Owner: ieducar
 --
 
 COPY foto_evento (cod_foto_evento, ref_ref_cod_pessoa_fj, data_foto, titulo, descricao, caminho, altura, largura, nm_credito) FROM stdin;
 \.
+
+
+--
+-- Name: foto_evento_cod_foto_evento_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('foto_evento_cod_foto_evento_seq', 1, false);
 
 
 --
@@ -25378,11 +24900,25 @@ COPY foto_vinc (cod_foto_vinc, ref_cod_acontecimento, ref_cod_foto_evento) FROM 
 
 
 --
+-- Name: foto_vinc_cod_foto_vinc_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('foto_vinc_cod_foto_vinc_seq', 1, false);
+
+
+--
 -- Data for Name: itinerario; Type: TABLE DATA; Schema: pmicontrolesis; Owner: ieducar
 --
 
 COPY itinerario (cod_itinerario, ref_funcionario_cad, ref_funcionario_exc, numero, itinerario, retorno, horarios, descricao_horario, data_cadastro, data_exclusao, ativo, nome) FROM stdin;
 \.
+
+
+--
+-- Name: itinerario_cod_itinerario_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('itinerario_cod_itinerario_seq', 1, false);
 
 
 --
@@ -25497,7 +25033,23 @@ COPY menu (cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ord_menu, 
 999615	999615	999614	Autores	2	module/Reports/BibliotecaAutor	_self	1	16	1
 999616	999616	999614	Editoras	3	module/Reports/BibliotecaEditora	_self	1	16	1
 999617	999617	999614	Obras	4	module/Reports/BibliotecaObra	_self	1	16	1
+20710	\N	\N	Cadastros	1	\N	_self	1	17	1
+20711	\N	\N	MovimentaÃ§Ã£o	2	\N	_self	1	17	1
+20712	\N	\N	RelatÃ³rios	3	\N	_self	1	17	1
+21235	21235	20710	Empresas	1	transporte_empresa_lst.php	_self	1	17	192
+21236	21236	20710	Motoristas	2	transporte_motorista_lst.php	_self	1	17	192
+21237	21237	20710	VeÃ­culos	3	transporte_veiculo_lst.php	_self	1	17	192
+21238	21238	20710	Pontos	4	transporte_ponto_lst.php	_self	1	17	192
+21239	21239	20710	Rotas	5	transporte_rota_lst.php	_self	1	17	192
+21240	21240	20711	UsuÃ¡rios de Transporte	5	transporte_pessoa_lst.php	_self	1	17	192
 \.
+
+
+--
+-- Name: menu_cod_menu_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('menu_cod_menu_seq', 20709, true);
 
 
 --
@@ -25509,11 +25061,25 @@ COPY menu_portal (cod_menu_portal, ref_funcionario_cad, ref_funcionario_exc, nm_
 
 
 --
+-- Name: menu_portal_cod_menu_portal_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('menu_portal_cod_menu_portal_seq', 1, false);
+
+
+--
 -- Data for Name: portais; Type: TABLE DATA; Schema: pmicontrolesis; Owner: ieducar
 --
 
 COPY portais (cod_portais, ref_cod_funcionario_cad, ref_cod_funcionario_exc, url, caminho, data_cadastro, data_exclusao, ativo, title, descricao) FROM stdin;
 \.
+
+
+--
+-- Name: portais_cod_portais_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('portais_cod_portais_seq', 1, false);
 
 
 --
@@ -25525,11 +25091,25 @@ COPY servicos (cod_servicos, ref_cod_funcionario_cad, ref_cod_funcionario_exc, u
 
 
 --
+-- Name: servicos_cod_servicos_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('servicos_cod_servicos_seq', 1, false);
+
+
+--
 -- Data for Name: sistema; Type: TABLE DATA; Schema: pmicontrolesis; Owner: ieducar
 --
 
 COPY sistema (cod_sistema, nm_sistema, ref_cod_funcionario_cad, ref_cod_funcionario_exc, data_cadastro, data_exclusao, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: sistema_cod_sistema_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('sistema_cod_sistema_seq', 1, false);
 
 
 --
@@ -25541,11 +25121,25 @@ COPY submenu_portal (cod_submenu_portal, ref_funcionario_cad, ref_funcionario_ex
 
 
 --
+-- Name: submenu_portal_cod_submenu_portal_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('submenu_portal_cod_submenu_portal_seq', 1, false);
+
+
+--
 -- Data for Name: telefones; Type: TABLE DATA; Schema: pmicontrolesis; Owner: ieducar
 --
 
 COPY telefones (cod_telefones, ref_funcionario_cad, ref_funcionario_exc, nome, numero, data_cadastro, data_exclusao, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: telefones_cod_telefones_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('telefones_cod_telefones_seq', 1, false);
 
 
 --
@@ -25557,11 +25151,25 @@ COPY tipo_acontecimento (cod_tipo_acontecimento, ref_cod_funcionario_cad, ref_co
 
 
 --
+-- Name: tipo_acontecimento_cod_tipo_acontecimento_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tipo_acontecimento_cod_tipo_acontecimento_seq', 1, false);
+
+
+--
 -- Data for Name: topo_portal; Type: TABLE DATA; Schema: pmicontrolesis; Owner: ieducar
 --
 
 COPY topo_portal (cod_topo_portal, ref_funcionario_cad, ref_funcionario_exc, ref_cod_menu_portal, caminho1, caminho2, caminho3, data_cadastro, data_exclusao, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: topo_portal_cod_topo_portal_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('topo_portal_cod_topo_portal_seq', 1, false);
 
 
 --
@@ -25572,7 +25180,15 @@ COPY tutormenu (cod_tutormenu, nm_tutormenu) FROM stdin;
 7	i-Pauta
 15	i-Educar
 16	i-Educar Biblioteca
+17	Transporte Escolar
 \.
+
+
+--
+-- Name: tutormenu_cod_tutormenu_seq; Type: SEQUENCE SET; Schema: pmicontrolesis; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tutormenu_cod_tutormenu_seq', 16, true);
 
 
 SET search_path = pmidrh, pg_catalog;
@@ -25586,11 +25202,25 @@ COPY diaria (cod_diaria, ref_funcionario_cadastro, ref_cod_diaria_grupo, ref_fun
 
 
 --
+-- Name: diaria_cod_diaria_seq; Type: SEQUENCE SET; Schema: pmidrh; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('diaria_cod_diaria_seq', 1, false);
+
+
+--
 -- Data for Name: diaria_grupo; Type: TABLE DATA; Schema: pmidrh; Owner: ieducar
 --
 
 COPY diaria_grupo (cod_diaria_grupo, desc_grupo) FROM stdin;
 \.
+
+
+--
+-- Name: diaria_grupo_cod_diaria_grupo_seq; Type: SEQUENCE SET; Schema: pmidrh; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('diaria_grupo_cod_diaria_grupo_seq', 1, false);
 
 
 --
@@ -25602,11 +25232,25 @@ COPY diaria_valores (cod_diaria_valores, ref_funcionario_cadastro, ref_cod_diari
 
 
 --
+-- Name: diaria_valores_cod_diaria_valores_seq; Type: SEQUENCE SET; Schema: pmidrh; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('diaria_valores_cod_diaria_valores_seq', 1, false);
+
+
+--
 -- Data for Name: setor; Type: TABLE DATA; Schema: pmidrh; Owner: ieducar
 --
 
 COPY setor (cod_setor, ref_cod_pessoa_exc, ref_cod_pessoa_cad, ref_cod_setor, nm_setor, sgl_setor, data_cadastro, data_exclusao, ativo, nivel, no_paco, endereco, tipo, ref_idpes_resp) FROM stdin;
 \.
+
+
+--
+-- Name: setor_cod_setor_seq; Type: SEQUENCE SET; Schema: pmidrh; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('setor_cod_setor_seq', 1, false);
 
 
 SET search_path = pmieducar, pg_catalog;
@@ -25644,11 +25288,32 @@ COPY acervo_assunto (cod_acervo_assunto, ref_usuario_exc, ref_usuario_cad, nm_as
 
 
 --
+-- Name: acervo_assunto_cod_acervo_assunto_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('acervo_assunto_cod_acervo_assunto_seq', 1, false);
+
+
+--
 -- Data for Name: acervo_autor; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY acervo_autor (cod_acervo_autor, ref_usuario_exc, ref_usuario_cad, nm_autor, descricao, data_cadastro, data_exclusao, ativo, ref_cod_biblioteca) FROM stdin;
 \.
+
+
+--
+-- Name: acervo_autor_cod_acervo_autor_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('acervo_autor_cod_acervo_autor_seq', 1, false);
+
+
+--
+-- Name: acervo_cod_acervo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('acervo_cod_acervo_seq', 1, false);
 
 
 --
@@ -25660,6 +25325,13 @@ COPY acervo_colecao (cod_acervo_colecao, ref_usuario_exc, ref_usuario_cad, nm_co
 
 
 --
+-- Name: acervo_colecao_cod_acervo_colecao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('acervo_colecao_cod_acervo_colecao_seq', 1, false);
+
+
+--
 -- Data for Name: acervo_editora; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
@@ -25668,11 +25340,25 @@ COPY acervo_editora (cod_acervo_editora, ref_usuario_cad, ref_usuario_exc, ref_i
 
 
 --
+-- Name: acervo_editora_cod_acervo_editora_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('acervo_editora_cod_acervo_editora_seq', 1, false);
+
+
+--
 -- Data for Name: acervo_idioma; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY acervo_idioma (cod_acervo_idioma, ref_usuario_exc, ref_usuario_cad, nm_idioma, data_cadastro, data_exclusao, ativo, ref_cod_biblioteca) FROM stdin;
 \.
+
+
+--
+-- Name: acervo_idioma_cod_acervo_idioma_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('acervo_idioma_cod_acervo_idioma_seq', 1, false);
 
 
 --
@@ -25689,6 +25375,20 @@ COPY aluno (cod_aluno, ref_cod_aluno_beneficio, ref_cod_religiao, ref_usuario_ex
 
 COPY aluno_beneficio (cod_aluno_beneficio, ref_usuario_exc, ref_usuario_cad, nm_beneficio, desc_beneficio, data_cadastro, data_exclusao, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: aluno_beneficio_cod_aluno_beneficio_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('aluno_beneficio_cod_aluno_beneficio_seq', 1, false);
+
+
+--
+-- Name: aluno_cod_aluno_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('aluno_cod_aluno_seq', 2, true);
 
 
 --
@@ -25716,6 +25416,13 @@ COPY biblioteca (cod_biblioteca, ref_cod_instituicao, ref_cod_escola, nm_bibliot
 
 
 --
+-- Name: biblioteca_cod_biblioteca_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('biblioteca_cod_biblioteca_seq', 1, false);
+
+
+--
 -- Data for Name: biblioteca_dia; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
@@ -25729,6 +25436,13 @@ COPY biblioteca_dia (ref_cod_biblioteca, dia) FROM stdin;
 
 COPY biblioteca_feriados (cod_feriado, ref_cod_biblioteca, nm_feriado, descricao, data_cadastro, data_exclusao, ativo, data_feriado) FROM stdin;
 \.
+
+
+--
+-- Name: biblioteca_feriados_cod_feriado_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('biblioteca_feriados_cod_feriado_seq', 1, false);
 
 
 --
@@ -25748,11 +25462,25 @@ COPY calendario_ano_letivo (cod_calendario_ano_letivo, ref_cod_escola, ref_usuar
 
 
 --
+-- Name: calendario_ano_letivo_cod_calendario_ano_letivo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('calendario_ano_letivo_cod_calendario_ano_letivo_seq', 1, false);
+
+
+--
 -- Data for Name: calendario_anotacao; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY calendario_anotacao (cod_calendario_anotacao, ref_usuario_exc, ref_usuario_cad, nm_anotacao, descricao, data_cadastro, data_exclusao, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: calendario_anotacao_cod_calendario_anotacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('calendario_anotacao_cod_calendario_anotacao_seq', 1, false);
 
 
 --
@@ -25780,6 +25508,13 @@ COPY calendario_dia_motivo (cod_calendario_dia_motivo, ref_cod_escola, ref_usuar
 
 
 --
+-- Name: calendario_dia_motivo_cod_calendario_dia_motivo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('calendario_dia_motivo_cod_calendario_dia_motivo_seq', 1, false);
+
+
+--
 -- Data for Name: categoria_nivel; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
@@ -25788,11 +25523,25 @@ COPY categoria_nivel (cod_categoria_nivel, ref_usuario_exc, ref_usuario_cad, nm_
 
 
 --
+-- Name: categoria_nivel_cod_categoria_nivel_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('categoria_nivel_cod_categoria_nivel_seq', 1, false);
+
+
+--
 -- Data for Name: cliente; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
-COPY cliente (cod_cliente, ref_usuario_exc, ref_usuario_cad, ref_idpes, "login", senha, data_cadastro, data_exclusao, ativo) FROM stdin;
+COPY cliente (cod_cliente, ref_usuario_exc, ref_usuario_cad, ref_idpes, login, senha, data_cadastro, data_exclusao, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: cliente_cod_cliente_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('cliente_cod_cliente_seq', 1, false);
 
 
 --
@@ -25820,6 +25569,13 @@ COPY cliente_tipo_cliente (ref_cod_cliente_tipo, ref_cod_cliente, data_cadastro,
 
 
 --
+-- Name: cliente_tipo_cod_cliente_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('cliente_tipo_cod_cliente_tipo_seq', 1, false);
+
+
+--
 -- Data for Name: cliente_tipo_exemplar_tipo; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
@@ -25836,6 +25592,13 @@ COPY coffebreak_tipo (cod_coffebreak_tipo, ref_usuario_exc, ref_usuario_cad, nm_
 
 
 --
+-- Name: coffebreak_tipo_cod_coffebreak_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('coffebreak_tipo_cod_coffebreak_tipo_seq', 1, false);
+
+
+--
 -- Data for Name: curso; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
@@ -25844,11 +25607,25 @@ COPY curso (cod_curso, ref_usuario_cad, ref_cod_tipo_regime, ref_cod_nivel_ensin
 
 
 --
+-- Name: curso_cod_curso_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('curso_cod_curso_seq', 1, true);
+
+
+--
 -- Data for Name: disciplina; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY disciplina (cod_disciplina, ref_usuario_exc, ref_usuario_cad, desc_disciplina, desc_resumida, abreviatura, carga_horaria, apura_falta, data_cadastro, data_exclusao, ativo, nm_disciplina, ref_cod_curso) FROM stdin;
 \.
+
+
+--
+-- Name: disciplina_cod_disciplina_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('disciplina_cod_disciplina_seq', 1, false);
 
 
 --
@@ -25865,6 +25642,13 @@ COPY disciplina_serie (ref_cod_disciplina, ref_cod_serie, ativo) FROM stdin;
 
 COPY disciplina_topico (cod_disciplina_topico, ref_usuario_exc, ref_usuario_cad, nm_topico, desc_topico, data_cadastro, data_exclusao, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: disciplina_topico_cod_disciplina_topico_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('disciplina_topico_cod_disciplina_topico_seq', 1, false);
 
 
 --
@@ -25889,6 +25673,13 @@ COPY escola (cod_escola, ref_usuario_cad, ref_usuario_exc, ref_cod_instituicao, 
 
 COPY escola_ano_letivo (ref_cod_escola, ano, ref_usuario_cad, ref_usuario_exc, andamento, data_cadastro, data_exclusao, ativo, turmas_por_ano) FROM stdin;
 \.
+
+
+--
+-- Name: escola_cod_escola_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('escola_cod_escola_seq', 1, true);
 
 
 --
@@ -25918,11 +25709,25 @@ COPY escola_localizacao (cod_escola_localizacao, ref_usuario_exc, ref_usuario_ca
 
 
 --
+-- Name: escola_localizacao_cod_escola_localizacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('escola_localizacao_cod_escola_localizacao_seq', 3, true);
+
+
+--
 -- Data for Name: escola_rede_ensino; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY escola_rede_ensino (cod_escola_rede_ensino, ref_usuario_exc, ref_usuario_cad, nm_rede, data_cadastro, data_exclusao, ativo, ref_cod_instituicao) FROM stdin;
 \.
+
+
+--
+-- Name: escola_rede_ensino_cod_escola_rede_ensino_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('escola_rede_ensino_cod_escola_rede_ensino_seq', 1, true);
 
 
 --
@@ -25950,11 +25755,25 @@ COPY exemplar (cod_exemplar, ref_cod_fonte, ref_cod_motivo_baixa, ref_cod_acervo
 
 
 --
+-- Name: exemplar_cod_exemplar_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('exemplar_cod_exemplar_seq', 1, false);
+
+
+--
 -- Data for Name: exemplar_emprestimo; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY exemplar_emprestimo (cod_emprestimo, ref_usuario_devolucao, ref_usuario_cad, ref_cod_cliente, ref_cod_exemplar, data_retirada, data_devolucao, valor_multa) FROM stdin;
 \.
+
+
+--
+-- Name: exemplar_emprestimo_cod_emprestimo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('exemplar_emprestimo_cod_emprestimo_seq', 1, false);
 
 
 --
@@ -25966,11 +25785,25 @@ COPY exemplar_tipo (cod_exemplar_tipo, ref_cod_biblioteca, ref_usuario_exc, ref_
 
 
 --
+-- Name: exemplar_tipo_cod_exemplar_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('exemplar_tipo_cod_exemplar_tipo_seq', 1, false);
+
+
+--
 -- Data for Name: falta_aluno; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY falta_aluno (cod_falta_aluno, ref_cod_disciplina, ref_cod_escola, ref_cod_serie, ref_cod_matricula, ref_usuario_exc, ref_usuario_cad, faltas, data_cadastro, data_exclusao, ativo, modulo, ref_cod_curso_disciplina) FROM stdin;
 \.
+
+
+--
+-- Name: falta_aluno_cod_falta_aluno_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('falta_aluno_cod_falta_aluno_seq', 1, false);
 
 
 --
@@ -25982,11 +25815,25 @@ COPY falta_atraso (cod_falta_atraso, ref_cod_escola, ref_ref_cod_instituicao, re
 
 
 --
+-- Name: falta_atraso_cod_falta_atraso_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('falta_atraso_cod_falta_atraso_seq', 1, false);
+
+
+--
 -- Data for Name: falta_atraso_compensado; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY falta_atraso_compensado (cod_compensado, ref_cod_escola, ref_ref_cod_instituicao, ref_cod_servidor, ref_usuario_exc, ref_usuario_cad, data_inicio, data_fim, data_cadastro, data_exclusao, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: falta_atraso_compensado_cod_compensado_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('falta_atraso_compensado_cod_compensado_seq', 1, false);
 
 
 --
@@ -25998,11 +25845,25 @@ COPY faltas (ref_cod_matricula, sequencial, ref_usuario_cad, falta, data_cadastr
 
 
 --
+-- Name: faltas_sequencial_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('faltas_sequencial_seq', 1, false);
+
+
+--
 -- Data for Name: fonte; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY fonte (cod_fonte, ref_usuario_exc, ref_usuario_cad, nm_fonte, descricao, data_cadastro, data_exclusao, ativo, ref_cod_biblioteca) FROM stdin;
 \.
+
+
+--
+-- Name: fonte_cod_fonte_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('fonte_cod_fonte_seq', 1, false);
 
 
 --
@@ -26014,11 +25875,25 @@ COPY funcao (cod_funcao, ref_usuario_exc, ref_usuario_cad, nm_funcao, abreviatur
 
 
 --
+-- Name: funcao_cod_funcao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('funcao_cod_funcao_seq', 1, false);
+
+
+--
 -- Data for Name: habilitacao; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY habilitacao (cod_habilitacao, ref_usuario_exc, ref_usuario_cad, nm_tipo, descricao, data_cadastro, data_exclusao, ativo, ref_cod_instituicao) FROM stdin;
 \.
+
+
+--
+-- Name: habilitacao_cod_habilitacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('habilitacao_cod_habilitacao_seq', 1, false);
 
 
 --
@@ -26104,6 +25979,7 @@ menu_tipo_usuario	(1,999621,1,0,1)	2012-06-22 16:31:36.620354	1
 menu_tipo_usuario	(1,999622,1,0,1)	2012-06-22 16:31:36.620354	1
 instituicao	(1,,1,RUA,SC,88888888,i-Educar,Centro,"Rua João Paulo Segundo",2013,Centro,"Secretaria de Educação e Cultura",48,99999999,"2010-01-04 08:00:00","2013-01-28 18:03:41.375419",1,"Prefeitura Municipal de i-Educar")	2013-01-28 18:03:41.375419	0
 instituicao	(1,,1,RUA,SC,88820000,Içara,Centro,"Coronel Marcos Rovaris",165,Centro,"Secretaria de Educação e Cultura",48,30553001,"2010-01-04 08:00:00","2013-01-31 23:07:02.374795",1,"Serviço Federal de Processamento de Dados - SERPRO")	2013-01-31 23:07:02.374795	0
+instituicao	(1,,1,QDA,DF,70836900,Içara,Centro,"SGAN 601",165,"Módulo 5","Coordenação Estratégica de Ações Governamentais - CEAGO",61,20218531,"2010-01-04 08:00:00","2014-04-09 09:13:44.355968",1,"Serviço Federal de Processamento de Dados - SERPRO")	2014-04-09 09:13:44.355968	0
 \.
 
 
@@ -26126,11 +26002,25 @@ COPY historico_grade_curso (id, descricao_etapa, created_at, updated_at, quantid
 
 
 --
+-- Name: historico_grade_curso_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('historico_grade_curso_seq', 3, false);
+
+
+--
 -- Data for Name: infra_comodo_funcao; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY infra_comodo_funcao (cod_infra_comodo_funcao, ref_usuario_exc, ref_usuario_cad, nm_funcao, desc_funcao, data_cadastro, data_exclusao, ativo, ref_cod_escola) FROM stdin;
 \.
+
+
+--
+-- Name: infra_comodo_funcao_cod_infra_comodo_funcao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('infra_comodo_funcao_cod_infra_comodo_funcao_seq', 1, true);
 
 
 --
@@ -26142,6 +26032,13 @@ COPY infra_predio (cod_infra_predio, ref_usuario_exc, ref_usuario_cad, ref_cod_e
 
 
 --
+-- Name: infra_predio_cod_infra_predio_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('infra_predio_cod_infra_predio_seq', 1, true);
+
+
+--
 -- Data for Name: infra_predio_comodo; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
@@ -26150,12 +26047,26 @@ COPY infra_predio_comodo (cod_infra_predio_comodo, ref_usuario_exc, ref_usuario_
 
 
 --
+-- Name: infra_predio_comodo_cod_infra_predio_comodo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('infra_predio_comodo_cod_infra_predio_comodo_seq', 1, true);
+
+
+--
 -- Data for Name: instituicao; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY instituicao (cod_instituicao, ref_usuario_exc, ref_usuario_cad, ref_idtlog, ref_sigla_uf, cep, cidade, bairro, logradouro, numero, complemento, nm_responsavel, ddd_telefone, telefone, data_cadastro, data_exclusao, ativo, nm_instituicao) FROM stdin;
-1	\N	1	RUA	SC	88820000	Içara	Centro	Coronel Marcos Rovaris	165	Centro	Secretaria de Educação e Cultura	48	30553001	2010-01-04 08:00:00	2013-01-31 23:07:02.374795	1	Serviço Federal de Processamento de Dados - SERPRO
+1	\N	1	QDA	DF	70836900	Içara	Centro	SGAN 601	165	Módulo 5	Coordenação Estratégica de Ações Governamentais - CEAGO	61	20218531	2010-01-04 08:00:00	2014-04-09 09:13:44.355968	1	Serviço Federal de Processamento de Dados - SERPRO
 \.
+
+
+--
+-- Name: instituicao_cod_instituicao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('instituicao_cod_instituicao_seq', 1, true);
 
 
 --
@@ -26167,6 +26078,13 @@ COPY material_didatico (cod_material_didatico, ref_cod_instituicao, ref_usuario_
 
 
 --
+-- Name: material_didatico_cod_material_didatico_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('material_didatico_cod_material_didatico_seq', 1, false);
+
+
+--
 -- Data for Name: material_tipo; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
@@ -26175,11 +26093,25 @@ COPY material_tipo (cod_material_tipo, ref_usuario_cad, ref_usuario_exc, nm_tipo
 
 
 --
+-- Name: material_tipo_cod_material_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('material_tipo_cod_material_tipo_seq', 1, false);
+
+
+--
 -- Data for Name: matricula; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
-COPY matricula (cod_matricula, ref_cod_reserva_vaga, ref_ref_cod_escola, ref_ref_cod_serie, ref_usuario_exc, ref_usuario_cad, ref_cod_aluno, aprovado, data_cadastro, data_exclusao, ativo, ano, ultima_matricula, modulo, descricao_reclassificacao, formando, matricula_reclassificacao, ref_cod_curso, matricula_transferencia, semestre) FROM stdin;
+COPY matricula (cod_matricula, ref_cod_reserva_vaga, ref_ref_cod_escola, ref_ref_cod_serie, ref_usuario_exc, ref_usuario_cad, ref_cod_aluno, aprovado, data_cadastro, data_exclusao, ativo, ano, ultima_matricula, modulo, descricao_reclassificacao, formando, matricula_reclassificacao, ref_cod_curso, matricula_transferencia, semestre, observacao) FROM stdin;
 \.
+
+
+--
+-- Name: matricula_cod_matricula_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('matricula_cod_matricula_seq', 2, true);
 
 
 --
@@ -26188,6 +26120,13 @@ COPY matricula (cod_matricula, ref_cod_reserva_vaga, ref_ref_cod_escola, ref_ref
 
 COPY matricula_excessao (cod_aluno_excessao, ref_cod_matricula, ref_cod_turma, ref_sequencial, ref_cod_serie, ref_cod_escola, ref_cod_disciplina, reprovado_faltas, precisa_exame, permite_exame) FROM stdin;
 \.
+
+
+--
+-- Name: matricula_excessao_cod_aluno_excessao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('matricula_excessao_cod_aluno_excessao_seq', 1, false);
 
 
 --
@@ -26234,11 +26173,25 @@ COPY modulo (cod_modulo, ref_usuario_exc, ref_usuario_cad, nm_tipo, descricao, n
 
 
 --
+-- Name: modulo_cod_modulo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('modulo_cod_modulo_seq', 1, true);
+
+
+--
 -- Data for Name: motivo_afastamento; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY motivo_afastamento (cod_motivo_afastamento, ref_usuario_exc, ref_usuario_cad, nm_motivo, descricao, data_cadastro, data_exclusao, ativo, ref_cod_instituicao) FROM stdin;
 \.
+
+
+--
+-- Name: motivo_afastamento_cod_motivo_afastamento_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('motivo_afastamento_cod_motivo_afastamento_seq', 1, false);
 
 
 --
@@ -26250,11 +26203,25 @@ COPY motivo_baixa (cod_motivo_baixa, ref_usuario_exc, ref_usuario_cad, nm_motivo
 
 
 --
+-- Name: motivo_baixa_cod_motivo_baixa_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('motivo_baixa_cod_motivo_baixa_seq', 1, false);
+
+
+--
 -- Data for Name: motivo_suspensao; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY motivo_suspensao (cod_motivo_suspensao, ref_usuario_exc, ref_usuario_cad, nm_motivo, descricao, data_cadastro, data_exclusao, ativo, ref_cod_biblioteca) FROM stdin;
 \.
+
+
+--
+-- Name: motivo_suspensao_cod_motivo_suspensao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('motivo_suspensao_cod_motivo_suspensao_seq', 1, false);
 
 
 --
@@ -26266,11 +26233,25 @@ COPY nivel (cod_nivel, ref_cod_categoria_nivel, ref_usuario_exc, ref_usuario_cad
 
 
 --
+-- Name: nivel_cod_nivel_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('nivel_cod_nivel_seq', 1, false);
+
+
+--
 -- Data for Name: nivel_ensino; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY nivel_ensino (cod_nivel_ensino, ref_usuario_exc, ref_usuario_cad, nm_nivel, descricao, data_cadastro, data_exclusao, ativo, ref_cod_instituicao) FROM stdin;
 \.
+
+
+--
+-- Name: nivel_ensino_cod_nivel_ensino_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('nivel_ensino_cod_nivel_ensino_seq', 1, true);
 
 
 --
@@ -26282,11 +26263,25 @@ COPY nota_aluno (cod_nota_aluno, ref_cod_disciplina, ref_cod_escola, ref_cod_ser
 
 
 --
+-- Name: nota_aluno_cod_nota_aluno_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('nota_aluno_cod_nota_aluno_seq', 1, false);
+
+
+--
 -- Data for Name: operador; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY operador (cod_operador, ref_usuario_exc, ref_usuario_cad, nome, valor, fim_sentenca, data_cadastro, data_exclusao, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: operador_cod_operador_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('operador_cod_operador_seq', 1, false);
 
 
 --
@@ -26298,6 +26293,13 @@ COPY pagamento_multa (cod_pagamento_multa, ref_usuario_cad, ref_cod_cliente, val
 
 
 --
+-- Name: pagamento_multa_cod_pagamento_multa_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('pagamento_multa_cod_pagamento_multa_seq', 1, false);
+
+
+--
 -- Data for Name: pre_requisito; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
@@ -26306,11 +26308,25 @@ COPY pre_requisito (cod_pre_requisito, ref_usuario_exc, ref_usuario_cad, schema_
 
 
 --
+-- Name: pre_requisito_cod_pre_requisito_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('pre_requisito_cod_pre_requisito_seq', 1, false);
+
+
+--
 -- Data for Name: quadro_horario; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY quadro_horario (cod_quadro_horario, ref_usuario_exc, ref_usuario_cad, ref_cod_turma, data_cadastro, data_exclusao, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: quadro_horario_cod_quadro_horario_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('quadro_horario_cod_quadro_horario_seq', 1, false);
 
 
 --
@@ -26338,6 +26354,13 @@ COPY religiao (cod_religiao, ref_usuario_exc, ref_usuario_cad, nm_religiao, data
 
 
 --
+-- Name: religiao_cod_religiao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('religiao_cod_religiao_seq', 1, false);
+
+
+--
 -- Data for Name: reserva_vaga; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
@@ -26346,11 +26369,25 @@ COPY reserva_vaga (cod_reserva_vaga, ref_ref_cod_escola, ref_ref_cod_serie, ref_
 
 
 --
+-- Name: reserva_vaga_cod_reserva_vaga_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('reserva_vaga_cod_reserva_vaga_seq', 1, false);
+
+
+--
 -- Data for Name: reservas; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY reservas (cod_reserva, ref_usuario_libera, ref_usuario_cad, ref_cod_cliente, data_reserva, data_prevista_disponivel, data_retirada, ref_cod_exemplar, ativo) FROM stdin;
 \.
+
+
+--
+-- Name: reservas_cod_reserva_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('reservas_cod_reserva_seq', 1, false);
 
 
 --
@@ -26367,6 +26404,13 @@ COPY sequencia_serie (ref_serie_origem, ref_serie_destino, ref_usuario_exc, ref_
 
 COPY serie (cod_serie, ref_usuario_exc, ref_usuario_cad, ref_cod_curso, nm_serie, etapa_curso, concluinte, carga_horaria, data_cadastro, data_exclusao, ativo, intervalo, idade_inicial, idade_final, regra_avaliacao_id, observacao_historico, dias_letivos) FROM stdin;
 \.
+
+
+--
+-- Name: serie_cod_serie_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('serie_cod_serie_seq', 2, true);
 
 
 --
@@ -26402,11 +26446,25 @@ COPY servidor_alocacao (cod_servidor_alocacao, ref_ref_cod_instituicao, ref_usua
 
 
 --
+-- Name: servidor_alocacao_cod_servidor_alocacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('servidor_alocacao_cod_servidor_alocacao_seq', 1, false);
+
+
+--
 -- Data for Name: servidor_curso; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY servidor_curso (cod_servidor_curso, ref_cod_formacao, data_conclusao, data_registro, diplomas_registros) FROM stdin;
 \.
+
+
+--
+-- Name: servidor_curso_cod_servidor_curso_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('servidor_curso_cod_servidor_curso_seq', 1, false);
 
 
 --
@@ -26434,6 +26492,13 @@ COPY servidor_formacao (cod_formacao, ref_ref_cod_instituicao, ref_usuario_exc, 
 
 
 --
+-- Name: servidor_formacao_cod_formacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('servidor_formacao_cod_formacao_seq', 1, false);
+
+
+--
 -- Data for Name: servidor_funcao; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
@@ -26450,11 +26515,25 @@ COPY servidor_titulo_concurso (cod_servidor_titulo, ref_cod_formacao, data_vigen
 
 
 --
+-- Name: servidor_titulo_concurso_cod_servidor_titulo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('servidor_titulo_concurso_cod_servidor_titulo_seq', 1, false);
+
+
+--
 -- Data for Name: situacao; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY situacao (cod_situacao, ref_usuario_exc, ref_usuario_cad, nm_situacao, permite_emprestimo, descricao, situacao_padrao, situacao_emprestada, data_cadastro, data_exclusao, ativo, ref_cod_biblioteca) FROM stdin;
 \.
+
+
+--
+-- Name: situacao_cod_situacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('situacao_cod_situacao_seq', 1, false);
 
 
 --
@@ -26466,11 +26545,25 @@ COPY subnivel (cod_subnivel, ref_usuario_exc, ref_usuario_cad, ref_cod_subnivel_
 
 
 --
+-- Name: subnivel_cod_subnivel_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('subnivel_cod_subnivel_seq', 1, false);
+
+
+--
 -- Data for Name: tipo_avaliacao; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY tipo_avaliacao (cod_tipo_avaliacao, ref_usuario_exc, ref_usuario_cad, nm_tipo, data_cadastro, data_exclusao, ativo, conceitual, ref_cod_instituicao) FROM stdin;
 \.
+
+
+--
+-- Name: tipo_avaliacao_cod_tipo_avaliacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tipo_avaliacao_cod_tipo_avaliacao_seq', 1, false);
 
 
 --
@@ -26490,11 +26583,25 @@ COPY tipo_dispensa (cod_tipo_dispensa, ref_usuario_exc, ref_usuario_cad, nm_tipo
 
 
 --
+-- Name: tipo_dispensa_cod_tipo_dispensa_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tipo_dispensa_cod_tipo_dispensa_seq', 1, false);
+
+
+--
 -- Data for Name: tipo_ensino; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY tipo_ensino (cod_tipo_ensino, ref_usuario_exc, ref_usuario_cad, nm_tipo, data_cadastro, data_exclusao, ativo, ref_cod_instituicao) FROM stdin;
 \.
+
+
+--
+-- Name: tipo_ensino_cod_tipo_ensino_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tipo_ensino_cod_tipo_ensino_seq', 1, true);
 
 
 --
@@ -26506,11 +26613,25 @@ COPY tipo_ocorrencia_disciplinar (cod_tipo_ocorrencia_disciplinar, ref_usuario_e
 
 
 --
+-- Name: tipo_ocorrencia_disciplinar_cod_tipo_ocorrencia_disciplinar_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tipo_ocorrencia_disciplinar_cod_tipo_ocorrencia_disciplinar_seq', 1, false);
+
+
+--
 -- Data for Name: tipo_regime; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY tipo_regime (cod_tipo_regime, ref_usuario_exc, ref_usuario_cad, nm_tipo, data_cadastro, data_exclusao, ativo, ref_cod_instituicao) FROM stdin;
 \.
+
+
+--
+-- Name: tipo_regime_cod_tipo_regime_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tipo_regime_cod_tipo_regime_seq', 1, false);
 
 
 --
@@ -26523,11 +26644,25 @@ COPY tipo_usuario (cod_tipo_usuario, ref_funcionario_cad, ref_funcionario_exc, n
 
 
 --
+-- Name: tipo_usuario_cod_tipo_usuario_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('tipo_usuario_cod_tipo_usuario_seq', 3, true);
+
+
+--
 -- Data for Name: transferencia_solicitacao; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY transferencia_solicitacao (cod_transferencia_solicitacao, ref_cod_transferencia_tipo, ref_usuario_exc, ref_usuario_cad, ref_cod_matricula_entrada, ref_cod_matricula_saida, observacao, data_cadastro, data_exclusao, ativo, data_transferencia) FROM stdin;
 \.
+
+
+--
+-- Name: transferencia_solicitacao_cod_transferencia_solicitacao_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('transferencia_solicitacao_cod_transferencia_solicitacao_seq', 1, false);
 
 
 --
@@ -26539,11 +26674,25 @@ COPY transferencia_tipo (cod_transferencia_tipo, ref_usuario_exc, ref_usuario_ca
 
 
 --
+-- Name: transferencia_tipo_cod_transferencia_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('transferencia_tipo_cod_transferencia_tipo_seq', 1, false);
+
+
+--
 -- Data for Name: turma; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
 COPY turma (cod_turma, ref_usuario_exc, ref_usuario_cad, ref_ref_cod_serie, ref_ref_cod_escola, ref_cod_infra_predio_comodo, nm_turma, sgl_turma, max_aluno, multiseriada, data_cadastro, data_exclusao, ativo, ref_cod_turma_tipo, hora_inicial, hora_final, hora_inicio_intervalo, hora_fim_intervalo, ref_cod_regente, ref_cod_instituicao_regente, ref_cod_instituicao, ref_cod_curso, ref_ref_cod_serie_mult, ref_ref_cod_escola_mult, visivel, tipo_boletim, turma_turno_id, ano) FROM stdin;
 \.
+
+
+--
+-- Name: turma_cod_turma_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('turma_cod_turma_seq', 2, true);
 
 
 --
@@ -26571,6 +26720,13 @@ COPY turma_tipo (cod_turma_tipo, ref_usuario_exc, ref_usuario_cad, nm_tipo, sgl_
 
 
 --
+-- Name: turma_tipo_cod_turma_tipo_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('turma_tipo_cod_turma_tipo_seq', 1, true);
+
+
+--
 -- Data for Name: turma_turno; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
@@ -26580,6 +26736,13 @@ COPY turma_turno (id, nome, ativo) FROM stdin;
 3	Noturno	1
 4	Integral	1
 \.
+
+
+--
+-- Name: turma_turno_id_seq; Type: SEQUENCE SET; Schema: pmieducar; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('turma_turno_id_seq', 1, false);
 
 
 --
@@ -26626,6 +26789,13 @@ COPY grupos (cod_grupos, ref_pessoa_exc, ref_pessoa_cad, nm_grupo, data_cadastro
 
 
 --
+-- Name: grupos_cod_grupos_seq; Type: SEQUENCE SET; Schema: pmiotopic; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('grupos_cod_grupos_seq', 1, false);
+
+
+--
 -- Data for Name: notas; Type: TABLE DATA; Schema: pmiotopic; Owner: ieducar
 --
 
@@ -26650,11 +26820,25 @@ COPY reuniao (cod_reuniao, ref_grupos_moderador, ref_moderador, data_inicio_marc
 
 
 --
+-- Name: reuniao_cod_reuniao_seq; Type: SEQUENCE SET; Schema: pmiotopic; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('reuniao_cod_reuniao_seq', 1, false);
+
+
+--
 -- Data for Name: topico; Type: TABLE DATA; Schema: pmiotopic; Owner: ieducar
 --
 
 COPY topico (cod_topico, ref_idpes_cad, ref_cod_grupos_cad, assunto, data_cadastro, data_exclusao, ativo, ref_idpes_exc, ref_cod_grupos_exc) FROM stdin;
 \.
+
+
+--
+-- Name: topico_cod_topico_seq; Type: SEQUENCE SET; Schema: pmiotopic; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('topico_cod_topico_seq', 1, false);
 
 
 --
@@ -26672,27 +26856,14 @@ SET search_path = portal, pg_catalog;
 --
 
 COPY acesso (cod_acesso, data_hora, ip_externo, ip_interno, cod_pessoa, obs, sucesso) FROM stdin;
-7	2010-09-02 11:47:17.859	127.0.0.1	NULL	1	\N	t
-8	2010-09-02 11:50:43.687	127.0.0.1	NULL	1	\N	f
-9	2010-09-02 11:50:47.609	127.0.0.1	NULL	1	\N	t
-10	2010-09-02 11:53:28.468	127.0.0.1	NULL	1	\N	t
-11	2010-09-02 12:23:18.812	127.0.0.1	NULL	1	\N	t
-12	2010-09-02 12:28:51.859	127.0.0.1	NULL	1	\N	t
-13	2010-09-02 12:49:37.968	127.0.0.1	NULL	1	\N	t
-14	2010-12-07 09:13:31.125	127.0.0.1	NULL	1	\N	t
-15	2011-07-22 11:22:25.009	::1	NULL	1	\N	t
-16	2011-07-23 09:47:39.552	::1	NULL	1	\N	f
-17	2011-07-25 09:25:36.956	::1	NULL	1	\N	f
-18	2011-07-25 09:25:43.212	::1	NULL	1	\N	t
-19	2013-01-28 17:59:18.625262	127.0.0.1	NULL	1	\N	t
-20	2013-01-28 18:15:17.543524	127.0.0.1	NULL	1	\N	t
-21	2013-01-31 09:00:07.819046	127.0.0.1	NULL	1	\N	t
-22	2013-01-31 15:26:18.434498	127.0.0.1	NULL	1	\N	t
-23	2013-01-31 16:50:40.625776	127.0.0.1	NULL	1	\N	t
-24	2013-01-31 23:04:53.384165	127.0.0.1	NULL	1	\N	t
-25	2013-02-04 18:25:52.317067	127.0.0.1	NULL	1	\N	t
-26	2013-03-05 18:38:55.514083	127.0.0.1	NULL	1	\N	t
 \.
+
+
+--
+-- Name: acesso_cod_acesso_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('acesso_cod_acesso_seq', 26, true);
 
 
 --
@@ -26702,6 +26873,13 @@ COPY acesso (cod_acesso, data_hora, ip_externo, ip_interno, cod_pessoa, obs, suc
 COPY agenda (cod_agenda, ref_ref_cod_pessoa_exc, ref_ref_cod_pessoa_cad, nm_agenda, publica, envia_alerta, data_cad, data_edicao, ref_ref_cod_pessoa_own) FROM stdin;
 1	\N	1	Administrador	0	0	2010-01-06 18:33:11.021729	\N	1
 \.
+
+
+--
+-- Name: agenda_cod_agenda_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('agenda_cod_agenda_seq', 1, true);
 
 
 --
@@ -26721,6 +26899,13 @@ COPY agenda_pref (cod_comp, data_comp, hora_comp, hora_f_comp, comp_comp, local_
 
 
 --
+-- Name: agenda_pref_cod_comp_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('agenda_pref_cod_comp_seq', 1, false);
+
+
+--
 -- Data for Name: agenda_responsavel; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
@@ -26734,6 +26919,13 @@ COPY agenda_responsavel (ref_cod_agenda, ref_ref_cod_pessoa_fj, principal) FROM 
 
 COPY compras_editais_editais (cod_compras_editais_editais, ref_cod_compras_licitacoes, versao, data_hora, arquivo, ref_ref_cod_pessoa_fj, motivo_alteracao, visivel) FROM stdin;
 \.
+
+
+--
+-- Name: compras_editais_editais_cod_compras_editais_editais_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('compras_editais_editais_cod_compras_editais_editais_seq', 1, false);
 
 
 --
@@ -26753,11 +26945,25 @@ COPY compras_editais_empresa (cod_compras_editais_empresa, cnpj, nm_empresa, ema
 
 
 --
+-- Name: compras_editais_empresa_cod_compras_editais_empresa_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('compras_editais_empresa_cod_compras_editais_empresa_seq', 1, false);
+
+
+--
 -- Data for Name: compras_final_pregao; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
 COPY compras_final_pregao (cod_compras_final_pregao, nm_final) FROM stdin;
 \.
+
+
+--
+-- Name: compras_final_pregao_cod_compras_final_pregao_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('compras_final_pregao_cod_compras_final_pregao_seq', 1, false);
 
 
 --
@@ -26777,11 +26983,25 @@ COPY compras_licitacoes (cod_compras_licitacoes, ref_ref_cod_pessoa_fj, ref_cod_
 
 
 --
+-- Name: compras_licitacoes_cod_compras_licitacoes_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('compras_licitacoes_cod_compras_licitacoes_seq', 1, false);
+
+
+--
 -- Data for Name: compras_modalidade; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
 COPY compras_modalidade (cod_compras_modalidade, nm_modalidade) FROM stdin;
 \.
+
+
+--
+-- Name: compras_modalidade_cod_compras_modalidade_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('compras_modalidade_cod_compras_modalidade_seq', 1, false);
 
 
 --
@@ -26793,11 +27013,25 @@ COPY compras_pregao_execucao (cod_compras_pregao_execucao, ref_cod_compras_licit
 
 
 --
+-- Name: compras_pregao_execucao_cod_compras_pregao_execucao_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('compras_pregao_execucao_cod_compras_pregao_execucao_seq', 1, false);
+
+
+--
 -- Data for Name: compras_prestacao_contas; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
 COPY compras_prestacao_contas (cod_compras_prestacao_contas, caminho, mes, ano) FROM stdin;
 \.
+
+
+--
+-- Name: compras_prestacao_contas_cod_compras_prestacao_contas_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('compras_prestacao_contas_cod_compras_prestacao_contas_seq', 1, false);
 
 
 --
@@ -26809,6 +27043,13 @@ COPY foto_portal (cod_foto_portal, ref_cod_foto_secao, ref_cod_credito, ref_ref_
 
 
 --
+-- Name: foto_portal_cod_foto_portal_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('foto_portal_cod_foto_portal_seq', 1, false);
+
+
+--
 -- Data for Name: foto_secao; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
@@ -26817,11 +27058,18 @@ COPY foto_secao (cod_foto_secao, nm_secao) FROM stdin;
 
 
 --
+-- Name: foto_secao_cod_foto_secao_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('foto_secao_cod_foto_secao_seq', 1, false);
+
+
+--
 -- Data for Name: funcionario; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
 COPY funcionario (ref_cod_pessoa_fj, matricula, senha, ativo, ref_sec, ramal, sequencial, opcao_menu, ref_cod_setor, ref_cod_funcionario_vinculo, tempo_expira_senha, tempo_expira_conta, data_troca_senha, data_reativa_conta, ref_ref_cod_pessoa_fj, proibido, ref_cod_setor_new, matricula_new, matricula_permanente, tipo_menu, ip_logado, data_login, email, status_token) FROM stdin;
-1	admin	16ec96b29c14a92daffed3b7d77b9006	1	\N	\N	1  	1	\N	\N	\N	\N	\N	\N	\N	0	\N	\N	0	1	127.0.0.1	2013-03-05 18:39:01.990024	\N	\N
+1	admin	16ec96b29c14a92daffed3b7d77b9006	1	\N	\N	1  	1	\N	\N	\N	\N	\N	\N	\N	0	\N	\N	0	1	10.200.118.190	2014-04-09 09:13:47.435499	\N	\N
 \.
 
 
@@ -26835,6 +27083,13 @@ COPY funcionario_vinculo (cod_funcionario_vinculo, nm_vinculo) FROM stdin;
 5	Comissionado
 6	Estagiário
 \.
+
+
+--
+-- Name: funcionario_vinculo_cod_funcionario_vinculo_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('funcionario_vinculo_cod_funcionario_vinculo_seq', 1, false);
 
 
 --
@@ -26973,6 +27228,13 @@ COPY imagem (cod_imagem, ref_cod_imagem_tipo, caminho, nm_imagem, extensao, altu
 
 
 --
+-- Name: imagem_cod_imagem_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('imagem_cod_imagem_seq', 186, true);
+
+
+--
 -- Data for Name: imagem_tipo; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
@@ -26980,6 +27242,20 @@ COPY imagem_tipo (cod_imagem_tipo, nm_tipo) FROM stdin;
 1	Icone
 6	Acervo
 \.
+
+
+--
+-- Name: imagem_tipo_cod_imagem_tipo_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('imagem_tipo_cod_imagem_tipo_seq', 6, true);
+
+
+--
+-- Name: intranet_segur_permissao_nega_cod_intranet_segur_permissao__seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('intranet_segur_permissao_nega_cod_intranet_segur_permissao__seq', 1, false);
 
 
 --
@@ -27007,11 +27283,25 @@ COPY jor_edicao (cod_jor_edicao, ref_ref_cod_pessoa_fj, jor_ano_edicao, jor_edic
 
 
 --
+-- Name: jor_edicao_cod_jor_edicao_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('jor_edicao_cod_jor_edicao_seq', 1, false);
+
+
+--
 -- Data for Name: mailling_email; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
 COPY mailling_email (cod_mailling_email, nm_pessoa, email) FROM stdin;
 \.
+
+
+--
+-- Name: mailling_email_cod_mailling_email_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('mailling_email_cod_mailling_email_seq', 1, false);
 
 
 --
@@ -27023,6 +27313,13 @@ COPY mailling_email_conteudo (cod_mailling_email_conteudo, ref_ref_cod_pessoa_fj
 
 
 --
+-- Name: mailling_email_conteudo_cod_mailling_email_conteudo_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('mailling_email_conteudo_cod_mailling_email_conteudo_seq', 1, false);
+
+
+--
 -- Data for Name: mailling_fila_envio; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
@@ -27031,11 +27328,25 @@ COPY mailling_fila_envio (cod_mailling_fila_envio, ref_cod_mailling_email_conteu
 
 
 --
+-- Name: mailling_fila_envio_cod_mailling_fila_envio_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('mailling_fila_envio_cod_mailling_fila_envio_seq', 1, false);
+
+
+--
 -- Data for Name: mailling_grupo; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
 COPY mailling_grupo (cod_mailling_grupo, nm_grupo) FROM stdin;
 \.
+
+
+--
+-- Name: mailling_grupo_cod_mailling_grupo_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('mailling_grupo_cod_mailling_grupo_seq', 1, false);
 
 
 --
@@ -27052,6 +27363,13 @@ COPY mailling_grupo_email (ref_cod_mailling_email, ref_cod_mailling_grupo) FROM 
 
 COPY mailling_historico (cod_mailling_historico, ref_cod_not_portal, ref_cod_mailling_grupo, ref_ref_cod_pessoa_fj, data_hora) FROM stdin;
 \.
+
+
+--
+-- Name: mailling_historico_cod_mailling_historico_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('mailling_historico_cod_mailling_historico_seq', 1, false);
 
 
 --
@@ -27175,7 +27493,15 @@ COPY menu_menu (cod_menu_menu, nm_menu, title, ref_cod_menu_pai) FROM stdin;
 56	i-Educar - Controle	\N	\N
 57	i-Educar - Biblioteca	\N	\N
 5	Agenda	Agendas	\N
+69	Transporte Escolar	\N	\N
 \.
+
+
+--
+-- Name: menu_menu_cod_menu_menu_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('menu_menu_cod_menu_menu_seq', 68, true);
 
 
 --
@@ -27284,7 +27610,21 @@ COPY menu_submenu (cod_menu_submenu, ref_cod_menu_menu, cod_sistema, nm_submenu,
 999615	57	2	Autores	module/Reports/BibliotecaAutor	\N	3
 999616	57	2	Editoras	module/Reports/BibliotecaEditora	\N	3
 999617	57	2	Obras	module/Reports/BibliotecaObra	\N	3
+21234	69	2	ApresentaÃ§Ã£o	transporte_index.php	\N	2
+21235	69	2	Empresas	transporte_empresa_lst.php	\N	3
+21236	69	2	Motoristas	transporte_motorista_lst.php	\N	3
+21237	69	2	VeÃ­culos	transporte_veiculo_lst.php	\N	3
+21238	69	2	Rotas	transporte_rota_lst.php	\N	3
+21239	69	2	Pontos	transporte_ponto_lst.php	\N	3
+21240	69	2	UsuÃ¡rios de Transporte	transporte_pessoa_lst.php	\N	3
 \.
+
+
+--
+-- Name: menu_submenu_cod_menu_submenu_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('menu_submenu_cod_menu_submenu_seq', 944, true);
 
 
 --
@@ -27293,6 +27633,13 @@ COPY menu_submenu (cod_menu_submenu, ref_cod_menu_menu, cod_sistema, nm_submenu,
 
 COPY not_portal (cod_not_portal, ref_ref_cod_pessoa_fj, titulo, descricao, data_noticia) FROM stdin;
 \.
+
+
+--
+-- Name: not_portal_cod_not_portal_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('not_portal_cod_not_portal_seq', 1, false);
 
 
 --
@@ -27312,6 +27659,13 @@ COPY not_tipo (cod_not_tipo, nm_tipo) FROM stdin;
 
 
 --
+-- Name: not_tipo_cod_not_tipo_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('not_tipo_cod_not_tipo_seq', 1, false);
+
+
+--
 -- Data for Name: not_vinc_portal; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
@@ -27328,6 +27682,13 @@ COPY notificacao (cod_notificacao, ref_cod_funcionario, titulo, conteudo, data_h
 
 
 --
+-- Name: notificacao_cod_notificacao_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('notificacao_cod_notificacao_seq', 1, false);
+
+
+--
 -- Data for Name: pessoa_atividade; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
@@ -27336,11 +27697,25 @@ COPY pessoa_atividade (cod_pessoa_atividade, ref_cod_ramo_atividade, nm_atividad
 
 
 --
+-- Name: pessoa_atividade_cod_pessoa_atividade_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('pessoa_atividade_cod_pessoa_atividade_seq', 1, false);
+
+
+--
 -- Data for Name: pessoa_fj; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
 COPY pessoa_fj (cod_pessoa_fj, nm_pessoa, id_federal, endereco, cep, ref_bairro, ddd_telefone_1, telefone_1, ddd_telefone_2, telefone_2, ddd_telefone_mov, telefone_mov, ddd_telefone_fax, telefone_fax, email, http, tipo_pessoa, sexo, razao_social, ins_est, ins_mun, rg, ref_cod_pessoa_pai, ref_cod_pessoa_mae, data_nasc, ref_ref_cod_pessoa_fj) FROM stdin;
 \.
+
+
+--
+-- Name: pessoa_fj_cod_pessoa_fj_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('pessoa_fj_cod_pessoa_fj_seq', 1, false);
 
 
 --
@@ -27360,11 +27735,25 @@ COPY pessoa_ramo_atividade (cod_ramo_atividade, nm_ramo_atividade) FROM stdin;
 
 
 --
+-- Name: pessoa_ramo_atividade_cod_ramo_atividade_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('pessoa_ramo_atividade_cod_ramo_atividade_seq', 1, false);
+
+
+--
 -- Data for Name: portal_banner; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
 COPY portal_banner (cod_portal_banner, ref_ref_cod_pessoa_fj, caminho, title, prioridade, link, lateral) FROM stdin;
 \.
+
+
+--
+-- Name: portal_banner_cod_portal_banner_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('portal_banner_cod_portal_banner_seq', 1, false);
 
 
 --
@@ -27376,11 +27765,25 @@ COPY portal_concurso (cod_portal_concurso, ref_ref_cod_pessoa_fj, nm_concurso, d
 
 
 --
+-- Name: portal_concurso_cod_portal_concurso_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('portal_concurso_cod_portal_concurso_seq', 1, false);
+
+
+--
 -- Data for Name: sistema; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
-COPY sistema (cod_sistema, nome, versao, "release", patch, tipo) FROM stdin;
+COPY sistema (cod_sistema, nome, versao, release, patch, tipo) FROM stdin;
 \.
+
+
+--
+-- Name: sistema_cod_sistema_seq; Type: SEQUENCE SET; Schema: portal; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('sistema_cod_sistema_seq', 1, false);
 
 
 SET search_path = public, pg_catalog;
@@ -33362,11 +33765,46 @@ COPY regiao (cod_regiao, nm_regiao) FROM stdin;
 
 
 --
+-- Name: regiao_cod_regiao_seq; Type: SEQUENCE SET; Schema: public; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('regiao_cod_regiao_seq', 1, false);
+
+
+--
+-- Name: seq_bairro; Type: SEQUENCE SET; Schema: public; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('seq_bairro', 1, false);
+
+
+--
+-- Name: seq_logradouro; Type: SEQUENCE SET; Schema: public; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('seq_logradouro', 1, false);
+
+
+--
+-- Name: seq_municipio; Type: SEQUENCE SET; Schema: public; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('seq_municipio', 5565, false);
+
+
+--
 -- Data for Name: setor; Type: TABLE DATA; Schema: public; Owner: ieducar
 --
 
 COPY setor (idset, nivel, nome, sigla, idsetsub, idsetredir, situacao, localizacao) FROM stdin;
 \.
+
+
+--
+-- Name: setor_idset_seq; Type: SEQUENCE SET; Schema: public; Owner: ieducar
+--
+
+SELECT pg_catalog.setval('setor_idset_seq', 1, false);
 
 
 --
@@ -33639,7 +34077,7 @@ ALTER TABLE ONLY grupo_sistema
 --
 
 ALTER TABLE ONLY historico_senha
-    ADD CONSTRAINT pk_historico_senha PRIMARY KEY ("login", senha);
+    ADD CONSTRAINT pk_historico_senha PRIMARY KEY (login, senha);
 
 
 --
@@ -33695,7 +34133,7 @@ ALTER TABLE ONLY sistema
 --
 
 ALTER TABLE ONLY usuario
-    ADD CONSTRAINT pk_usuario PRIMARY KEY ("login");
+    ADD CONSTRAINT pk_usuario PRIMARY KEY (login);
 
 
 --
@@ -33703,7 +34141,7 @@ ALTER TABLE ONLY usuario
 --
 
 ALTER TABLE ONLY usuario_grupo
-    ADD CONSTRAINT pk_usuario_grupo PRIMARY KEY (idgrp, "login");
+    ADD CONSTRAINT pk_usuario_grupo PRIMARY KEY (idgrp, login);
 
 
 SET search_path = alimentos, pg_catalog;
@@ -34419,6 +34857,14 @@ ALTER TABLE ONLY educacenso_ies
 
 
 --
+-- Name: empresa_transporte_escolar_cod_empresa_transporte_escolar_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY empresa_transporte_escolar
+    ADD CONSTRAINT empresa_transporte_escolar_cod_empresa_transporte_escolar_pkey PRIMARY KEY (cod_empresa_transporte_escolar);
+
+
+--
 -- Name: falta_aluno_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
 --
 
@@ -34448,6 +34894,22 @@ ALTER TABLE ONLY falta_geral
 
 ALTER TABLE ONLY formula_media
     ADD CONSTRAINT formula_media_pkey PRIMARY KEY (id, instituicao_id);
+
+
+--
+-- Name: itinerario_transporte_escolar_cod_itinerario_transporte_escolar; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY itinerario_transporte_escolar
+    ADD CONSTRAINT itinerario_transporte_escolar_cod_itinerario_transporte_escolar PRIMARY KEY (cod_itinerario_transporte_escolar);
+
+
+--
+-- Name: motorista_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY motorista
+    ADD CONSTRAINT motorista_pkey PRIMARY KEY (cod_motorista);
 
 
 --
@@ -34499,11 +34961,35 @@ ALTER TABLE ONLY parecer_geral
 
 
 --
+-- Name: pessoa_transporte_cod_pessoa_transporte_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY pessoa_transporte
+    ADD CONSTRAINT pessoa_transporte_cod_pessoa_transporte_pkey PRIMARY KEY (cod_pessoa_transporte);
+
+
+--
+-- Name: ponto_transporte_escolar_cod_ponto_transporte_escolar_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY ponto_transporte_escolar
+    ADD CONSTRAINT ponto_transporte_escolar_cod_ponto_transporte_escolar_pkey PRIMARY KEY (cod_ponto_transporte_escolar);
+
+
+--
 -- Name: regra_avaliacao_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
 --
 
 ALTER TABLE ONLY regra_avaliacao
     ADD CONSTRAINT regra_avaliacao_pkey PRIMARY KEY (id, instituicao_id);
+
+
+--
+-- Name: rota_transporte_escolar_cod_rota_transporte_escolar_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY rota_transporte_escolar
+    ADD CONSTRAINT rota_transporte_escolar_cod_rota_transporte_escolar_pkey PRIMARY KEY (cod_rota_transporte_escolar);
 
 
 --
@@ -34523,11 +35009,27 @@ ALTER TABLE ONLY tabela_arredondamento_valor
 
 
 --
+-- Name: tipo_veiculo_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY tipo_veiculo
+    ADD CONSTRAINT tipo_veiculo_pkey PRIMARY KEY (cod_tipo_veiculo);
+
+
+--
 -- Name: transporte_aluno_pk; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
 --
 
 ALTER TABLE ONLY transporte_aluno
     ADD CONSTRAINT transporte_aluno_pk PRIMARY KEY (aluno_id);
+
+
+--
+-- Name: veiculo_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY veiculo
+    ADD CONSTRAINT veiculo_pkey PRIMARY KEY (cod_veiculo);
 
 
 SET search_path = pmiacoes, pg_catalog;
@@ -34951,7 +35453,7 @@ ALTER TABLE ONLY categoria_nivel
 --
 
 ALTER TABLE ONLY cliente
-    ADD CONSTRAINT cliente_login_ukey UNIQUE ("login");
+    ADD CONSTRAINT cliente_login_ukey UNIQUE (login);
 
 
 --
@@ -37312,400 +37814,280 @@ SET search_path = cadastro, pg_catalog;
 -- Name: trg_aft_documento; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_documento
-    AFTER INSERT OR UPDATE ON documento
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_documento();
+CREATE TRIGGER trg_aft_documento AFTER INSERT OR UPDATE ON documento FOR EACH ROW EXECUTE PROCEDURE fcn_aft_documento();
 
 
 --
 -- Name: trg_aft_documento_historico_campo; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_documento_historico_campo
-    AFTER INSERT OR UPDATE ON documento
-    FOR EACH ROW
-    EXECUTE PROCEDURE consistenciacao.fcn_documento_historico_campo();
+CREATE TRIGGER trg_aft_documento_historico_campo AFTER INSERT OR UPDATE ON documento FOR EACH ROW EXECUTE PROCEDURE consistenciacao.fcn_documento_historico_campo();
 
 
 --
 -- Name: trg_aft_documento_provisorio; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_documento_provisorio
-    AFTER INSERT OR UPDATE ON documento
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_documento_provisorio();
+CREATE TRIGGER trg_aft_documento_provisorio AFTER INSERT OR UPDATE ON documento FOR EACH ROW EXECUTE PROCEDURE fcn_aft_documento_provisorio();
 
 
 --
 -- Name: trg_aft_endereco_externo_historico_campo; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_endereco_externo_historico_campo
-    AFTER INSERT OR UPDATE ON endereco_externo
-    FOR EACH ROW
-    EXECUTE PROCEDURE consistenciacao.fcn_endereco_externo_historico_campo();
+CREATE TRIGGER trg_aft_endereco_externo_historico_campo AFTER INSERT OR UPDATE ON endereco_externo FOR EACH ROW EXECUTE PROCEDURE consistenciacao.fcn_endereco_externo_historico_campo();
 
 
 --
 -- Name: trg_aft_endereco_pessoa_historico_campo; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_endereco_pessoa_historico_campo
-    AFTER INSERT OR UPDATE ON endereco_pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE consistenciacao.fcn_endereco_pessoa_historico_campo();
+CREATE TRIGGER trg_aft_endereco_pessoa_historico_campo AFTER INSERT OR UPDATE ON endereco_pessoa FOR EACH ROW EXECUTE PROCEDURE consistenciacao.fcn_endereco_pessoa_historico_campo();
 
 
 --
 -- Name: trg_aft_fisica; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_fisica
-    AFTER INSERT OR UPDATE ON fisica
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_fisica();
+CREATE TRIGGER trg_aft_fisica AFTER INSERT OR UPDATE ON fisica FOR EACH ROW EXECUTE PROCEDURE fcn_aft_fisica();
 
 
 --
 -- Name: trg_aft_fisica_cpf_provisorio; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_fisica_cpf_provisorio
-    AFTER INSERT OR UPDATE ON fisica_cpf
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_fisica_cpf_provisorio();
+CREATE TRIGGER trg_aft_fisica_cpf_provisorio AFTER INSERT OR UPDATE ON fisica_cpf FOR EACH ROW EXECUTE PROCEDURE fcn_aft_fisica_cpf_provisorio();
 
 
 --
 -- Name: trg_aft_fisica_historico_campo; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_fisica_historico_campo
-    AFTER INSERT OR UPDATE ON fisica
-    FOR EACH ROW
-    EXECUTE PROCEDURE consistenciacao.fcn_fisica_historico_campo();
+CREATE TRIGGER trg_aft_fisica_historico_campo AFTER INSERT OR UPDATE ON fisica FOR EACH ROW EXECUTE PROCEDURE consistenciacao.fcn_fisica_historico_campo();
 
 
 --
 -- Name: trg_aft_fisica_provisorio; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_fisica_provisorio
-    AFTER INSERT OR UPDATE ON fisica
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_fisica_provisorio();
+CREATE TRIGGER trg_aft_fisica_provisorio AFTER INSERT OR UPDATE ON fisica FOR EACH ROW EXECUTE PROCEDURE fcn_aft_fisica_provisorio();
 
 
 --
 -- Name: trg_aft_fone_historico_campo; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_fone_historico_campo
-    AFTER INSERT OR UPDATE ON fone_pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE consistenciacao.fcn_fone_historico_campo();
+CREATE TRIGGER trg_aft_fone_historico_campo AFTER INSERT OR UPDATE ON fone_pessoa FOR EACH ROW EXECUTE PROCEDURE consistenciacao.fcn_fone_historico_campo();
 
 
 --
 -- Name: trg_aft_fone_pessoa_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_fone_pessoa_historico
-    AFTER DELETE ON fone_pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_fone_pessoa();
+CREATE TRIGGER trg_aft_fone_pessoa_historico AFTER DELETE ON fone_pessoa FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_fone_pessoa();
 
 
 --
 -- Name: trg_aft_funcionario_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_funcionario_historico
-    AFTER DELETE ON funcionario
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_funcionario();
+CREATE TRIGGER trg_aft_funcionario_historico AFTER DELETE ON funcionario FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_funcionario();
 
 
 --
 -- Name: trg_aft_ins_endereco_externo; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_ins_endereco_externo
-    AFTER INSERT OR UPDATE ON endereco_externo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_ins_endereco_externo();
+CREATE TRIGGER trg_aft_ins_endereco_externo AFTER INSERT OR UPDATE ON endereco_externo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_ins_endereco_externo();
 
 
 --
 -- Name: trg_aft_ins_endereco_pessoa; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_ins_endereco_pessoa
-    AFTER INSERT OR UPDATE ON endereco_pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_ins_endereco_pessoa();
+CREATE TRIGGER trg_aft_ins_endereco_pessoa AFTER INSERT OR UPDATE ON endereco_pessoa FOR EACH ROW EXECUTE PROCEDURE fcn_aft_ins_endereco_pessoa();
 
 
 --
 -- Name: trg_aft_juridica_historico_campo; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_juridica_historico_campo
-    AFTER INSERT OR UPDATE ON juridica
-    FOR EACH ROW
-    EXECUTE PROCEDURE consistenciacao.fcn_juridica_historico_campo();
+CREATE TRIGGER trg_aft_juridica_historico_campo AFTER INSERT OR UPDATE ON juridica FOR EACH ROW EXECUTE PROCEDURE consistenciacao.fcn_juridica_historico_campo();
 
 
 --
 -- Name: trg_aft_pessoa_fonetiza; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_pessoa_fonetiza
-    AFTER INSERT OR UPDATE ON pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.fcn_aft_pessoa_fonetiza();
+CREATE TRIGGER trg_aft_pessoa_fonetiza AFTER INSERT OR UPDATE ON pessoa FOR EACH ROW EXECUTE PROCEDURE public.fcn_aft_pessoa_fonetiza();
 
 
 --
 -- Name: trg_aft_pessoa_historico_campo; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_pessoa_historico_campo
-    AFTER INSERT OR UPDATE ON pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE consistenciacao.fcn_pessoa_historico_campo();
+CREATE TRIGGER trg_aft_pessoa_historico_campo AFTER INSERT OR UPDATE ON pessoa FOR EACH ROW EXECUTE PROCEDURE consistenciacao.fcn_pessoa_historico_campo();
 
 
 --
 -- Name: trg_bef_documento_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_documento_historico
-    BEFORE UPDATE ON documento
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_documento();
+CREATE TRIGGER trg_bef_documento_historico BEFORE UPDATE ON documento FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_documento();
 
 
 --
 -- Name: trg_bef_endereco_externo_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_endereco_externo_historico
-    BEFORE UPDATE ON endereco_externo
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_endereco_externo();
+CREATE TRIGGER trg_bef_endereco_externo_historico BEFORE UPDATE ON endereco_externo FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_endereco_externo();
 
 
 --
 -- Name: trg_bef_endereco_pessoa_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_endereco_pessoa_historico
-    BEFORE UPDATE ON endereco_pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_endereco_pessoa();
+CREATE TRIGGER trg_bef_endereco_pessoa_historico BEFORE UPDATE ON endereco_pessoa FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_endereco_pessoa();
 
 
 --
 -- Name: trg_bef_fisica_cpf_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_fisica_cpf_historico
-    BEFORE UPDATE ON fisica_cpf
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_fisica_cpf();
+CREATE TRIGGER trg_bef_fisica_cpf_historico BEFORE UPDATE ON fisica_cpf FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_fisica_cpf();
 
 
 --
 -- Name: trg_bef_fisica_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_fisica_historico
-    BEFORE UPDATE ON fisica
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_fisica();
+CREATE TRIGGER trg_bef_fisica_historico BEFORE UPDATE ON fisica FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_fisica();
 
 
 --
 -- Name: trg_bef_fone_pessoa_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_fone_pessoa_historico
-    BEFORE UPDATE ON fone_pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_fone_pessoa();
+CREATE TRIGGER trg_bef_fone_pessoa_historico BEFORE UPDATE ON fone_pessoa FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_fone_pessoa();
 
 
 --
 -- Name: trg_bef_funcionario_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_funcionario_historico
-    BEFORE UPDATE ON funcionario
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_funcionario();
+CREATE TRIGGER trg_bef_funcionario_historico BEFORE UPDATE ON funcionario FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_funcionario();
 
 
 --
 -- Name: trg_bef_ins_fisica; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_ins_fisica
-    BEFORE INSERT ON fisica
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.fcn_bef_ins_fisica();
+CREATE TRIGGER trg_bef_ins_fisica BEFORE INSERT ON fisica FOR EACH ROW EXECUTE PROCEDURE public.fcn_bef_ins_fisica();
 
 
 --
 -- Name: trg_bef_ins_juridica; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_ins_juridica
-    BEFORE INSERT ON juridica
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.fcn_bef_ins_juridica();
+CREATE TRIGGER trg_bef_ins_juridica BEFORE INSERT ON juridica FOR EACH ROW EXECUTE PROCEDURE public.fcn_bef_ins_juridica();
 
 
 --
 -- Name: trg_bef_juridica_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_juridica_historico
-    BEFORE UPDATE ON juridica
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_juridica();
+CREATE TRIGGER trg_bef_juridica_historico BEFORE UPDATE ON juridica FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_juridica();
 
 
 --
 -- Name: trg_bef_pessoa_fonetiza; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_pessoa_fonetiza
-    BEFORE DELETE ON pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.fcn_bef_pessoa_fonetiza();
+CREATE TRIGGER trg_bef_pessoa_fonetiza BEFORE DELETE ON pessoa FOR EACH ROW EXECUTE PROCEDURE public.fcn_bef_pessoa_fonetiza();
 
 
 --
 -- Name: trg_bef_pessoa_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_pessoa_historico
-    BEFORE UPDATE ON pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_pessoa();
+CREATE TRIGGER trg_bef_pessoa_historico BEFORE UPDATE ON pessoa FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_pessoa();
 
 
 --
 -- Name: trg_bef_socio_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_socio_historico
-    BEFORE UPDATE ON socio
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_socio();
+CREATE TRIGGER trg_bef_socio_historico BEFORE UPDATE ON socio FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_socio();
 
 
 --
 -- Name: trg_delete_documento_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_documento_historico
-    AFTER DELETE ON documento
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_documento();
+CREATE TRIGGER trg_delete_documento_historico AFTER DELETE ON documento FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_documento();
 
 
 --
 -- Name: trg_delete_endereco_externo_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_endereco_externo_historico
-    AFTER DELETE ON endereco_externo
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_endereco_externo();
+CREATE TRIGGER trg_delete_endereco_externo_historico AFTER DELETE ON endereco_externo FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_endereco_externo();
 
 
 --
 -- Name: trg_delete_endereco_pessoa_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_endereco_pessoa_historico
-    AFTER DELETE ON endereco_pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_endereco_pessoa();
+CREATE TRIGGER trg_delete_endereco_pessoa_historico AFTER DELETE ON endereco_pessoa FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_endereco_pessoa();
 
 
 --
 -- Name: trg_delete_fisica_cpf_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_fisica_cpf_historico
-    AFTER DELETE ON fisica_cpf
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_fisica_cpf();
+CREATE TRIGGER trg_delete_fisica_cpf_historico AFTER DELETE ON fisica_cpf FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_fisica_cpf();
 
 
 --
 -- Name: trg_delete_fisica_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_fisica_historico
-    AFTER DELETE ON fisica
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_fisica();
+CREATE TRIGGER trg_delete_fisica_historico AFTER DELETE ON fisica FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_fisica();
 
 
 --
 -- Name: trg_delete_fone_pessoa_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_fone_pessoa_historico
-    AFTER DELETE ON fone_pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_fone_pessoa();
+CREATE TRIGGER trg_delete_fone_pessoa_historico AFTER DELETE ON fone_pessoa FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_fone_pessoa();
 
 
 --
 -- Name: trg_delete_funcionario_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_funcionario_historico
-    AFTER DELETE ON funcionario
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_funcionario();
+CREATE TRIGGER trg_delete_funcionario_historico AFTER DELETE ON funcionario FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_funcionario();
 
 
 --
 -- Name: trg_delete_juridica_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_juridica_historico
-    AFTER DELETE ON juridica
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_juridica();
+CREATE TRIGGER trg_delete_juridica_historico AFTER DELETE ON juridica FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_juridica();
 
 
 --
 -- Name: trg_delete_pessoa_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_pessoa_historico
-    AFTER DELETE ON pessoa
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_pessoa();
+CREATE TRIGGER trg_delete_pessoa_historico AFTER DELETE ON pessoa FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_pessoa();
 
 
 --
 -- Name: trg_delete_socio_historico; Type: TRIGGER; Schema: cadastro; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_socio_historico
-    AFTER DELETE ON socio
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_socio();
+CREATE TRIGGER trg_delete_socio_historico AFTER DELETE ON socio FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_socio();
 
 
 SET search_path = pmieducar, pg_catalog;
@@ -37714,930 +38096,651 @@ SET search_path = pmieducar, pg_catalog;
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON instituicao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON instituicao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON acervo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON acervo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON acervo_acervo_assunto
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON acervo_acervo_assunto FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON acervo_acervo_autor
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON acervo_acervo_autor FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON acervo_assunto
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON acervo_assunto FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON acervo_autor
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON acervo_autor FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON acervo_colecao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON acervo_colecao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON acervo_editora
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON acervo_editora FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON acervo_idioma
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON acervo_idioma FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON aluno
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON aluno FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON aluno_beneficio
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON aluno_beneficio FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON ano_letivo_modulo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON ano_letivo_modulo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON avaliacao_desempenho
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON avaliacao_desempenho FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON biblioteca
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON biblioteca FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON biblioteca_dia
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON biblioteca_dia FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON biblioteca_feriados
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON biblioteca_feriados FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON biblioteca_usuario
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON biblioteca_usuario FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON calendario_ano_letivo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON calendario_ano_letivo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON calendario_anotacao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON calendario_anotacao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON calendario_dia
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON calendario_dia FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON calendario_dia_anotacao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON calendario_dia_anotacao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON calendario_dia_motivo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON calendario_dia_motivo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON cliente
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON cliente FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON cliente_suspensao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON cliente_suspensao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON cliente_tipo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON cliente_tipo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON cliente_tipo_cliente
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON cliente_tipo_cliente FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON cliente_tipo_exemplar_tipo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON cliente_tipo_exemplar_tipo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON coffebreak_tipo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON coffebreak_tipo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON curso
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON curso FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON disciplina
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON disciplina FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON disciplina_topico
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON disciplina_topico FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON escola
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON escola FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON escola_ano_letivo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON escola_ano_letivo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON escola_complemento
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON escola_complemento FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON escola_curso
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON escola_curso FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON escola_localizacao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON escola_localizacao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON escola_rede_ensino
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON escola_rede_ensino FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON escola_serie
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON escola_serie FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON exemplar
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON exemplar FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON exemplar_emprestimo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON exemplar_emprestimo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON exemplar_tipo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON exemplar_tipo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON falta_atraso
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON falta_atraso FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON falta_atraso_compensado
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON falta_atraso_compensado FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON fonte
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON fonte FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON funcao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON funcao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON habilitacao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON habilitacao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON habilitacao_curso
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON habilitacao_curso FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON historico_disciplinas
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON historico_disciplinas FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON historico_escolar
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON historico_escolar FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON infra_comodo_funcao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON infra_comodo_funcao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON infra_predio
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON infra_predio FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON infra_predio_comodo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON infra_predio_comodo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON material_didatico
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON material_didatico FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON material_tipo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON material_tipo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON matricula
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON matricula FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON matricula_ocorrencia_disciplinar
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON matricula_ocorrencia_disciplinar FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON menu_tipo_usuario
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON menu_tipo_usuario FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON modulo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON modulo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON motivo_afastamento
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON motivo_afastamento FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON motivo_baixa
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON motivo_baixa FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON motivo_suspensao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON motivo_suspensao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON nivel_ensino
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON nivel_ensino FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON operador
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON operador FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON pagamento_multa
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON pagamento_multa FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON pre_requisito
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON pre_requisito FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON quadro_horario
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON quadro_horario FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON religiao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON religiao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON reserva_vaga
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON reserva_vaga FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON reservas
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON reservas FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON sequencia_serie
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON sequencia_serie FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON serie
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON serie FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON serie_pre_requisito
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON serie_pre_requisito FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON servidor
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON servidor FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON servidor_afastamento
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON servidor_afastamento FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON servidor_alocacao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON servidor_alocacao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON servidor_curso
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON servidor_curso FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON servidor_formacao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON servidor_formacao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON servidor_titulo_concurso
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON servidor_titulo_concurso FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON situacao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON situacao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON tipo_avaliacao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON tipo_avaliacao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON tipo_avaliacao_valores
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON tipo_avaliacao_valores FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON tipo_dispensa
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON tipo_dispensa FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON tipo_ensino
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON tipo_ensino FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON tipo_ocorrencia_disciplinar
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON tipo_ocorrencia_disciplinar FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON tipo_regime
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON tipo_regime FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON tipo_usuario
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON tipo_usuario FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON transferencia_solicitacao
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON transferencia_solicitacao FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON transferencia_tipo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON transferencia_tipo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON turma
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON turma FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON turma_dia_semana
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON turma_dia_semana FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON turma_modulo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON turma_modulo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON turma_tipo
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON turma_tipo FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 --
 -- Name: fcn_aft_update; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
 --
 
-CREATE TRIGGER fcn_aft_update
-    AFTER INSERT OR UPDATE ON usuario
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_update();
+CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON usuario FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
 SET search_path = public, pg_catalog;
@@ -38646,80 +38749,56 @@ SET search_path = public, pg_catalog;
 -- Name: trg_aft_logradouro_fonetiza; Type: TRIGGER; Schema: public; Owner: ieducar
 --
 
-CREATE TRIGGER trg_aft_logradouro_fonetiza
-    AFTER INSERT OR UPDATE ON logradouro
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_aft_logradouro_fonetiza();
+CREATE TRIGGER trg_aft_logradouro_fonetiza AFTER INSERT OR UPDATE ON logradouro FOR EACH ROW EXECUTE PROCEDURE fcn_aft_logradouro_fonetiza();
 
 
 --
 -- Name: trg_bef_bairro_historico; Type: TRIGGER; Schema: public; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_bairro_historico
-    BEFORE UPDATE ON bairro
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_bairro();
+CREATE TRIGGER trg_bef_bairro_historico BEFORE UPDATE ON bairro FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_bairro();
 
 
 --
 -- Name: trg_bef_logradouro_fonetiza; Type: TRIGGER; Schema: public; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_logradouro_fonetiza
-    BEFORE DELETE ON logradouro
-    FOR EACH ROW
-    EXECUTE PROCEDURE fcn_bef_logradouro_fonetiza();
+CREATE TRIGGER trg_bef_logradouro_fonetiza BEFORE DELETE ON logradouro FOR EACH ROW EXECUTE PROCEDURE fcn_bef_logradouro_fonetiza();
 
 
 --
 -- Name: trg_bef_logradouro_historico; Type: TRIGGER; Schema: public; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_logradouro_historico
-    BEFORE UPDATE ON logradouro
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_logradouro();
+CREATE TRIGGER trg_bef_logradouro_historico BEFORE UPDATE ON logradouro FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_logradouro();
 
 
 --
 -- Name: trg_bef_municipio_historico; Type: TRIGGER; Schema: public; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_municipio_historico
-    BEFORE UPDATE ON municipio
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_municipio();
+CREATE TRIGGER trg_bef_municipio_historico BEFORE UPDATE ON municipio FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_municipio();
 
 
 --
 -- Name: trg_delete_bairro_historico; Type: TRIGGER; Schema: public; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_bairro_historico
-    AFTER DELETE ON bairro
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_bairro();
+CREATE TRIGGER trg_delete_bairro_historico AFTER DELETE ON bairro FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_bairro();
 
 
 --
 -- Name: trg_delete_logradouro_historico; Type: TRIGGER; Schema: public; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_logradouro_historico
-    AFTER DELETE ON logradouro
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_logradouro();
+CREATE TRIGGER trg_delete_logradouro_historico AFTER DELETE ON logradouro FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_logradouro();
 
 
 --
 -- Name: trg_delete_municipio_historico; Type: TRIGGER; Schema: public; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_municipio_historico
-    AFTER DELETE ON municipio
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_municipio();
+CREATE TRIGGER trg_delete_municipio_historico AFTER DELETE ON municipio FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_municipio();
 
 
 SET search_path = urbano, pg_catalog;
@@ -38728,40 +38807,28 @@ SET search_path = urbano, pg_catalog;
 -- Name: trg_bef_cep_logradouro_bairro_historico; Type: TRIGGER; Schema: urbano; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_cep_logradouro_bairro_historico
-    BEFORE UPDATE ON cep_logradouro_bairro
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_cep_logradouro_bairro();
+CREATE TRIGGER trg_bef_cep_logradouro_bairro_historico BEFORE UPDATE ON cep_logradouro_bairro FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_cep_logradouro_bairro();
 
 
 --
 -- Name: trg_bef_cep_logradouro_historico; Type: TRIGGER; Schema: urbano; Owner: ieducar
 --
 
-CREATE TRIGGER trg_bef_cep_logradouro_historico
-    BEFORE UPDATE ON cep_logradouro
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_grava_historico_cep_logradouro();
+CREATE TRIGGER trg_bef_cep_logradouro_historico BEFORE UPDATE ON cep_logradouro FOR EACH ROW EXECUTE PROCEDURE historico.fcn_grava_historico_cep_logradouro();
 
 
 --
 -- Name: trg_delete_cep_logradouro_bairro_historico; Type: TRIGGER; Schema: urbano; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_cep_logradouro_bairro_historico
-    AFTER DELETE ON cep_logradouro_bairro
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_cep_logradouro_bairro();
+CREATE TRIGGER trg_delete_cep_logradouro_bairro_historico AFTER DELETE ON cep_logradouro_bairro FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_cep_logradouro_bairro();
 
 
 --
 -- Name: trg_delete_cep_logradouro_historico; Type: TRIGGER; Schema: urbano; Owner: ieducar
 --
 
-CREATE TRIGGER trg_delete_cep_logradouro_historico
-    AFTER DELETE ON cep_logradouro
-    FOR EACH ROW
-    EXECUTE PROCEDURE historico.fcn_delete_grava_historico_cep_logradouro();
+CREATE TRIGGER trg_delete_cep_logradouro_historico AFTER DELETE ON cep_logradouro FOR EACH ROW EXECUTE PROCEDURE historico.fcn_delete_grava_historico_cep_logradouro();
 
 
 SET search_path = acesso, pg_catalog;
@@ -38915,7 +38982,7 @@ ALTER TABLE ONLY operacao
 --
 
 ALTER TABLE ONLY usuario_grupo
-    ADD CONSTRAINT fk_usuario_usuario_grupo FOREIGN KEY ("login") REFERENCES usuario("login");
+    ADD CONSTRAINT fk_usuario_usuario_grupo FOREIGN KEY (login) REFERENCES usuario(login);
 
 
 SET search_path = alimentos, pg_catalog;
@@ -38925,7 +38992,7 @@ SET search_path = alimentos, pg_catalog;
 --
 
 ALTER TABLE ONLY cardapio
-    ADD CONSTRAINT fk_alterar_usuario_cardapio FOREIGN KEY (login_alteracao) REFERENCES acesso.usuario("login");
+    ADD CONSTRAINT fk_alterar_usuario_cardapio FOREIGN KEY (login_alteracao) REFERENCES acesso.usuario(login);
 
 
 --
@@ -38957,7 +39024,7 @@ ALTER TABLE ONLY unidade_atendida
 --
 
 ALTER TABLE ONLY guia_remessa
-    ADD CONSTRAINT fk_cancelar_usuario_guia_remessa FOREIGN KEY (login_cancelamento) REFERENCES acesso.usuario("login");
+    ADD CONSTRAINT fk_cancelar_usuario_guia_remessa FOREIGN KEY (login_cancelamento) REFERENCES acesso.usuario(login);
 
 
 --
@@ -39133,7 +39200,7 @@ ALTER TABLE ONLY faixa_composto_quimico
 --
 
 ALTER TABLE ONLY guia_remessa
-    ADD CONSTRAINT fk_emitir_usuario_guia_remessa FOREIGN KEY (login_emissao) REFERENCES acesso.usuario("login");
+    ADD CONSTRAINT fk_emitir_usuario_guia_remessa FOREIGN KEY (login_emissao) REFERENCES acesso.usuario(login);
 
 
 --
@@ -39237,7 +39304,7 @@ ALTER TABLE ONLY guia_produto_diario
 --
 
 ALTER TABLE ONLY cardapio
-    ADD CONSTRAINT fk_incluir_usuario_cardapio FOREIGN KEY (login_inclusao) REFERENCES acesso.usuario("login");
+    ADD CONSTRAINT fk_incluir_usuario_cardapio FOREIGN KEY (login_inclusao) REFERENCES acesso.usuario(login);
 
 
 --
@@ -39477,7 +39544,7 @@ ALTER TABLE ONLY fornecedor_unidade_atendida
 --
 
 ALTER TABLE ONLY baixa_guia_produto
-    ADD CONSTRAINT fk_usuario_baixa_guia FOREIGN KEY (login_baixa) REFERENCES acesso.usuario("login");
+    ADD CONSTRAINT fk_usuario_baixa_guia FOREIGN KEY (login_baixa) REFERENCES acesso.usuario(login);
 
 
 --
@@ -39485,7 +39552,7 @@ ALTER TABLE ONLY baixa_guia_produto
 --
 
 ALTER TABLE ONLY baixa_guia_remessa
-    ADD CONSTRAINT fk_usuario_baixa_guia_remessa FOREIGN KEY (login_baixa) REFERENCES acesso.usuario("login");
+    ADD CONSTRAINT fk_usuario_baixa_guia_remessa FOREIGN KEY (login_baixa) REFERENCES acesso.usuario(login);
 
 
 --
@@ -39493,7 +39560,7 @@ ALTER TABLE ONLY baixa_guia_remessa
 --
 
 ALTER TABLE ONLY contrato
-    ADD CONSTRAINT fk_usuario_contrato FOREIGN KEY ("login") REFERENCES acesso.usuario("login");
+    ADD CONSTRAINT fk_usuario_contrato FOREIGN KEY (login) REFERENCES acesso.usuario(login);
 
 
 --
@@ -39501,7 +39568,7 @@ ALTER TABLE ONLY contrato
 --
 
 ALTER TABLE ONLY log_guia_remessa
-    ADD CONSTRAINT fk_usuario_log_guia FOREIGN KEY ("login") REFERENCES acesso.usuario("login");
+    ADD CONSTRAINT fk_usuario_log_guia FOREIGN KEY (login) REFERENCES acesso.usuario(login);
 
 
 SET search_path = cadastro, pg_catalog;
@@ -40375,6 +40442,22 @@ ALTER TABLE ONLY educacenso_cod_turma
 
 
 --
+-- Name: empresa_transporte_escolar_ref_idpes_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY empresa_transporte_escolar
+    ADD CONSTRAINT empresa_transporte_escolar_ref_idpes_fkey FOREIGN KEY (ref_idpes) REFERENCES cadastro.juridica(idpes);
+
+
+--
+-- Name: empresa_transporte_escolar_ref_resp_idpes_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY empresa_transporte_escolar
+    ADD CONSTRAINT empresa_transporte_escolar_ref_resp_idpes_fkey FOREIGN KEY (ref_resp_idpes) REFERENCES cadastro.fisica(idpes) ON UPDATE RESTRICT ON DELETE RESTRICT;
+
+
+--
 -- Name: falta_componente_curricular_falta_aluno_fk; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
 --
 
@@ -40388,6 +40471,30 @@ ALTER TABLE ONLY falta_componente_curricular
 
 ALTER TABLE ONLY falta_geral
     ADD CONSTRAINT falta_geral_falta_aluno_fk FOREIGN KEY (falta_aluno_id) REFERENCES falta_aluno(id) ON DELETE CASCADE;
+
+
+--
+-- Name: itinerario_transporte_escolar_ref_cod_rota_transporte_escolar_f; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY itinerario_transporte_escolar
+    ADD CONSTRAINT itinerario_transporte_escolar_ref_cod_rota_transporte_escolar_f FOREIGN KEY (ref_cod_rota_transporte_escolar) REFERENCES rota_transporte_escolar(cod_rota_transporte_escolar);
+
+
+--
+-- Name: motorista_ref_cod_empresa_transporte_escolar_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY motorista
+    ADD CONSTRAINT motorista_ref_cod_empresa_transporte_escolar_fkey FOREIGN KEY (ref_cod_empresa_transporte_escolar) REFERENCES empresa_transporte_escolar(cod_empresa_transporte_escolar) ON UPDATE RESTRICT ON DELETE RESTRICT;
+
+
+--
+-- Name: motorista_ref_idpes_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY motorista
+    ADD CONSTRAINT motorista_ref_idpes_fkey FOREIGN KEY (ref_idpes) REFERENCES cadastro.fisica(idpes) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 --
@@ -40423,6 +40530,46 @@ ALTER TABLE ONLY parecer_geral
 
 
 --
+-- Name: pessoa_transporte_ref_cod_ponto_transporte_escolar_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY pessoa_transporte
+    ADD CONSTRAINT pessoa_transporte_ref_cod_ponto_transporte_escolar_fkey FOREIGN KEY (ref_cod_ponto_transporte_escolar) REFERENCES ponto_transporte_escolar(cod_ponto_transporte_escolar);
+
+
+--
+-- Name: pessoa_transporte_ref_cod_rota_transporte_escolar_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY pessoa_transporte
+    ADD CONSTRAINT pessoa_transporte_ref_cod_rota_transporte_escolar_fkey FOREIGN KEY (ref_cod_rota_transporte_escolar) REFERENCES rota_transporte_escolar(cod_rota_transporte_escolar);
+
+
+--
+-- Name: pessoa_transporte_ref_idpes_destino_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY pessoa_transporte
+    ADD CONSTRAINT pessoa_transporte_ref_idpes_destino_fkey FOREIGN KEY (ref_idpes_destino) REFERENCES cadastro.juridica(idpes);
+
+
+--
+-- Name: pessoa_transporte_ref_idpes_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY pessoa_transporte
+    ADD CONSTRAINT pessoa_transporte_ref_idpes_fkey FOREIGN KEY (ref_idpes) REFERENCES cadastro.fisica(idpes) ON UPDATE RESTRICT ON DELETE RESTRICT;
+
+
+--
+-- Name: ponto_transporte_escolar_ref_cod_veiculo_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY itinerario_transporte_escolar
+    ADD CONSTRAINT ponto_transporte_escolar_ref_cod_veiculo_fkey FOREIGN KEY (ref_cod_veiculo) REFERENCES veiculo(cod_veiculo) ON UPDATE RESTRICT ON DELETE RESTRICT;
+
+
+--
 -- Name: regra_avaliacao_formula_media_formula_media_fk; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
 --
 
@@ -40447,6 +40594,22 @@ ALTER TABLE ONLY regra_avaliacao
 
 
 --
+-- Name: rota_transporte_escolar_ref_cod_empresa_transporte_escolar_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY rota_transporte_escolar
+    ADD CONSTRAINT rota_transporte_escolar_ref_cod_empresa_transporte_escolar_fkey FOREIGN KEY (ref_cod_empresa_transporte_escolar) REFERENCES empresa_transporte_escolar(cod_empresa_transporte_escolar) ON UPDATE RESTRICT ON DELETE RESTRICT;
+
+
+--
+-- Name: rota_transporte_escolar_ref_idpes_destino_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY rota_transporte_escolar
+    ADD CONSTRAINT rota_transporte_escolar_ref_idpes_destino_fkey FOREIGN KEY (ref_idpes_destino) REFERENCES cadastro.juridica(idpes);
+
+
+--
 -- Name: tabela_arredondamento_tabela_arredondamento_valor_fk; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
 --
 
@@ -40460,6 +40623,22 @@ ALTER TABLE ONLY tabela_arredondamento_valor
 
 ALTER TABLE ONLY transporte_aluno
     ADD CONSTRAINT transporte_aluno_aluno_fk FOREIGN KEY (aluno_id) REFERENCES pmieducar.aluno(cod_aluno) ON DELETE CASCADE;
+
+
+--
+-- Name: veiculo_ref_cod_empresa_transporte_escolar_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY veiculo
+    ADD CONSTRAINT veiculo_ref_cod_empresa_transporte_escolar_fkey FOREIGN KEY (ref_cod_empresa_transporte_escolar) REFERENCES empresa_transporte_escolar(cod_empresa_transporte_escolar);
+
+
+--
+-- Name: veiculo_ref_cod_tipo_veiculo_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY veiculo
+    ADD CONSTRAINT veiculo_ref_cod_tipo_veiculo_fkey FOREIGN KEY (ref_cod_tipo_veiculo) REFERENCES tipo_veiculo(cod_tipo_veiculo) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 SET search_path = pmiacoes, pg_catalog;
@@ -44591,12 +44770,13 @@ ALTER TABLE ONLY cep_logradouro
 
 
 --
--- Name: public; Type: ACL; Schema: -; Owner: ieducar
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
 --
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM "ieducar";
-GRANT ALL ON SCHEMA public TO "ieducar";
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO ieducar;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
