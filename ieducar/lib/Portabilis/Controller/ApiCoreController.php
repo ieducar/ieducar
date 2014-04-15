@@ -490,7 +490,7 @@ class ApiCoreController extends Core_Controller_Page_EditController
     $selectFields                    = join(', ', $searchOptions['selectFields']);
 
     return "select distinct $selectFields from $namespace.$table
-            where $idAttr like $1||'%' order by $idAttr limit 15";
+            where $idAttr = $1 order by $idAttr limit 15";
   }
 
 
