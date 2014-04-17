@@ -64,9 +64,15 @@ class MotoristaController extends ApiCoreController
 
   protected function sqlsForNumericSearch() {
 
-    $sqls[] = "select distinct cod_motorista as id, nome as name from
-                 modules.motorista, cadastro.pessoa where idpes = ref_idpes
-                 and cod_motorista like $1||'%'";
+    $sqls[] = "select distinct 
+                   cod_motorista as id, 
+                   nome as name 
+               from
+                   modules.motorista, 
+                   cadastro.pessoa 
+               where 
+                   idpes = ref_idpes and 
+                   cod_motorista = $1 ";
 
     return $sqls;
   }

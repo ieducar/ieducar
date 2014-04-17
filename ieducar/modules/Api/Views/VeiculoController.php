@@ -90,8 +90,14 @@ class VeiculoController extends ApiCoreController
 
   protected function sqlsForNumericSearch() {
 
-    $sqls[] = "select distinct cod_veiculo as id, (descricao || ', Placa: ' || placa) as name from
-                 modules.veiculo where (cod_veiculo like $1||'%') OR (lower(to_ascii(placa)) like '%'||lower(to_ascii($1))||'%')";
+    $sqls[] = "select distinct
+                 cod_veiculo as id, 
+                 (descricao || ', Placa: ' || placa) as name 
+               from
+                 modules.veiculo 
+               where 
+                 ( cod_veiculo = $1 ) OR 
+                 ( lower(to_ascii(placa)) like '%'||lower(to_ascii($1))||'%' )";
 
     return $sqls;
   }

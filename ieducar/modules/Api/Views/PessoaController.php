@@ -180,30 +180,31 @@ class PessoaController extends ApiCoreController
   protected function sqlsForNumericSearch() {
     $sqls = array();
 
-    //TODO: performance bottleneck.
-    
     // search by idpes or cpf
     $sqls[] = "select distinct 
-    		     pessoa.idpes as id, 
-    		     pessoa.nome as name 
-    		   from cadastro.pessoa, cadastro.fisica 
-    		   where 
-    		      fisica.idpes = pessoa.idpes and 
-    			    ((text(pessoa.idpes) like $1||'%') or (text(fisica.cpf) like $1||'%')) 
-    		   order by id 
-    		   limit 15";
+                   pessoa.idpes as id, 
+    		           pessoa.nome as name 
+    	     	   from 
+                   cadastro.pessoa, 
+                   cadastro.fisica 
+      		     where 
+    		           fisica.idpes = pessoa.idpes and (
+                    (text(pessoa.idpes) = $1) or 
+                    (text(fisica.cpf) = $1)
+                   )";
 
     // search by rg
     $sqls[] = "select distinct 
-    			 pessoa.idpes as id,
-    		     pessoa.nome as name 
-    		   from cadastro.pessoa, 
-    			    cadastro.documento
+             			 pessoa.idpes as id,
+    		           pessoa.nome as name 
+        		   from 
+                   cadastro.pessoa, 
+        			     cadastro.documento
                where 
-    				pessoa.idpes = documento.idpes and 
-    				(text(documento.rg) like $1||'%') 
-    		   order by id 
-    		   limit 15";
+           				 pessoa.idpes = documento.idpes and 
+    				       (documento.rg = $1 ) 
+         		   order by id 
+        		   limit 15";
 
     return $sqls;
   }

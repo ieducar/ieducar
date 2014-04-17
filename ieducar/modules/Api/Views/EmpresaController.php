@@ -136,9 +136,15 @@ class EmpresaController extends ApiCoreController
 
   protected function sqlsForNumericSearch() {
 
-    $sqls[] = "select distinct cod_empresa_transporte_escolar as id, nome as name from
-                 modules.empresa_transporte_escolar, cadastro.pessoa where idpes = ref_idpes
-                 and cod_empresa_transporte_escolar like $1||'%'";
+    $sqls[] = "select distinct 
+                   cod_empresa_transporte_escolar as id, 
+                   nome as name 
+               from
+                   modules.empresa_transporte_escolar, 
+                   cadastro.pessoa 
+               where 
+                   idpes = ref_idpes and 
+                   cod_empresa_transporte_escolar = $1 ";
 
     return $sqls;
   }

@@ -102,8 +102,13 @@ class PontoController extends ApiCoreController
 
   protected function sqlsForNumericSearch() {
 
-    $sqls[] = "select distinct cod_ponto_transporte_escolar as id, descricao as name from
-                 modules.ponto_transporte_escolar where cod_ponto_transporte_escolar like $1||'%'";
+    $sqls[] = "select distinct 
+                  cod_ponto_transporte_escolar as id, 
+                  descricao as name 
+               from
+                  modules.ponto_transporte_escolar 
+               where 
+                  cod_ponto_transporte_escolar = $1 ";
 
     return $sqls;
   }

@@ -41,8 +41,14 @@ class PessoajController extends ApiCoreController
   
   protected function sqlsForNumericSearch() {
     
-    $sqls[] = "select distinct idpes as id, nome as name from
-                 cadastro.pessoa where tipo='J' and idpes like $1||'%'";
+    $sqls[] = "select distinct 
+                  idpes as id, 
+                  nome as name 
+               from
+                  cadastro.pessoa 
+               where 
+                  tipo='J' and 
+                  idpes = 1 ";
 
     return $sqls;
   }
