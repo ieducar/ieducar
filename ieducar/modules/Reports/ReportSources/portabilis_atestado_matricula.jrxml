@@ -286,7 +286,7 @@
 				<textElement textAlignment="Justified">
 					<font fontName="DejaVu Sans" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Atestamos para os defidos fins que, o(a) aluno(a): "+$F{nome}+" com o código nº: "+$F{cod_aluno}+" filho(a) de "+$F{nm_mae}+" e de "+$F{nm_pai}+" nascido(a) em "+$F{data_nasc}+", natural de "+$F{municipio_uf_nascimento}+", admitido em "+$F{dt_matricula}+", está regularmente matriculado no ano de "+$F{ano}+" no curso: "+$F{nm_curso}+" no(a) ano/série: "+$F{nm_serie}+"."]]></textFieldExpression>
+        <textFieldExpression><![CDATA["Atestamos para os devidos fins que o(a) aluno(a) "+$F{nome}+", nascido(a) em "+$F{data_nasc}+", natural de "+$F{municipio_uf_nascimento}+", admitido(a) em "+$F{dt_matricula}+", está regularmente matriculado(a) no ano de "+$F{ano}+" no curso "+$F{nm_curso}+" no(a) ano/série "+$F{nm_serie}+"."]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement uuid="97bd019d-ec3b-4b53-953d-230fba35a8ae" x="79" y="52" width="221" height="13"/>
