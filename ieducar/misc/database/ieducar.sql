@@ -25034,14 +25034,14 @@ COPY menu (cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ord_menu, 
 999616	999616	999614	Editoras	3	module/Reports/BibliotecaEditora	_self	1	16	1
 999617	999617	999614	Obras	4	module/Reports/BibliotecaObra	_self	1	16	1
 20710	\N	\N	Cadastros	1	\N	_self	1	17	1
-20711	\N	\N	Movimenta√ß√£o	2	\N	_self	1	17	1
-20712	\N	\N	Relat√≥rios	3	\N	_self	1	17	1
+20711	\N	\N	MovimentaÁ„o	2	\N	_self	1	17	1
+20712	\N	\N	RelatÛrios	3	\N	_self	1	17	1
 21235	21235	20710	Empresas	1	transporte_empresa_lst.php	_self	1	17	192
 21236	21236	20710	Motoristas	2	transporte_motorista_lst.php	_self	1	17	192
-21237	21237	20710	Ve√≠culos	3	transporte_veiculo_lst.php	_self	1	17	192
+21237	21237	20710	VeÌculos	3	transporte_veiculo_lst.php	_self	1	17	192
 21238	21238	20710	Pontos	4	transporte_ponto_lst.php	_self	1	17	192
 21239	21239	20710	Rotas	5	transporte_rota_lst.php	_self	1	17	192
-21240	21240	20711	Usu√°rios de Transporte	5	transporte_pessoa_lst.php	_self	1	17	192
+21240	21240	20711	Usu·rios de Transporte	5	transporte_pessoa_lst.php	_self	1	17	192
 \.
 
 
@@ -27610,13 +27610,13 @@ COPY menu_submenu (cod_menu_submenu, ref_cod_menu_menu, cod_sistema, nm_submenu,
 999615	57	2	Autores	module/Reports/BibliotecaAutor	\N	3
 999616	57	2	Editoras	module/Reports/BibliotecaEditora	\N	3
 999617	57	2	Obras	module/Reports/BibliotecaObra	\N	3
-21234	69	2	Apresenta√ß√£o	transporte_index.php	\N	2
+21234	  69	2	ApresentaÁ„o	transporte_index.php	\N	2
 21235	69	2	Empresas	transporte_empresa_lst.php	\N	3
 21236	69	2	Motoristas	transporte_motorista_lst.php	\N	3
-21237	69	2	Ve√≠culos	transporte_veiculo_lst.php	\N	3
+21237	69	2	VeÌculos	transporte_veiculo_lst.php	\N	3
 21238	69	2	Rotas	transporte_rota_lst.php	\N	3
 21239	69	2	Pontos	transporte_ponto_lst.php	\N	3
-21240	69	2	Usu√°rios de Transporte	transporte_pessoa_lst.php	\N	3
+21240	69	2	Usu·rios de Transporte	transporte_pessoa_lst.php	\N	3
 \.
 
 
