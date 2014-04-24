@@ -110,6 +110,11 @@ class clsPermissoes
         die();
       }
     }
+    // Liberando para admin.
+    if ($obj_usuario->idpes == 1) {
+        $ok = TRUE;
+    }
+
 
     if (!$ok) {
       if ($str_pagina_redirecionar) {
