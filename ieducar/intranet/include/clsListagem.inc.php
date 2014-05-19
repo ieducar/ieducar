@@ -81,7 +81,7 @@ class clsListagem extends clsCampos
   var $funcAcao = '';
   var $funcAcaoNome = '';
   var $rotulo_anterior;
-  var $locale = "<b>=> PAGINA SEM LOCALIZACAO, COLOQUE POR GENTILEZA. <=</b>";
+  var $locale = "<!-- Página sem localização. Inclua ela no arquivo da listagem. -->";
 
   var $array_botao;
   var $array_botao_url;
