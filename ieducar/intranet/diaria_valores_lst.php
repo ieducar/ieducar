@@ -102,8 +102,8 @@ class indice extends clsListagem
 		$this->nome_acao = "Novo";
 
 		$this->largura = "100%";
-                $localizacao = new LocalizacaoSistema();
-                $localizacao->entradaCaminhos(array($_SERVER['SERVER_NAME'] . '/intranet' => 'i-Educar', '' => 'Diárias Registro de Valores'));
+               $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos(array($_SERVER['SERVER_NAME'] . '/intranet' => 'i-Educar', '' => 'Diária Valores'));
                 $this->enviaLocalizacao($localizacao->montar());
 	}
 }
