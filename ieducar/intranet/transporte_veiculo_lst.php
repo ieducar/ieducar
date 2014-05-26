@@ -33,6 +33,8 @@ require_once( "include/public/geral.inc.php" );
 
 require_once("include/modules/clsModulesEmpresaTransporteEscolar.inc.php");
 require_once("include/modules/clsModulesVeiculo.inc.php");
+require_once 'include/localizacaoSistema.php';
+
 
 class clsIndexBase extends clsBase
 {
@@ -40,6 +42,8 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Veículos" );
 		$this->processoAp = "21237";
+                $this->addEstilo( "localizacaoSistema" );
+
 	}
 }
 
@@ -175,6 +179,9 @@ class indice extends clsListagem
 		$this->nome_acao = "Novo";
 
 		$this->largura = "100%";
+                 $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos(array($_SERVER['SERVER_NAME'] . '/intranet' => 'i-Educar', '' => 'Transporte Veículos'));
+                $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 // cria uma extensao da classe base

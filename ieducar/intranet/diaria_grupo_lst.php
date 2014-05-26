@@ -81,16 +81,11 @@ class indice extends clsListagem
 		$this->nome_acao = "Novo";
 
 		$this->largura = "100%";
-                
                 $localizacao = new LocalizacaoSistema();
-                $localizacao->entradaCaminhos( array(
-                    $_SERVER['SERVER_NAME']."/intranet" => "i-Educar",
-                    ""                  => "Diárias Grupo"
-                ));
+                $localizacao->entradaCaminhos(array($_SERVER['SERVER_NAME'] . '/intranet' => 'i-Educar', '' => 'Diárias Registro de Grupos'));
                 $this->enviaLocalizacao($localizacao->montar());
-	}
+                }
 }
-
 
 $pagina = new clsIndex();
 

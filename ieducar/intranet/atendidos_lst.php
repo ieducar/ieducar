@@ -3,6 +3,7 @@ $desvio_diretorio = "";
 require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
+require_once 'include/localizacaoSistema.php';
 
 class clsIndex extends clsBase
 {
@@ -11,6 +12,8 @@ class clsIndex extends clsBase
 	{
 		$this->SetTitulo( "Pessoas Físicas" );
 		$this->processoAp = "43";
+                $this->addEstilo( "localizacaoSistema" );
+
 	}
 }
 
@@ -63,6 +66,9 @@ class indice extends clsListagem
 
 		$this->largura = "100%";
 		$this->addPaginador2( "atendidos_lst.php", $total, $_GET, $this->nome, $limite );
+                $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos(array($_SERVER['SERVER_NAME'] . '/intranet' => 'i-Educar', '' => 'Gerenciamento de Pessoas Físicas'));
+                $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 
