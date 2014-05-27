@@ -223,10 +223,7 @@ class indice extends clsListagem
                 
                 $localizacao = new LocalizacaoSistema();
                 $localizacao->entradaCaminhos( array(
-                    $_SERVER['SERVER_NAME']."/intranet" => "i-Educar",
-                    "educar_biblioteca_index.php"                  => "Biblioteca",
-                    ""                                  => "Lista de Dados das bibliotecas"
-                ));
+                    $_SERVER['SERVER_NAME']."/intranet" => "i-Educar","educar_biblioteca_index.php"=> "Biblioteca","" => "Lista de Dados das bibliotecas"));
                 $this->enviaLocalizacao($localizacao->montar());
 	}
 }

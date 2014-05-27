@@ -96,7 +96,7 @@ class indice extends clsListagem
 		$this->__pessoa_logada = $_SESSION['id_pessoa'];
 		session_write_close();
 
-		$this->__titulo = "Logradouro - Listagem";
+		//$this->__titulo = "Logradouro - Listagem";
 
 		foreach( $_GET AS $var => $val ) // passa todos os valores obtidos no GET para atributos do objeto
 			$this->$var = ( $val === "" ) ? null: $val;
