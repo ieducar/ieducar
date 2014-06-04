@@ -53,15 +53,17 @@ class Portabilis_Model_Report_TipoBoletim extends CoreExt_Enum
   const PARECER_DESCRITIVO_COMPONENTE = 7;
   const PARECER_DESCRITIVO_GERAL      = 8;
 
+  // Em conversa com a Portabilis, eles não vão disponibilizar os outros relatórios de boletim.
+  // Portanto, até fazermos os nossos, só tem bimestral.
   protected $_data = array(
-    self::BIMESTRAL                     => 'Bimestral',
-    self::TRIMESTRAL                    => 'Trimestral',
-    self::TRIMESTRAL_CONCEITUAL         => 'Trimestral conceitual',
-    self::SEMESTRAL                     => 'Semestral',
-    self::SEMESTRAL_CONCEITUAL          => 'Semestral conceitual',
-    self::SEMESTRAL_EDUCACAO_INFANTIL   => 'Semestral educa&ccedil;&atilde;o infantil',
-    self::PARECER_DESCRITIVO_COMPONENTE => 'Parecer descritivo por componente curricular',
-    self::PARECER_DESCRITIVO_GERAL      => 'Parecer descritivo geral'
+    self::BIMESTRAL                     => 'Bimestral' //,
+    //self::TRIMESTRAL                    => 'Trimestral',
+    //self::TRIMESTRAL_CONCEITUAL         => 'Trimestral conceitual',
+    //self::SEMESTRAL                     => 'Semestral',
+    //self::SEMESTRAL_CONCEITUAL          => 'Semestral conceitual',
+    //self::SEMESTRAL_EDUCACAO_INFANTIL   => 'Semestral educa&ccedil;&atilde;o infantil',
+    //self::PARECER_DESCRITIVO_COMPONENTE => 'Parecer descritivo por componente curricular',
+    //self::PARECER_DESCRITIVO_GERAL      => 'Parecer descritivo geral'
   );
 
   public static function getInstance() 
