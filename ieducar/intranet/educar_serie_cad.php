@@ -328,24 +328,27 @@ function EtapasCurso(xml_qtd_etapas)
 
 function RegrasInstituicao(xml_qtd_regras)
 {
-  var campoRegras = document.getElementById('regra_avaliacao_id');
-  var DOM_array = xml_qtd_regras.getElementsByTagName('regra');
+    var campoRegras = document.getElementById('regra_avaliacao_id');
+    var DOM_array = xml_qtd_regras.getElementsByTagName('regra');
+    campoRegras.length = 0;
 
-  if (DOM_array.length) {
-    campoRegras.length = 1;
-    campoRegras.options[0].text = 'Selecione uma regra';
-    campoRegras.disabled = false;
+    if (DOM_array.length) {
+        campoRegras.length = 1;
+        campoRegras.options[0].text = 'Selecione uma regra';
+        campoRegras.options[0].value = '';
+        campoRegras.disabled = false;
 
-    var loop = DOM_array.length;
-
-    for (var i = 0; i < loop;i++) {
-      campoRegras.options[i] = new Option(DOM_array[i].firstChild.data, i, false, false);
+        for (var i = 0; i < DOM_array.length; i++) {
+            campoRegras.options[i + 1] = new Option(DOM_array[i].firstChild.data, i + 1, false, false);
+        }
     }
-  }
-  else {
-	  campoRegras.options[0].text = 'A instituição não possui uma Regra de Avaliação';
-  }
+    else {
+        campoRegras.length = 1;
+        campoRegras.options[0].text = 'A instituição não possui uma Regra de Avaliação';
+        campoRegras.disabled = true;
+    }
 }
+
 
 document.getElementById('ref_cod_curso').onchange = function()
 {
