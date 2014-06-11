@@ -124,7 +124,7 @@
 			<img id="logo_comunicacoes" src="imagens/logo_ministerio_comunicacoes.png" alt="Minist&eacute;rio das Comunica&ccedil;&otilde;es"> </img>
 		</a>
 		
-		<a class="logo_rodape" href="http://brasil.gov.br/ieducar/" target="_top">
+		<a class="logo_rodape" href="http://brasil.gov.br/" target="_top">
 			<img id="logo_brasil" src="imagens/logo_brasil.png" alt="Governo Federal do Brasil"> </img>
 		</a>
 	</body>
