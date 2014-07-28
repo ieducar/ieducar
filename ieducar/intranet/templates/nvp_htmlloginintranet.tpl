@@ -74,9 +74,6 @@
 				transition : 1s;
 				border : thin solid transparent;
 			}
-      .hidden {
-				display: none !important;
-			}
 			.logo_rodape:hover {
 				background-color : #C0E0EE;
 				border : thin solid white;
@@ -111,10 +108,6 @@
 			<img id="logo_ieducar" src="imagens/logo_ieducar.png" alt="i-Educar"> </img>
 		</a>
 		
-		<a class="logo_rodape hidden" href="http://cidadesdigitais.gov.br" target="_top">
-			<img id="logo_cidades_digitais" src="imagens/logo_cidades_digitais.png" alt="Cidades Digitais"> </img>
-		</a>
-	
 		<a class="logo_rodape" href="http://serpro.gov.br" target="_top">
 			<img id="logo_serpro" src="imagens/logo_serpro.png" alt="SERPRO"> </img>
 		</a>
@@ -127,8 +120,5 @@
 			<img id="logo_comunicacoes" src="imagens/logo_ministerio_comunicacoes.png" alt="Minist&eacute;rio das Comunica&ccedil;&otilde;es"> </img>
 		</a>
 		
-		<a class="logo_rodape hidden" href="http://brasil.gov.br/" target="_top" >
-			<img id="logo_brasil" src="imagens/logo_brasil.png" alt="Governo Federal do Brasil"> </img>
-		</a>
 	</body>
 </html>
