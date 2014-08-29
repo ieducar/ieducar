@@ -71,6 +71,9 @@ app.database.port     = 5432
 app.template.vars.instituicao = i-Educar
 app.template.pdf.titulo       = Relatório i-Educar
 app.template.pdf.logo         =
+; Página de template para login. O padrão é o arquivo em
+; templates/nvp_htmlloginintranet.html
+app.template.loginpage        = templates/nvp_htmlloginintranet.html
 
 ; Configurações de localização
 ; Define valores padrão para algumas das tarefas de endereçamento como listagem

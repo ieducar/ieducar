@@ -212,7 +212,18 @@ class clsControlador
   protected function renderLoginPage() {
     $this->destroyLoginSession();
 
+    // Nome padrão da template
     $templateName = 'templates/nvp_htmlloginintranet.tpl';
+    // Caso esteja definido no arquivo de configuração ...
+    if ($GLOBALS['coreExt']['Config']->app->template->loginpage) {
+    	// ... e o arquivo existir e conseguirmos ler ...
+    	if (file_exists($GLOBALS['coreExt']['Config']->app->template->loginpage) &&
+    		is_readable($GLOBALS['coreExt']['Config']->app->template->loginpage)) {
+    			// ... o substituímos.
+    			$templateName = $GLOBALS['coreExt']['Config']->app->template->loginpage;
+    		}
+    }
+    
     $templateFile = fopen($templateName, "r");
     $templateText = fread($templateFile, filesize($templateName));
     $templateText = str_replace( "<!-- #&ERROLOGIN&# -->", $this->messenger->toHtml('p'), $templateText);
