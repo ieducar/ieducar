@@ -2,123 +2,130 @@
 <html>
 	<head>
 		<title>Intranet</title>
-
-		<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1' />
+    <meta http-equiv='Content-Type' content='text/html; charset=ISO-8859-1' />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta http-equiv="Pragma" content="no-cache" />
 		<meta http-equiv="Expires" content="-1" />
 
-		<script language="JavaScript" type="text/javascript">
-			function loginpage_onload()
-			{
-				loginObj = document.getElementById( "login" );
-				if( loginObj.value == "" )
-				{
-					loginObj.focus();
-				}
-			}
-		</script>
-		<style type="text/css">
-			BODY,TABLE,TD {
-				color: #000000;
-				font-size: 11px;
-				margin: 0 0 0 0;
-				font-family : sans-serif;
-			}
-			body {
-				background-image: url("imagens/fundo_login.jpg");
-				background-size : 100%;
-			}
-			A:link, A:visited, A:active, A:hover {
-				color: #0033CC;
-				font-family: verdana, arial, heveltica, sans;
-				font-size: 11px;
-			}
-			LABEL{
-				float: left;
-				margin-right : 20px;
-				font-family: sans;
-				font-size : 150%;
-				color: #092C34;
-				min-width : 10em;
-				text-align : right;
-			}
-			#login, #senha {
-				-webkit-transition : 500ms;
-				transition : 1s;
-				margin-bottom:5px;
-				width: 18em;
-				font-size: 150%;
-				color: #092C34;
-				background-color : #C0E0EE;
-				border : none;
-				padding : 3px;
-			}
-			#login:focus, #senha:focus {
-				background-color : white;
-			}
-			#login_form {
-				margin-left : 10%;
-				margin-top : 40px;
-				max-width : 50%;
-				
-			}
-			#botao {
-				margin-top : 30px;
-				margin-left : 200px;
-			}
-			.logo_rodape {
-				margin-top : 20px;
-				margin-left : 16px;
-				float : left;
-				-webkit-transition : 1s;
-				transition : 1s;
-				border : thin solid transparent;
-			}
-			.logo_rodape:hover {
-				background-color : #C0E0EE;
-				border : thin solid white;
-			}
-			.error {
-				padding : 1em;
-				background-color : white;
-				color : #BA0000;
-				width : 80%;
-				margin-left : 10%;
-			}
-		</style>
+    <link rel=stylesheet type='text/css' href='styles/reset.css?rand=3' />
+    <link rel=stylesheet type='text/css' href='styles/portabilis.css?rand=3' />
+    <link rel=stylesheet type='text/css' href='styles/min-portabilis.css?rand=3' />
+    <link rel=stylesheet type='text/css' href='styles/login.css?rand=4' />
+
+  <script type='text/javascript' src='//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js'></script>
+
+  <script type="text/javascript">
+
+    var $j = jQuery.noConflict();
+
+    function currentSO() {
+      var so = undefined;
+
+      if (navigator && navigator.platform) {
+        var platform = navigator.platform.toLowerCase();
+
+        if (platform.indexOf('win') > -1)
+          so = 'windows';
+        else if (platform.indexOf('linux') > -1)
+          so = 'linux';
+        else if (platform.indexOf('mac') > -1)
+          so = 'macOS';
+        else if (platform.indexOf('x11') > -1)
+          so = 'unix';
+        else
+          so = platform;
+      }
+
+      return so;
+    }
+
+    function loginpage_onload() {
+      var domainName = window.location.hostname;
+
+      if (domainName.indexOf('treinamento') < 0 && domainName.indexOf('demonstracao') < 0)
+        $j('.only-for-clients').show();
+
+      $j('.fade-in').fadeIn('slow');
+
+      $j('#login').focus();
+
+      // used for support links
+      if (currentSO() == 'windows')
+        $j('.visible-for-windows-so').show();
+      else
+        $j('.visible-for-non-windows-so').show();
+    }
+  </script>
+
 	</head>
-	<body onload="loginpage_onload();">
+	<body onload="loginpage_onload();" class="hidden fade-in">
+    <div id="flash-container">
 
-		<span id="login_error">
-		      <!-- #&ERROLOGIN&# -->
-		</span>
-	
-		<form action="" method="post" id="login_form">
-			<label for="login">Usu&aacute;rio:</label>
-			<input type="text" name="login" id="login" value="" size="15" /><br />
-				
-			<label for="senha">Senha:</label>
-			<input type="password" name="senha" id="senha" size="15" /><br />
-			<!-- #&RECAPTCHA&# -->
+      <!--[if lt IE 7]>
+      <p style="min-height: 32px;" class="flash update-browser"><strong>Seu navegador est&aacute desatualizado.</strong> Para melhor navega&ccedil;&atildeo  no sistema, por favor, atualize seu navegador.<a href="http://br.mozdev.org/download/" target="_blank"><img style="margin-top:4px;" src="http://www.mozilla.org/contribute/buttons/110x32bubble_r_pt.png" alt="Firefox" width="110" height="32" style="border-style:none;" title="Mozilla Firefox" /></a></p>
+      <![endif]-->
 
-			<input type="image" id="botao" src="imagens/bot_login.png" value="Entrar" />
-		</form>
+      <!-- #&ERROLOGIN&# -->
+    </div>
 
-		<a class="logo_rodape" href="http://pagina.softwarepublico.gov.br/ieducar/" target="_top">
-			<img id="logo_ieducar" src="imagens/logo_ieducar.png" alt="i-Educar"> </img>
-		</a>
-		
-		<a class="logo_rodape" href="http://serpro.gov.br" target="_top">
-			<img id="logo_serpro" src="imagens/logo_serpro.png" alt="SERPRO"> </img>
-		</a>
-		
-		<a class="logo_rodape" href="http://fazenda.gov.br" target="_top">
-			<img id="logo_fazenda" src="imagens/logo_ministerio_fazenda.png" alt="Minist&eacute;rio da Fazenda"> </img>
-		</a>
-		
-		<a class="logo_rodape" href="http://mc.gov.br" target="_top">
-			<img id="logo_comunicacoes" src="imagens/logo_ministerio_comunicacoes.png" alt="Minist&eacute;rio das Comunica&ccedil;&otilde;es"> </img>
-		</a>
-		
-	</body>
+    <div id="corpo">
+      <div id="login-form" class="box shadow">
+        <h2>Entrar</h2>
+        <p class="explanation"></p>
+
+        <form action="" method="post">
+        <table>
+          <tbody><tr>
+    		    <td>
+              <label class="" for="login">Matr&iacute;cula:</label>
+              <input type="text" name="login" id="login"></td>
+    	    </tr>
+
+          <tr>
+    		    <td>
+              <label class="" for="senha">Senha:</label>
+              <input type="password" name="senha" id="senha">
+            </td>
+          </tr>
+          <tr>
+            <td><!-- #&RECAPTCHA&# --></td>
+          </tr>
+          <tr>
+    		    <td>
+              <input type="submit" class="submit" src="imagens/nvp_bot_entra_webmail.jpg" value="Entrar">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p class="forget-password"><a class="light small" href="/module/Usuario/RedefinirSenha">Esqueceu sua senha?</a></p>
+
+              <p><a target="_blank" class="light small" href="http://educacao.portabilis.com.br/">Acesso professores, pais e alunos.</a> <a target="_blank" class="decorated light small" href="http://www.portabilis.com.br/produto/educacao-19#destaques">Saiba mais</a>
+            </p>
+            </td>
+          </tr>
+        </tbody></table>
+        </form>
+
+      </div> <!-- end login-form -->
+
+      <div id="service-info">
+        <p class="requiriments title">Requisitos</p>
+        <p class="explanation">Para melhor uso do sistema, recomendamos:</p>
+        <ul class="requiriments unstyled">
+          <li>- Navegador <a target="_blank" class="light decorated" href="https://www.google.com/intl/pt-BR/chrome/browser/">Google Chrome</a> ou <a target="_blank" class="light decorated" href="http://br.mozdev.org/download/">Mozilla Firefox</a></li>
+          <li>- Leitor relat&oacute;rios PDF <a target="_blank" class="light decorated" href="http://get.adobe.com/br/reader/">Adobe Reader</a> ou <a target="_blank" class="light decorated" href="http://www.foxitsoftware.com/downloads#reader">Foxit</a></li>
+        </ul>
+      </div>
+
+      <div class="clear"></div>
+
+    </div> <!-- end corpo -->
+
+    <div id="rodape" class="texto-normal">
+		  <p>
+        <!--Portabilis Tecnologia-->
+		  </p>
+    </div> <!-- end rodape -->
+
+  </body>
 </html>
