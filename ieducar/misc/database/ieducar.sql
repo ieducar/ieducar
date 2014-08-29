@@ -16984,7 +16984,7 @@ CREATE TABLE portal_banner (
     title character varying(255),
     prioridade integer DEFAULT 0 NOT NULL,
     link character varying(255) DEFAULT ''::character varying NOT NULL,
-    lateral smallint DEFAULT (1)::smallint NOT NULL
+    is_lateral smallint DEFAULT (1)::smallint NOT NULL
 );
 
 
@@ -27745,7 +27745,7 @@ SELECT pg_catalog.setval('pessoa_ramo_atividade_cod_ramo_atividade_seq', 1, fals
 -- Data for Name: portal_banner; Type: TABLE DATA; Schema: portal; Owner: ieducar
 --
 
-COPY portal_banner (cod_portal_banner, ref_ref_cod_pessoa_fj, caminho, title, prioridade, link, lateral) FROM stdin;
+COPY portal_banner (cod_portal_banner, ref_ref_cod_pessoa_fj, caminho, title, prioridade, link, is_lateral) FROM stdin;
 \.
 
 
