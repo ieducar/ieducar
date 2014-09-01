@@ -273,10 +273,13 @@ class clsControlador
 
   protected function validateHumanAccess() {
     $result = false;
-
-    if (! $this->atingiuTentativasLogin())
-      $result = true;
-
+    
+    if ( !($GLOBALS['coreExt']['Config']->app->recaptcha->enabled) ) {
+    	$result = true;
+    } 
+    elseif (! $this->atingiuTentativasLogin()) {
+      $result = true;  
+    } 
     elseif (Portabilis_Utils_ReCaptcha::getWidget()->validate()) {
       $this->unsetTentativasLogin();
       $result = true;
