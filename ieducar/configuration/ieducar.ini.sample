@@ -144,6 +144,7 @@ modules.error.send_notification_email = false
 modules.error.show_details            = true
 
 ; Configurações google.com/recaptcha (confirmação humana, para evitar robos)
+app.recaptcha.enabled        = false
 app.recaptcha.public_key     =
 app.recaptcha.private_key    =
 app.recaptcha.options.secure = true

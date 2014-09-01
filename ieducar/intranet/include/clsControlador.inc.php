@@ -228,9 +228,10 @@ class clsControlador
     $templateText = fread($templateFile, filesize($templateName));
     $templateText = str_replace( "<!-- #&ERROLOGIN&# -->", $this->messenger->toHtml('p'), $templateText);
 
-    $requiresHumanAccessValidation = isset($_SESSION['tentativas_login_falhas']) &&
-                                     is_numeric($_SESSION['tentativas_login_falhas']) &&
-                                     $_SESSION['tentativas_login_falhas'] >= $this->_maximoTentativasFalhas;
+    $requiresHumanAccessValidation = $GLOBALS['coreExt']['Config']->app->recaptcha->enabled
+                                     && isset($_SESSION['tentativas_login_falhas']) 
+    								 && is_numeric($_SESSION['tentativas_login_falhas']) 
+                                     && $_SESSION['tentativas_login_falhas'] >= $this->_maximoTentativasFalhas;
 
     if ($requiresHumanAccessValidation)
       $templateText = str_replace( "<!-- #&RECAPTCHA&# -->", Portabilis_Utils_ReCaptcha::getWidget(), $templateText);
