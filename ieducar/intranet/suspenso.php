@@ -32,7 +32,7 @@
  */
 ?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-br" xml:lang="pt-br">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-br">
   <head>
     <!--style type="text/css">
       * {
@@ -79,8 +79,7 @@
     <div id="error">
       <div class="content">
         <h1>Acesso suspenso</h1>
-        <p class="explanation">Desculpe-nos, o acesso ao sistema foi suspenso, por favor, entre em contato com o responsável pelo sistema em sua entidade, e tente novamente.</strong>
-        </p>
+        <p class="explanation">Desculpe-nos, o acesso ao sistema foi suspenso, por favor, entre em contato com o responsável pelo sistema em sua entidade, e tente novamente.</p>
       </div>
     </div>
   </body>

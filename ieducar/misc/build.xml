@@ -22,7 +22,7 @@
  * @version  $Id: build.xml 768 2010-12-09 02:20:10Z eriksencosta@gmail.com $
  */
 -->
-<project name="i-Educar" description="Sistema de gestão escolar" default="release" basedir="../">
+<project name="i-Educar" default="release" basedir="../">
   <!-- Configuração geral do build -->
   <property name="project.conf.version"   value="1.1.0" />
   <property name="project.conf.curdir"    value="" />

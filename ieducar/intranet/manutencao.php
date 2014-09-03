@@ -37,7 +37,7 @@ header("HTTP/1.1 503 Service Unavailable");
 
 
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-br" xml:lang="pt-br">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-br" >
   <head>
     <link rel='stylesheet' type='text/css' href='styles/reset.css'>
     <link rel='stylesheet' type='text/css' href='styles/portabilis.css'>

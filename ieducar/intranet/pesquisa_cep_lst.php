@@ -233,7 +233,7 @@ $miolo = new indice();
 $pagina->addForm( $miolo );
 $pagina->MakeAll();
 ?>
-<script type="text/javascript"/">
+<script type="text/javascript">
 
 function pesquisa_libera_campos( campo1, campo2, campo3, campo4, campo5, campo6, campo7, campo8 )
 {
