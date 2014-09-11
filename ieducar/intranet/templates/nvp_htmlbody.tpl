@@ -3,7 +3,17 @@
 	<td align="left" class="r2c1A" >&nbsp;Usuário atual: <b style="font-variant: small-caps;"><!-- #&USERLOGADO&# --></b></td>
 	<td align="center" class="r2c1A" >&nbsp;Último Acesso: <b><!-- #&ULTIMOACESSO&# --></b></td>
 
-	<td align="right"><a href="index.php"><img src="imagens/nvp_bot_intra_calendario.jpg" width="79" height="21" border="0" alt="Calendario" title="Calendário"></a><a href="meusdados.php"><img src="imagens/nvp_bot_intra_dados.jpg" width="80" height="21" border="0" alt="Meus Dados" title="Meus dados"></a><a href="logof.php"><img src="imagens/nvp_bot_intra_logout.jpg" width="56" height="21" border="0" alt="Logout" title="Sair"></a><!--a href="http://www.google.com.br/" target="_blank"><img src="imagens/nvp_bot_internet.jpg" width="62" height="21" border="0" alt="Acessar Internet" title="Acessar a Web"></a--></td>
+	<td align="right">
+		<a href="index.php" target="_self">
+			<img src="imagens/nvp_bot_intra_calendario.jpg" width="79" height="21" border="0" alt="Calendario" title="Calendário">
+		</a>
+		<a href="meusdados.php" target="_self">
+			<img src="imagens/nvp_bot_intra_dados.jpg" width="80" height="21" border="0" alt="Meus Dados" title="Meus dados">
+		</a>
+		<a href="logof.php">
+			<img src="imagens/nvp_bot_intra_logout.jpg" width="56" height="21" border="0" alt="Logout" title="Sair">
+		</a>
+	</td>
 </tr>
 <tr>
 	<td colspan="3">
