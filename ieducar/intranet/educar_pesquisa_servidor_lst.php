@@ -248,6 +248,10 @@ class indice extends clsListagem
     $this->ref_cod_disciplina = $this->ref_cod_disciplina ?
       $this->ref_cod_disciplina : NULL;
 
+    // permite alocacao em multiplas turmas no mesmo horario.
+    $array_hora = NULL;
+    $this->horario = NULL;
+
     // Passa NULL para $alocacao_escola_instituicao senão o seu filtro anula
     // um anterior (referente a selecionar somente servidores não alocados),
     // selecionando apenas servidores alocados na instituição
@@ -392,7 +396,7 @@ function addVal1(campo,opcao, valor)
       valor                   = obj.options[novoIndice];
       valor.value             = opcao.toString();
       valor.selected          = true;
-      obj.onchange();      
+      obj.onchange();
     }
     else if (window.parent.document.getElementById(campo)) {
       obj       =  window.parent.document.getElementById(campo);
