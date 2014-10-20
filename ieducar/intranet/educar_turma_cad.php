@@ -32,6 +32,7 @@ require_once 'include/clsBase.inc.php';
 require_once 'include/clsCadastro.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
+require_once 'Portabilis/String/Utils.php';
 
 /**
  * clsIndexBase class.
@@ -114,7 +115,7 @@ class indice extends clsCadastro
     '' => 'Selecione',
     1  => 'Domingo',
     2  => 'Segunda',
-    3  => 'Terça',
+    3  => 'Ter&ccedil;a',
     4  => 'Quarta',
     5  => 'Quinta',
     6  => 'Sexta',
@@ -190,6 +191,29 @@ class indice extends clsCadastro
     $sem_padrao               = TRUE;
     $get_curso                = TRUE;
 
+    $bloqueia = false;
+    $anoVisivel = false;
+    if (isset($this->ano) || !is_numeric($this->cod_turma)){
+      $anoVisivel=true;
+    }
+    if(! isset($this->cod_turma)){
+      $bloqueia = false;
+    }else{
+      if (is_numeric($this->cod_turma)) {
+        $obj_matriculas_turma = new clsPmieducarMatriculaTurma();
+        $obj_matriculas_turma->setOrderby('nome_aluno');
+        $lst_matriculas_turma = $obj_matriculas_turma->lista(NULL, $this->cod_turma,
+         NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL,
+         array(1, 2, 3), NULL, NULL, NULL, NULL, TRUE, NULL, 1, TRUE);
+
+        if (is_array($lst_matriculas_turma) && count($lst_matriculas_turma)>0) {
+            $bloqueia = true;
+        }
+      }
+    }
+
+    $desabilitado = $bloqueia;
+
     include 'include/pmieducar/educar_campo_lista.php';
 
     if ($this->ref_cod_escola) {
@@ -224,12 +248,14 @@ class indice extends clsCadastro
     }
 
     $this->campoLista('ref_ref_cod_serie', 'Série', $opcoes_serie, $this->ref_ref_cod_serie,
-      '', FALSE, '', $script);
+      '', FALSE, '', $script, $bloqueia);
 
     // o campo ano somente é exibido para turmas novas  ou cadastradas após inclusão deste campo.
-    if (! isset($this->cod_turma) || isset($this->ano))
-      $this->inputsHelper()->dynamic('anoLetivo');
-
+    if ($anoVisivel){
+      $this->inputsHelper()->dynamic('anoLetivo', array('disabled' => $bloqueia));
+      if($bloqueia)
+        $this->inputsHelper()->hidden('ano_hidden', array('value' => $this->ano));
+    }
     // Infra prédio cômodo
     $opcoes = array('' => 'Selecione');
 
@@ -324,7 +350,7 @@ class indice extends clsCadastro
 
     $this->campoHora('hora_final', 'Hora Final', $this->hora_final, FALSE);
 
-    $this->campoHora('hora_inicio_intervalo', 'Hora Início Intervalo',
+    $this->campoHora('hora_inicio_intervalo', Portabilis_String_Utils::toLatin1('Hora Início Intervalo'),
       $this->hora_inicio_intervalo, FALSE);
 
     $this->campoHora( 'hora_fim_intervalo', 'Hora Fim Intervalo', $this->hora_fim_intervalo, FALSE);
@@ -338,7 +364,7 @@ class indice extends clsCadastro
     $tiposBoletim = Portabilis_Model_Report_TipoBoletim::getInstance()->getEnums();
     $tiposBoletim = Portabilis_Array_Utils::insertIn(null, "Selecione um modelo", $tiposBoletim);
 
-    $this->campoLista('tipo_boletim', 'Modelo relatório boletim', $tiposBoletim, $this->tipo_boletim);
+    $this->campoLista('tipo_boletim', Portabilis_String_Utils::toLatin1('Modelo relatório boletim'), $tiposBoletim, $this->tipo_boletim);
 
     $this->campoQuebra2();
 
@@ -378,8 +404,8 @@ class indice extends clsCadastro
       if (is_array($lista) && count($lista)) {
         $conteudo .= '<div style="margin-bottom: 10px;">';
         $conteudo .= '  <span style="display: block; float: left; width: 250px;">Nome</span>';
-        $conteudo .= '  <span style="display: block; float: left; width: 100px;">Carga horária</span>';
-        $conteudo .= '  <span style="display: block; float: left">Usar padrão do componente?</span>';
+        $conteudo .= '  <span style="display: block; float: left; width: 100px;">' . Portabilis_String_Utils::toLatin1('Carga horária') . '</span>';
+        $conteudo .= '  <span style="display: block; float: left">'.Portabilis_String_Utils::toLatin1('Usar padrão do componente?'). '</span>';
         $conteudo .= '</div>';
         $conteudo .= '<br style="clear: left" />';
 
@@ -415,7 +441,7 @@ class indice extends clsCadastro
         $disciplinas .= '</table>';
       }
       else {
-        $disciplinas = 'A série/ano escolar não possui componentes curriculares cadastrados.';
+        $disciplinas = Portabilis_String_Utils::toLatin1('A série/ano escolar não possui componentes curriculares cadastrados.');
       }
     }
 
@@ -441,9 +467,9 @@ class indice extends clsCadastro
     }
 
     $label = 'Componentes curriculares:<br />'
-           . '<strong>Observação:</strong> caso não defina os componentes<br />'
-           . 'curriculares para a turma, esta usará a definição<br />'
-           . 'da série/ano escolar da escola:'
+           . '<strong>Observa&ccedil;&atilde;o:</strong> caso n&atilde;o defina os componentes<br />'
+           . 'curriculares para a turma, esta usar&aacute; a defini&ccedil;&atilde;o<br />'
+           . 'da s&eacute;rie/ano escolar da escola:'
            . '<span id="_escola_serie_componentes">%s</span>';
 
     $label = sprintf($label, $help);
@@ -546,15 +572,15 @@ class indice extends clsCadastro
       }
     }
 
-    $this->campoLista('ref_cod_modulo', 'Módulo', $opcoes, $this->ref_cod_modulo,
+    $this->campoLista('ref_cod_modulo', Portabilis_String_utils::toLatin1('Módulo'), $opcoes, $this->ref_cod_modulo,
       NULL, NULL, NULL, NULL, NULL, FALSE);
 
-    $this->campoData('data_inicio', 'Data Início', $this->data_inicio, FALSE);
+    $this->campoData('data_inicio', Portabilis_String_utils::toLatin1('Data Início'), $this->data_inicio, FALSE);
     $this->campoData('data_fim', 'Data Fim', $this->data_fim, FALSE);
 
     $this->campoOculto('incluir_modulo', '');
 
-    $this->campoRotulo('bt_incluir_modulo', 'Módulo',
+    $this->campoRotulo('bt_incluir_modulo', Portabilis_String_utils::toLatin1('Módulo'),
       "<a href='#' onclick=\"document.getElementById('incluir_modulo').value = 'S'; document.getElementById('tipoacao').value = ''; acao();\"><img src='imagens/nvp_bot_adiciona.gif' alt='adicionar' title='Incluir' border=0></a>"
     );
 
@@ -632,7 +658,7 @@ class indice extends clsCadastro
     }
     else {
       echo '<!--\nErro\nClasse clsPmieducarTurmaDiaSemana não encontrada\n-->';
-      $opcoes = array('' => 'Erro na geração');
+      $opcoes = array('' => Portabilis_String_utils::toLatin1('Erro na geração'));
     }
 
     $this->campoLista('dia_semana', 'Dia Semana', $opcoes, $this->dia_semana, NULL,
@@ -683,7 +709,7 @@ class indice extends clsCadastro
       $this->turma_modulo = unserialize(urldecode($this->turma_modulo));
       $this->turma_dia_semana = unserialize(urldecode($this->turma_dia_semana));
 
-      if ($this->turma_modulo && $this->turma_dia_semana) {
+      if ($this->turma_modulo) {
         $obj = new clsPmieducarTurma(NULL, NULL, $this->pessoa_logada,
           $this->ref_ref_cod_serie, $this->ref_cod_escola,
           $this->ref_cod_infra_predio_comodo, $this->nm_turma, $this->sgl_turma,
@@ -708,25 +734,26 @@ class indice extends clsCadastro
             $cadastrou1 = $obj->cadastra();
 
             if (!$cadastrou1) {
-              $this->mensagem = 'Cadastro não realizado.';
+              $this->mensagem = Portabilis_String_utils::toLatin1('Cadastro não realizado.');
               echo "<!--\nErro ao cadastrar clsPmieducarTurmaModulo\nvalores obrigatorios\nis_numeric( $cadastrou ) && is_numeric( {$campo["ref_cod_modulo_"]} ) && is_numeric( {$campo["sequencial_"]} ) && is_string( {$campo["data_inicio_"]} ) && is_string( {$campo["data_fim_"]} )\n-->";
 
               return FALSE;
             }
           }
-
-          // Cadastra dia semana
-          foreach ($this->turma_dia_semana as $campo) {
-            $obj = new clsPmieducarTurmaDiaSemana($campo["dia_semana_"],
-              $cadastrou, $campo["hora_inicial_"], $campo["hora_final_"]);
-
-            $cadastrou2  = $obj->cadastra();
-
-            if (!$cadastrou2) {
-              $this->mensagem = 'Cadastro não realizado.';
-              echo "<!--\nErro ao cadastrar clsPmieducarTurmaDiaSemana\nvalores obrigat&oacute;rios\nis_numeric( $cadastrou ) && is_numeric( {$campo["dia_semana_"]} ) && is_string( {$campo["hora_inicial_"]} ) && is_string( {$campo["hora_final_"]} )\n-->";
-
-              return FALSE;
+          if ($this->turma_dia_semana){
+            // Cadastra dia semana
+            foreach ($this->turma_dia_semana as $campo) {
+              $obj = new clsPmieducarTurmaDiaSemana($campo["dia_semana_"],
+                $cadastrou, $campo["hora_inicial_"], $campo["hora_final_"]);
+  
+              $cadastrou2  = $obj->cadastra();
+  
+              if (!$cadastrou2) {
+                $this->mensagem = 'Cadastro não realizado.';
+                echo "<!--\nErro ao cadastrar clsPmieducarTurmaDiaSemana\nvalores obrigat&oacute;rios\nis_numeric( $cadastrou ) && is_numeric( {$campo["dia_semana_"]} ) && is_string( {$campo["hora_inicial_"]} ) && is_string( {$campo["hora_final_"]} )\n-->";
+  
+                return FALSE;
+              }
             }
           }
 
@@ -735,14 +762,14 @@ class indice extends clsCadastro
           die();
         }
 
-        $this->mensagem = 'Cadastro não realizado.';
+        $this->mensagem = Portabilis_String_utils::toLatin1('Cadastro não realizado.');
         echo "<!--\nErro ao cadastrar clsPmieducarTurma\nvalores obrigatorios\nis_numeric( $this->pessoa_logada ) && is_numeric( $this->ref_ref_cod_serie ) && is_numeric( $this->ref_cod_escola ) && is_numeric( $this->ref_cod_infra_predio_comodo ) && is_string( $this->nm_turma ) && is_numeric( $this->max_aluno ) && is_numeric( $this->multiseriada ) && is_numeric( $this->ref_cod_turma_tipo )\n-->";
 
         return FALSE;
       }
 
-      echo '<script type="text/javascript">alert("É necessário adicionar pelo menos 1 módulo e 1 dia da semana!")</script>';
-      $this->mensagem = "Cadastro não realizado.";
+      echo '<script type="text/javascript">alert(stringUtils.toUtf8("É necessário adicionar pelo menos 1 módulo!"))</script>';
+      $this->mensagem = Portabilis_String_utils::toLatin1("Cadastro não realizado.");
 
       return FALSE;
     }
@@ -769,7 +796,7 @@ class indice extends clsCadastro
         die();
       }
 
-      $this->mensagem = 'Cadastro não realizado.';
+      $this->mensagem = Portabilis_String_utils::toLatin1('Cadastro não realizado.');
       echo "<!--\nErro ao cadastrar clsPmieducarTurma\nvalores obrigatorios\nis_numeric( $this->pessoa_logada ) && is_numeric( $this->ref_ref_cod_serie ) && is_numeric( $this->ref_cod_escola ) && is_numeric( $this->ref_cod_infra_predio_comodo ) && is_string( $this->nm_turma ) && is_numeric( $this->max_aluno ) && is_numeric( $this->multiseriada ) && is_numeric( $this->ref_cod_turma_tipo )\n-->";
 
       return FALSE;
@@ -786,6 +813,9 @@ class indice extends clsCadastro
     @session_start();
     $this->pessoa_logada = $_SESSION['id_pessoa'];
     @session_write_close();
+
+    if(is_numeric($this->ano_hidden))
+      $this->ano = $this->ano_hidden;
 
     $this->ref_cod_instituicao_regente = $this->ref_cod_instituicao;
 
@@ -808,7 +838,7 @@ class indice extends clsCadastro
       $this->turma_modulo = unserialize(urldecode($this->turma_modulo));
       $this->turma_dia_semana = unserialize(urldecode($this->turma_dia_semana));
 
-      if ($this->turma_modulo && $this->turma_dia_semana) {
+      if ($this->turma_modulo) {
         $obj = new clsPmieducarTurma($this->cod_turma, $this->pessoa_logada, NULL,
           $this->ref_ref_cod_serie, $this->ref_cod_escola,
           $this->ref_cod_infra_predio_comodo, $this->nm_turma, $this->sgl_turma,
@@ -839,7 +869,7 @@ class indice extends clsCadastro
 
               $cadastrou1 = $obj->cadastra();
               if (!$cadastrou1) {
-                $this->mensagem = 'Edição não realizada.';
+                $this->mensagem = Portabilis_String_utils::toLatin1('Edição não realizada.');
                 echo "<!--\nErro ao editar clsPmieducarTurmaModulo\nvalores obrigatorios\nis_numeric( $this->cod_turma ) && is_numeric( {$campo["ref_cod_modulo_"]} ) \n-->";
 
                 return FALSE;
@@ -859,7 +889,7 @@ class indice extends clsCadastro
               $cadastrou2  = $obj->cadastra();
 
               if (!$cadastrou2) {
-                $this->mensagem = 'Edição não realizada.';
+                $this->mensagem = Portabilis_String_utils::toLatin1('Edição não realizada.');
                 echo "<!--\nErro ao editar clsPmieducarTurmaDiaSemana\nvalores obrigat&oacute;rios\nis_numeric( $this->cod_turma ) && is_numeric( {$campo["dia_semana_"]} ) \n-->";
 
                 return FALSE;
@@ -868,15 +898,15 @@ class indice extends clsCadastro
           }
         }
         else {
-          $this->mensagem = 'Edição não realizada.';
+          $this->mensagem = Portabilis_String_utils::toLatin1('Edição não realizada.');
           echo "<!--\nErro ao editar clsPmieducarTurma\nvalores obrigatorios\nis_numeric( $this->pessoa_logada ) && is_numeric( $this->ref_ref_cod_serie ) && is_numeric( $this->ref_cod_escola ) && is_numeric( $this->ref_cod_infra_predio_comodo ) && is_string( $this->nm_turma ) && is_numeric( $this->max_aluno ) && is_numeric( $this->multiseriada ) && is_numeric( $this->ref_cod_turma_tipo )\n-->";
 
           return FALSE;
         }
       }
       else {
-        echo '<script type="text/javascript">alert("É necessário adicionar pelo menos 1 módulo e 1 dia da semana!")</script>';
-        $this->mensagem = 'Edição não realizada.';
+        echo '<script type="text/javascript">alert(stringUtils.toUtf8("É necessário adicionar pelo menos 1 módulo!"))</script>';
+        $this->mensagem = Portabilis_String_utils::toLatin1('Edição não realizada.');
 
         return FALSE;
       }
@@ -907,7 +937,7 @@ class indice extends clsCadastro
       die();
     }
     else {
-      $this->mensagem = 'Edição não realizada.';
+      $this->mensagem = Portabilis_String_utils::toLatin1('Edição não realizada.');
       echo "<!--\nErro ao editar clsPmieducarTurma\nvalores obrigatorios\nis_numeric( $this->pessoa_logada ) && is_numeric( $this->ref_ref_cod_serie ) && is_numeric( $this->ref_cod_escola ) && is_numeric( $this->ref_cod_infra_predio_comodo ) && is_string( $this->nm_turma ) && is_numeric( $this->max_aluno ) && is_numeric( $this->multiseriada ) && is_numeric( $this->ref_cod_turma_tipo )\n-->";
 
       return FALSE;
@@ -954,12 +984,12 @@ class indice extends clsCadastro
         $excluiu2 = $obj->excluirTodos();
 
         if ($excluiu2) {
-          $this->mensagem .= 'Exclusão efetuada com sucesso.';
+          $this->mensagem .= Portabilis_String_utils::toLatin1('Exclusão efetuada com sucesso.');
           header('Location: educar_turma_lst.php');
           die();
         }
         else {
-          $this->mensagem = 'Exclusão não realizada.';
+          $this->mensagem = Portabilis_String_utils::toLatin1('Exclusão não realizada.');
           echo "<!--\nErro ao excluir clsPmieducarTurma\nvalores obrigatorios\nif( is_numeric( $this->cod_turma ) && is_numeric( $this->pessoa_logada ) )\n-->";
 
           return FALSE;
@@ -967,14 +997,14 @@ class indice extends clsCadastro
       }
       else
       {
-        $this->mensagem = 'Exclusão não realizada.';
+        $this->mensagem = Portabilis_String_utils::toLatin1('Exclusão não realizada.');
         echo "<!--\nErro ao excluir clsPmieducarTurma\nvalores obrigatorios\nif( is_numeric( $this->cod_turma ) && is_numeric( $this->pessoa_logada ) )\n-->";
 
         return FALSE;
       }
     }
 
-    $this->mensagem = 'Exclusão não realizada.';
+    $this->mensagem = Portabilis_String_utils::toLatin1('Exclusão não realizada.');
     echo "<!--\nErro ao excluir clsPmieducarTurma\nvalores obrigatorios\nif( is_numeric( $this->cod_turma ) && is_numeric( $this->pessoa_logada ) )\n-->";
 
     return FALSE;
@@ -1088,7 +1118,7 @@ function atualizaTurmaCad_TipoComodo(xml)
   }
   else {
     campoComodo.length = 1;
-    campoComodo.options[0] = new Option('A escola não possui nenhuma Sala', '', false, false);
+    campoComodo.options[0] = new Option(stringUtils.toUtf8('A escola não possui nenhuma Sala'), '', false, false);
   }
 }
 
@@ -1122,7 +1152,7 @@ function atualizaTurmaCad_TipoTurma(xml)
   else {
     campoTipoTurma.length     = 1;
     campoTipoTurma.options[0] = new Option(
-      'A instituição não possui nenhum Tipo de Turma', '', false, false
+      stringUtils.toUtf8('A instituição não possui nenhum Tipo de Turma'), '', false, false
     );
   }
 }
@@ -1160,7 +1190,7 @@ function getModulo_xml(xml)
 
   if (campoModulo.length == 1 && campoInstituicao != '') {
     campoModulo.options[0] = new Option(
-      'A Instituição não possui nenhum módulo', '', false, false
+      stringUtils.toUtf8('A Instituição não possui nenhum módulo'), '', false, false
     );
   }
 }
@@ -1335,7 +1365,7 @@ function atualizaMultiSerie(xml)
   var campoSerie      = document.getElementById('ref_ref_cod_serie');
 
   campoSerieMult.length = 1;
-  campoSerieMult.options[0] = new Option('Selecione uma série', '', false, false);
+  campoSerieMult.options[0] = new Option(stringUtils.toUtf8('Selecione uma série'), '', false, false);
 
   var multi_serie = xml.getElementsByTagName('serie');
 
@@ -1348,7 +1378,7 @@ function atualizaMultiSerie(xml)
   }
 
   if (campoSerieMult.length == 1 && campoCurso != '') {
-    campoSerieMult.options[0] = new Option('O curso não possui nenhuma série', '', false, false);
+    campoSerieMult.options[0] = new Option(stringUtils.toUtf8('O curso não possui nenhuma série'), '', false, false);
   }
 
   document.getElementById('ref_ref_cod_serie_mult').value = document.getElementById('ref_ref_cod_serie_mult_').value;
@@ -1397,8 +1427,8 @@ function parseComponentesCurriculares(xml_disciplina)
   if (DOM_array.length) {
     conteudo += '<div style="margin-bottom: 10px; float: left">';
     conteudo += '  <span style="display: block; float: left; width: 250px;">Nome</span>';
-    conteudo += '  <label span="display: block; float: left; width: 100px">Carga horária</span>';
-    conteudo += '  <label span="display: block; float: left">Usar padrão do componente?</span>';
+    conteudo += '  <label span="display: block; float: left; width: 100px">Carga hor&aacute;ria</span>';
+    conteudo += '  <label span="display: block; float: left">Usar padr&atilde;o do componente?</span>';
     conteudo += '</div>';
     conteudo += '<br style="clear: left" />';
 
@@ -1414,7 +1444,7 @@ function parseComponentesCurriculares(xml_disciplina)
     }
   }
   else {
-    campoDisciplinas.innerHTML = 'A série/ano escolar não possui componentes '
+    campoDisciplinas.innerHTML = 'A s&eacute;rie/ano escolar n&atilde;o possui componentes '
                                + 'curriculares cadastrados.';
   }
 
@@ -1643,7 +1673,7 @@ function valida_xml(xml)
 
   if (document.getElementById('ref_cod_escola').value) {
     if (!document.getElementById('ref_ref_cod_serie').value) {
-      alert("Preencha o campo 'Série' corretamente!");
+      alert(stringUtils.toUtf8("Preencha o campo 'Série' corretamente!"));
       document.getElementById('ref_ref_cod_serie').focus();
       return false;
     }
@@ -1651,7 +1681,7 @@ function valida_xml(xml)
 
   if (document.getElementById('multiseriada').checked) {
     if (!document.getElementById('ref_ref_cod_serie_mult')){
-      alert("Preencha o campo 'Série Multi-seriada' corretamente!");
+      alert(stringUtils.toUtf8("Preencha o campo 'Série Multi-seriada' corretamente!"));
       document.getElementById('ref_ref_cod_serie_mult').focus();
       return false;
     }
@@ -1674,7 +1704,7 @@ function valida_xml(xml)
       return false;
     }
     else if (campoHoraInicioIntervalo == '') {
-      alert("Preencha o campo 'Hora Início Intervalo' corretamente!");
+      alert(stringUtils.toUtf8("Preencha o campo 'Hora Início Intervalo' corretamente!"));
       document.getElementById('hora_inicio_intervalo').focus();
       return false;
     }
@@ -1689,14 +1719,8 @@ function valida_xml(xml)
     var qtdDiaSemana = document.getElementsByName('dia_semana').length;
 
     if (qtdModulo == 1) {
-      alert("ATENÇÃO!\nÉ necessário incluir um 'Módulo'!");
+      alert(stringUtils.toUtf8("ATENÇÃO!\nÉ necessário incluir um 'Módulo'!"));
       document.getElementById('ref_cod_modulo').focus();
-      return false;
-    }
-
-    if (qtdDiaSemana == 1) {
-      alert("ATENÇÂO! \n É necessário incluir um 'Dia da Semana'!");
-      document.getElementById('dia_semana').focus();
       return false;
     }
   }
@@ -1710,7 +1734,7 @@ function valida_xml(xml)
         (DOM_turma_sala[j].firstChild.nodeValue <= document.getElementById('hora_final').value) &&
         (document.getElementById('hora_final').value <= DOM_turma_sala[j+1].firstChild.nodeValue)
       ) {
-        alert("ATENÇÃO!\nA 'sala' já está alocada nesse horário!\nPor favor, escolha outro horário ou sala.");
+        alert(stringUtils.toUtf8("ATENÇÃO!\nA 'sala' já está alocada nesse horário!\nPor favor, escolha outro horário ou sala."));
         return false;
       }
     }
@@ -1728,7 +1752,7 @@ function validaCampoServidor()
   if (document.getElementById('ref_cod_instituicao').value)
     ref_cod_instituicao = document.getElementById('ref_cod_instituicao').value;
   else {
-    alert('Selecione uma instituição');
+    alert(stringUtils.toUtf8('Selecione uma instituição'));
     return false;
   }
 
@@ -1736,7 +1760,7 @@ function validaCampoServidor()
     ref_cod_escola = document.getElementById('ref_cod_escola').value;
   }
   else {
-    alert('Selecione uma escola');
+    alert(stringUtils.toUtf8('Selecione uma escola'));
     return false;
   }
 
@@ -1766,7 +1790,7 @@ function getEscolaCursoSerie()
 
   if (campoEscola && campoCurso) {
     campoSerie.disabled = true;
-    campoSerie.options[0].text = 'Carregando séries';
+    campoSerie.options[0].text = stringUtils.toUtf8('Carregando séries');
 
     var xml = new ajax(atualizaLstEscolaCursoSerie);
     xml.envia('educar_escola_curso_serie_xml.php?esc=' + campoEscola + '&cur=' + campoCurso);
@@ -1780,7 +1804,7 @@ function atualizaLstEscolaCursoSerie(xml)
 {
   var campoSerie             = document.getElementById('ref_ref_cod_serie');
   campoSerie.length          = 1;
-  campoSerie.options[0].text = 'Selecione uma série';
+  campoSerie.options[0].text = stringUtils.toUtf8('Selecione uma série');
   campoSerie.disabled        = false;
 
   series = xml.getElementsByTagName('serie');
@@ -1793,7 +1817,7 @@ function atualizaLstEscolaCursoSerie(xml)
     }
   }
   else {
-    campoSerie.options[0].text = 'A escola/curso não possui nenhuma série';
+    campoSerie.options[0].text = stringUtils.toUtf8('A escola/curso não possui nenhuma série');
   }
 }
 </script>
