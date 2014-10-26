@@ -1105,6 +1105,40 @@ class clsPmieducarAluno
   }
 
   /**
+   * Se o aluno estiver cadastrado pelo Educacenso, retorna o cod_aluno.
+   * @param $cod_inep int
+   * @return int se houver, null se não.
+   */
+  function id_aluno_inep ($cod_inep) {
+      $db = new clsBanco();
+      $db->Consulta("SELECT cod_aluno FROM modules.educacenso_cod_aluno WHERE cod_aluno_inep = {$cod_inep};");
+      $db->ProximoRegistro();
+      $row = $db->Tupla();
+      if ($row)
+          return $row['cod_aluno'];
+      else
+          return null;
+  
+  }
+  
+  /**
+   * Adiciona vínculo do INEP.
+   * @param $cod_inep int
+   * @param fonte str
+   * @return true se executar, false se não
+   */
+  function vincula_educacenso ($cod_inep, $fonte = '') {
+      if (!id_aluno_inep($cod_inep)) {
+          $db = new clsBanco();
+          $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_aluno \
+                  (cod_aluno, cod_aluno_inep, fonte, created_at) VALUES \
+                  (%d, %d, %s, NOW());", $this->cod_aluno, $cod_inep, $fonte));
+          return true;
+      }
+      return false;
+  }
+  
+  /**
    * Define quais campos da tabela serão selecionados no método Lista().
    */
   function setCamposLista($str_campos)

@@ -56,6 +56,7 @@ class clsPmieducarEscola
   var $data_cadastro;
   var $data_exclusao;
   var $ativo;
+  var $cod_inep;
 
   /**
    * Armazena o total de resultados obtidos na última chamada ao método lista().
@@ -651,6 +652,40 @@ class clsPmieducarEscola
     }
 
     return FALSE;
+  }
+  
+  /**
+   * Se a escola estiver cadastrada pelo Educacenso, retorna o cod_escola.
+   * @param $cod_inep int 
+   * @return int se houver, null se não.
+   */
+  function id_escola_inep ($cod_inep) {
+      $db = new clsBanco();
+      $db->Consulta("SELECT cod_escola FROM modules.educacenso_cod_escola WHERE cod_escola_inep = {$cod_inep}");
+      $db->ProximoRegistro();
+      $row = $db->Tupla();
+      if ($row)
+          return $row['cod_escola'];
+      else
+          return null;
+      
+  }
+  
+  /**
+   * Adiciona vínculo do INEP.
+   * @param $cod_inep int
+   * @param fonte str
+   * @return true se executar, false se não
+   */
+  function vincula_educacenso ($cod_inep, $fonte = '') {
+      if (!id_escola_inep($cod_inep)) {
+          $db = new clsBanco();
+          $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_escola \ 
+                  (cod_escola, cod_escola_inep, fonte, created_at) VALUES \
+                  (%d, %d, %s, NOW());", $this->cod_escola, $cod_inep, $fonte));
+          return true;
+      } 
+      return false;
   }
 
   /**

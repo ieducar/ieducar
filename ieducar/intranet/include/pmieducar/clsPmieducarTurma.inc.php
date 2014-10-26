@@ -2005,6 +2005,40 @@ and  e.cod_escola = t.ref_ref_cod_escola
 	}
 
 	/**
+	 * Se a turma estiver cadastrada pelo Educacenso, retorna o cod_turma.
+	 * @param $cod_inep int
+	 * @return int se houver, null se não.
+	 */
+	function id_turma_inep ($cod_inep) {
+	    $db = new clsBanco();
+	    $db->Consulta("SELECT cod_turma FROM modules.educacenso_cod_turma WHERE cod_turma_inep = {$cod_inep}");
+	    $db->ProximoRegistro();
+	    $row = $db->Tupla();
+	    if ($row)
+	        return $row['cod_escola'];
+	    else
+	        return null;
+	
+	}
+	
+	/**
+	 * Adiciona vínculo do INEP.
+	 * @param $cod_inep int
+	 * @param fonte str
+	 * @return true se executar, false se não
+	 */
+	function vincula_educacenso ($cod_inep, $fonte = '') {
+	    if (!id_turma_inep($cod_inep)) {
+	        $db = new clsBanco();
+	        $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_turma \
+                  (cod_turma, cod_turma_inep, fonte, created_at) VALUES \
+                  (%d, %d, %s, NOW());", $this->cod_turma, $cod_inep, $fonte));
+	        return true;
+	    }
+	    return false;
+	}
+	
+	/**
 	 * Define quais campos da tabela serao selecionados na invocacao do metodo lista
 	 *
 	 * @return null

@@ -1176,6 +1176,40 @@ class clsPmieducarServidor
   }
 
   /**
+   * Se o servidor estiver cadastrado pelo Educacenso, retorna o cod_servidor.
+   * @param $cod_inep int
+   * @return int se houver, null se não.
+   */
+  function id_servidor_inep ($cod_inep) {
+      $db = new clsBanco();
+      $db->Consulta("SELECT cod_servidor FROM modules.educacenso_cod_docente WHERE cod_docente_inep = {$cod_inep}");
+      $db->ProximoRegistro();
+      $row = $db->Tupla();
+      if ($row)
+          return $row['cod_servidor'];
+      else
+          return null;
+  
+  }
+  
+  /**
+   * Adiciona vínculo do INEP.
+   * @param $cod_inep int
+   * @param fonte str
+   * @return true se executar, false se não
+   */
+  function vincula_educacenso ($cod_inep, $fonte = '') {
+      if (!id_servidor_inep($cod_inep)) {
+          $db = new clsBanco();
+          $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_docente \
+                  (cod_servidor, cod_docente_inep, fonte, created_at) VALUES \
+                  (%d, %d, %s, NOW());", $this->cod_servidora, $cod_inep, $fonte));
+          return true;
+      }
+      return false;
+  }
+  
+  /**
    * Define quais campos da tabela serão selecionados no método Lista().
    */
   function setCamposLista($str_campos)
