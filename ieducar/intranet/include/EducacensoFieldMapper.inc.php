@@ -255,7 +255,7 @@ class EducacensoFieldHelper {
                     1 => "tipo_registro",
                     2 => "codigo_inep_escola",
                     3 => "codigo_inep_profissional",
-                    4 => "codigo_profissional_escole",
+                    4 => "codigo_profissional_escola",
                     5 => "nome_profissional",
                     6 => "email",
                     7 => "numero_nis",
@@ -289,7 +289,8 @@ class EducacensoFieldHelper {
                     9 => "numero",
                     10 => "complemento",
                     11 => "bairro",
-                    12 => "_uf" 
+                    12 => "_uf",
+                    13 => "_municipio"
             ),
             "50" => array ( // Profissional/Dados variaveis
                     1 => "tipo_registro",

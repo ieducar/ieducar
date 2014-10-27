@@ -70,11 +70,113 @@ class EducacensoParser {
             $logs .= var_export($d, true) . "\n";
             add_turma($d);
         }
+        return $logs;
+    }
+    
+    protected function _professor($d) {
+        $logs = "";
+        $id_professor_inep = int($d['codigo_inep_profissional']);
+        $id_servidor = (new clsPmieducarServidor())->id_servidor_inep($id_professor_inep);
         
+        if ($id_servidor) {
+            $logs .= "Servidor $id_professor_inep encontrado. Não será atualizado.\n";
+        } else {
+            $logs .= "Servidor $id_professor_inep não encontrado. Criando o registro.\n";
+            $logs .= $logs .= var_export($d, true) . "\n"; 
+        }
+        return $logs;                
+    }
+    
+    protected function _turma_professor($id_turma_inep, $id_professor_inep) {
+        $logs = "";
+        $id_turma = (new clsPmieducarTurma())->id_turma_inep($id_turma_inep);
+        $id_servidor = (new clsPmieducarServidor())->id_servidor_inep($id_professor_inep);
+        
+        if (bool($id_turma) && bool($id_servidor)) {
+            $turma = clsPmieducarTurma($id_turma);
+            $turma->detalhe();
+            $turma->ref_cod_regente = $id_servidor;
+            if ($turma->editar()) {
+                $logs .= "Adicionado servidor $id_professor_inep como regente da turma $id_turma_inep.\n";
+            } else {
+                $logs .= "Erro ao adicionar servidor $id_professor_inep como regente da turma $id_turma_inep.\n";
+            }
+        }
+        return $logs;
+    }
+    
+    protected function _turma_aluno($id_turma_inep, $id_escola_inep, $id_aluno_inep) {
+        $logs = "";
+        $id_turma = (new clsPmieducarTurma())->id_turma_inep($id_turma_inep);
+        $id_aluno = (new clsPmieducarAluno())->id_aluno_inep($id_aluno_inep);
+        $id_escola = (new clsPmieducarEscola())->id_escola_inep($id_escola_inep);
+        
+        if (bool($id_turma) && bool($id_aluno) && bool ($id_escola)) {
+            // Verifica se o aluno está matriculado na escola para este ano
+            // Se sim, adiciona uma matrícula para esta turma
+            // Se não, cria a matrícula antes de fazê-lo
+            $matriculas = new clsPmieducarMatricula();
+            $matriculas->lista(NULL, NULL, NULL, NULL, NULL, NULL, $id_aluno, NULL, NULL, NULL, NULL, NULL, 1, $this->year);
+            if ($matriculas) {
+                $logs .= "Aluno $id_aluno_inep já matriculado na escola $id_escola_inep. \n";
+                $id_matricula = $matriculas[0]['cod_matricula'];
+            } else {
+                $logs .= "Aluno $id_aluno_inep ainda não matriculado na escola $id_escola_inep. Iniciando matrícula. \n";
+                $matricula = clsPmieducarMatricula(
+                        null, # $cod_matricula = NULL, 
+                        null, # $ref_cod_reserva_vaga = NULL,
+                        $id_escola, # $ref_ref_cod_escola = NULL, 
+                        null, # $ref_ref_cod_serie = NULL, 
+                        null, # $ref_usuario_exc = NULL,
+                        null, # $ref_usuario_cad = NULL, 
+                        $id_aluno, # $ref_cod_aluno = NULL, 
+                        null, # $aprovado = NULL,
+                        null, # $data_cadastro = NULL, 
+                        null, # $data_exclusao = NULL, 
+                        null, # $ativo = NULL, 
+                        $this->year, # $ano = NULL,
+                        null, # $ultima_matricula = NULL, 
+                        null, # $modulo = NULL, 
+                        null, # $formando = NULL,
+                        null, # $descricao_reclassificacao = NULL, 
+                        null, # $matricula_reclassificacao = NULL,
+                        null, # $ref_cod_curso = NULL, 
+                        null, # $matricula_transferencia = NULL, 
+                        null # $semestre = NULL
+                );
+                $id_matricula = $matricula->cadastra();
+            }
+            // Com a matrícula do aluno na escola, matricula-se ele na turma.
+            $matricula_turmas = new clsPmieducarMatriculaTurma();
+            $matricula_turmas->lista($id_matricula, $id_turma, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 
+                    NULL, NULL, null, NULL, NULL, NULL, NULL, $this->year);
+            if ($matricula_turmas) {
+                $logs .= "Aluno $id_aluno_inep já matriculado na turma $id_turma_inep da escola $id_escola_inep. \n";
+            } else {
+                $matricula_turma = new clsPmieducarMatriculaTurma(
+                        $id_matricula, // $ref_cod_matricula = NULL,
+                        $id_turma, # $ref_cod_turma = NULL, 
+                        null, # $ref_usuario_exc = NULL, 
+                        null, # $ref_usuario_cad = NULL,
+                        null, # $data_cadastro = NULL, 
+                        null, # $data_exclusao = NULL, 
+                        null, # $ativo = NULL,
+                        null, # $ref_cod_turma_transf = NULL,
+                        null  # $sequencial = NULL
+                );
+                if ($matricula_turma->cadastra()) {
+                    $logs .= "Aluno $id_aluno_inep matriculado na turma $id_turma_inep da escola $id_escola_inep.\n";
+                } else {
+                    $logs .= "Erro ao matricular aluno $id_aluno_inep na turma $id_turma_inep da escola $id_escola_inep. \n";
+                }
+            }
+        }
         return $logs;
     }
     
     protected function _aluno($d) {
+        $logs = "";
+        
     }
 
     protected function _escola($d) {
@@ -217,7 +319,75 @@ class EducacensoParser {
        
     } 
 
+    protected function _date($date) {
+        return implode('-', array_reverse(explode('/', $date)));
+    }
+    
     protected function add_professor($d) {
+        $id_professor_inep = int($d['codigo_inep_profissional']);
+        
+        $municipio_nascimento = null;
+        $municipio_residencia = null;
+        try {
+            $municipio_nascimento = (new clsMunicipio())->by_id_IBGE(int($d['_municipio_nascimento']));
+            $municipio_residencia = (new clsMunicipio())->by_id_IBGE(int($d['_municipio']));
+        } catch (Exception $e) {
+
+        }
+        
+        // Cadastro de pessoas ...
+        $pessoa = new clsPessoa_();
+        $pessoa->nome  = $d['nome_profissional'];
+        $pessoa->email = $d['email'];
+        $pessoa->tipo = 'F';
+        $idpes = $pessoa->cadastra();
+        // Então pessoa física ...
+        $fisica = new clsFisica();
+        $fisica->idpes = $idpes;
+        $fisica->data_nasc = _date($d['data_nascimento']);
+        $fisica->sexo = $d['sexo'] == '1' ? 'M' : 'F';
+        $fisica->ref_cod_sistema = 'NULL';
+        $fisica->cpf = int($d['cpf']);
+        $fisica->nacionalidade = $d['nacionalidade'];
+        $fisica->idmun_nascimento = $municipio_nascimento ? $municipio_nascimento->idmun : null;
+        $fisica->nome_mae = $d['nome_mae'];
+        $id_fisica = $fisica->cadastra();
+        // Endereço ...
+        $endereco = new clsEnderecoExterno(
+                $idpes, # $idpes = FALSE, 
+                '1', # $tipo = FALSE, 
+                'QDA', # $idtlog = FALSE, //TODO: Encontrar uma forma de identificar o tipo.
+                $d['endereco'], # $logradouro = FALSE, 
+                null, # $numero = FALSE, 
+                $d['numero'], # $letra = FALSE, // Sim, o campo 'numero' é tipo Numeric. Geniuses. 
+                $d['complemento'], # $complemento = FALSE,
+                $d['bairro'], # $bairro = FALSE, 
+                idFederal2int( $d['cep'] ), # $cep = FALSE, 
+                $municipio_residencia ? $municipio_residencia->idmun : null, # $cidade = FALSE, 
+                $municipio_residencia ? $municipio_residencia->uf : null, # $uf = FALSE,
+                null, # $reside_desde = FALSE, 
+                null, # $bloco = FALSE, 
+                null, # $apartamento = FALSE, 
+                null, # $andar = FALSE,
+                null, # $idpes_cad = FALSE, 
+                null, # $idpes_rev = FALSE, 
+                1 # $zona_localizacao = 1
+        );
+        $endereco->cadastra();
+        // Servidor
+        $servidor = new clsPmieducarServidor(
+                null, # $cod_servidor = NULL, 
+                null, # $ref_cod_deficiencia = NULL, 
+                null, # $ref_idesco = NULL,
+                20.0, # $carga_horaria = NULL, 
+                null, # $data_cadastro = NULL, 
+                null, # $data_exclusao = NULL,
+                1, # $ativo = NULL, 
+                $this->instituicao_id, # $ref_cod_instituicao = NULL, 
+                null #$ref_cod_subnivel = NULL
+        );
+        $id_servidor = $servidor->cadastra();
+        $servidor->vincula_educacenso($id_professor_inep);
     }
 
     protected function add_turma($d) {
