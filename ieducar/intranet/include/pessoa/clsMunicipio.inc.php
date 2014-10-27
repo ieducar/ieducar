@@ -417,5 +417,23 @@ class clsMunicipio
 		}
 		return false;
 	}
+	
+	/**
+	 * Se o município existir, retorna o próprio.
+	 * @param unknown $id_ibge
+	 * @return Ambigous <multitype:, boolean, multitype:mixed >
+	 */
+	public function by_id_IBGE($id_ibge) {
+	    try {
+	       $results = $this->lista(false, false, false, false, false, $id_ibge);
+	       if ($results) {
+	           $this->idmun = $results[0]['idmun'];
+	           $this->detalhe();
+	           return $this;
+	       }
+	    } catch (Exception $e) {        
+	    } 
+	    return null;
+	}
 }
 ?>
