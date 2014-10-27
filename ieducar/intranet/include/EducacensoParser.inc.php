@@ -7,8 +7,9 @@ class EducacensoParser {
     private $instituicao_id;
     private $filename;
     private $operations;
+    private $year;  
 
-    public function __construct($instituicao_id, $filename) {
+    public function __construct($instituicao_id, $filename, $year = 2014) {
         $this->instituicao_id = $instituicao_id;
         $this->filename = $filename;
         $this->operations = array ();
@@ -55,8 +56,25 @@ class EducacensoParser {
         return $logs;
     }
     
+    protected function _turma($d) {
+        $logs = "";
+        $id_turma_inep = int($d['codigo_inep_turma']);
+        $id_escola_inep = int($d['codigo_inep_escola']);
+        $id_turma = (new clsPmieducarTurma())->id_turma_inep($id_turma_inep);
+        $id_escola = (new clsPmieducarEscola())->id_escola_inep($id_escola_inep);
+        
+        if ($id_turma) {
+            $logs .= "Turma $id_turma_inep encontrada. Não será atualizada.\n";
+        } else {
+            $logs .= "Turma $id_turma_inep não encontrada. Criando o registro.\n";
+            $logs .= var_export($d, true) . "\n";
+            add_turma($d);
+        }
+        
+        return $logs;
+    }
+    
     protected function _aluno($d) {
-        $logs = array();
     }
 
     protected function _escola($d) {
@@ -72,9 +90,9 @@ class EducacensoParser {
             // Mas por enquanto não.
             $logs .= "Escola $id_escola encontrada. Não será atualizada.\n";
         } else {
-            add_escola($d);
             $logs .= "Escola $id_escola não encontrada. Criando o registro.\n";
             $logs .= var_export($d, true) . "\n";
+            add_escola($d);
         }
         return $logs;
     }
@@ -199,12 +217,73 @@ class EducacensoParser {
        
     } 
 
-    protected function add_professor() {
-    
+    protected function add_professor($d) {
     }
 
-    protected function add_turma() {
+    protected function add_turma($d) {
+        $id_turma_inep = int($d['codigo_inep_turma']);
+        $id_escola_inep = int($d['codigo_inep_escola']);
         
+        $id_escola = (new clsPmieducarEscola())->id_escola_inep($id_escola_inep);
+
+        // Tipo de turma. Procura por tipos pré-criados e usa o primeiro.
+        // Não encontrando nenhum, cria um tipo 'Não se aplica'.
+        $tipos_turma = (new clsPmieducarTurmaTipo())->lista(null, null, null, null, null, null, null, null, null, 1, $this->instituicao_id);
+        $id_turma_tipo = null;
+        if ($tipos_turma) {
+            $id_tipo_turma = $tipos_turma[0]['cod_turma_tipo'];
+        } else {
+            $tipo_turma = clsPmieducarTurmaTipo( 
+                    null, # $cod_turma_tipo = null, 
+                    null, # $ref_usuario_exc = null, 
+                    null, # $ref_usuario_cad = null, 
+                    "Não se aplica", # $nm_tipo = null, 
+                    "N/A", # $sgl_tipo = null, 
+                    null, # $data_cadastro = null, 
+                    null, # $data_exclusao = null, 
+                    1, # $ativo = null, 
+                    $this->instituicao_id # $ref_cod_instituicao = null 
+            );
+            $id_turma_tipo = $tipo_turma->cadastra();
+        }
+        
+        $hora_inicio = sprintf("%02d:%02d:00", int($d['horario_inicial_hora']), int($d['horario_inicial_minuto']));
+        $hora_fim = sprintf("%02d:%02d:00", int($d['horario_final_hora']), int($d['horario_final_minuto']));
+        
+        $turma = clsPmieducarTurma(
+                null, # $cod_turma = null
+                null, # $ref_usuario_exc = null
+                null, # $ref_usuario_cad = null
+                null, # $ref_ref_cod_serie = null
+                $id_escola, # $ref_ref_cod_escola = null
+                null, # $ref_cod_infra_predio_comodo = null
+                $d['nome_turma'], # $nm_turma = null
+                '', # $sgl_turma = null
+                99, # $max_aluno = null
+                null, # $multiseriada = null
+                null, # $data_cadastro = null
+                null, # $data_exclusao = null
+                1, # $ativo = null
+                $id_turma_tipo, # $ref_cod_turma_tipo = null
+                $hora_inicio, # $hora_inicial = null
+                $hora_fim, # $hora_final = null
+                null, # $hora_inicio_intervalo = null
+                null, # $hora_fim_intervalo = null  
+                null, # $ref_cod_regente = null
+                null, # $ref_cod_instituicao_regente = null
+                $this->instituicao_id, # $ref_cod_instituicao = null
+                null, # $ref_cod_curso = null
+                null, # $ref_ref_cod_serie_mult = null
+                null, # $ref_ref_cod_escola_mult = null
+                null, # $visivel = null
+                null, # $turma_turno_id = null
+                null, # $tipo_boletim = null
+                $this->year # $ano = null
+        );
+        $id_turma = $turma->cadastra();
+        $turma->vincula_educacenso($id_turma_inep, 'Importador');
+        
+        // TODO: Descobrir se módulos e dias da semana são realmente necessários.
     }
 
     protected function add_aluno() {
