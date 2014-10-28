@@ -1128,7 +1128,7 @@ class clsPmieducarAluno
    * @return true se executar, false se não
    */
   public function vincula_educacenso ($cod_inep, $fonte = '') {
-      if (clsPmieducarAluno::id_aluno_inep($cod_inep)) {
+      if (!clsPmieducarAluno::id_aluno_inep($cod_inep)) {
           $db = new clsBanco();
           $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_aluno " .
                   "(cod_aluno, cod_aluno_inep, fonte, created_at) VALUES " .
