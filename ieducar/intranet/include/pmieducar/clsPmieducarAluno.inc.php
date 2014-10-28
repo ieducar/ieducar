@@ -1130,9 +1130,9 @@ class clsPmieducarAluno
   public function vincula_educacenso ($cod_inep, $fonte = '') {
       if (clsPmieducarAluno::id_aluno_inep($cod_inep)) {
           $db = new clsBanco();
-          $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_aluno \
-                  (cod_aluno, cod_aluno_inep, fonte, created_at) VALUES \
-                  (%d, %d, %s, NOW());", $this->cod_aluno, $cod_inep, $fonte));
+          $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_aluno " .
+                  "(cod_aluno, cod_aluno_inep, fonte, created_at) VALUES " .
+                  "(%d, %d, '%s', NOW());", $this->cod_aluno, $cod_inep, $fonte));
           return true;
       }
       return false;

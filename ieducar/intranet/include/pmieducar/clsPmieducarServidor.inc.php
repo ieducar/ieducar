@@ -1201,9 +1201,9 @@ class clsPmieducarServidor
   public function vincula_educacenso ($cod_inep, $fonte = '') {
       if (!clsPmieducarServidor::id_servidor_inep($cod_inep)) {
           $db = new clsBanco();
-          $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_docente \
-                  (cod_servidor, cod_docente_inep, fonte, created_at) VALUES \
-                  (%d, %d, %s, NOW());", $this->cod_servidora, $cod_inep, $fonte));
+          $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_docente " .
+                  "(cod_servidor, cod_docente_inep, fonte, created_at) VALUES " .
+                  "(%d, %d, '%s', NOW());", $this->cod_servidor, $cod_inep, $fonte));
           return true;
       }
       return false;

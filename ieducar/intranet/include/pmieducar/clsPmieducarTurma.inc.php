@@ -465,7 +465,11 @@ class clsPmieducarTurma
 	 */
 	function cadastra()
 	{
-		if( is_numeric( $this->ref_usuario_cad ) /*&& is_numeric( $this->ref_ref_cod_serie ) && is_numeric( $this->ref_ref_cod_escola ) && is_numeric( $this->ref_cod_infra_predio_comodo )*/ && is_string( $this->nm_turma ) && is_numeric( $this->max_aluno ) && is_numeric( $this->multiseriada ) && is_numeric( $this->ref_cod_turma_tipo ) )
+		if( is_numeric( $this->ref_usuario_cad )  
+		        && is_string( $this->nm_turma ) 
+		        && is_numeric( $this->max_aluno ) 
+		        && is_numeric( $this->ref_cod_turma_tipo ) 
+        )
 		{
 			$db = new clsBanco();
 
@@ -2015,7 +2019,7 @@ and  e.cod_escola = t.ref_ref_cod_escola
 	    $db->ProximoRegistro();
 	    $row = $db->Tupla();
 	    if ($row)
-	        return $row['cod_escola'];
+	        return $row['cod_turma'];
 	    else
 	        return null;
 	
@@ -2030,9 +2034,9 @@ and  e.cod_escola = t.ref_ref_cod_escola
 	public function vincula_educacenso ($cod_inep, $fonte = '') {
 	    if (!clsPmieducarTurma::id_turma_inep($cod_inep)) {
 	        $db = new clsBanco();
-	        $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_turma \
-                  (cod_turma, cod_turma_inep, fonte, created_at) VALUES \
-                  (%d, %d, %s, NOW());", $this->cod_turma, $cod_inep, $fonte));
+	        $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_turma " .
+                  "(cod_turma, cod_turma_inep, fonte, created_at) VALUES " .
+                  "(%d, %d, '%s', NOW());", $this->cod_turma, $cod_inep, $fonte));
 	        return true;
 	    }
 	    return false;
