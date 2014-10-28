@@ -92,7 +92,8 @@ class CoreExt_Config_Ini extends CoreExt_Config
    * @param  string  $section
    */
   function hasEnviromentSection($section) {
-    return is_array($this->iniArr[$section]);
+    return array_key_exists($section, $this->iniArr) 
+    	&& is_array($this->iniArr[$section]);
   }
 
   /**
