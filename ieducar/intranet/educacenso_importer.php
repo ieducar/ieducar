@@ -37,9 +37,9 @@ class indice extends clsCadastro {
         if ($nivel_usuario == 1) {
             
             if (array_key_exists ( 'arquivo_educacenso', $_FILES ) && $this->id_instituicao) {
-                $parser = new EducacensoParser($this->id_instituicao, $_FILES['arquivo_educacenso']['tmp_name']);
+                $parser = new EducacensoParser($this->id_instituicao, $_FILES['arquivo_educacenso']['tmp_name'], $this->pessoa_logada);
                 $results = $parser->run();
-                var_dump($results);
+                $this->campoMemo("resultados", "Resultados", implode("\n", $results), 120, 100);
             } else {
                 $opcoes = array (
                         "" => "Selecione uma institui&ccedil;&atilde;o" 
@@ -55,7 +55,6 @@ class indice extends clsCadastro {
                 }
                 
                 $this->campoLista ( "cod_instituicao", "Institui&ccedil;&atilde;o", $opcoes, '');
-                
                 $this->campoArquivo ( 'arquivo_educacenso', 'Arquivo', '', '60', 'Arquivo exportado pelo sistema Educacenso.', FALSE );
             }
         }

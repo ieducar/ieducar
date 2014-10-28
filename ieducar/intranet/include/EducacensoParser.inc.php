@@ -6,17 +6,16 @@ require_once('include/funcoes.inc.php');
 class EducacensoParser {
     private $instituicao_id;
     private $filename;
+    private $usuario_cad;
     private $year;
-    private $_aluno_data;
-    private $_docente_data;
-    private $_turma_data;
 
-    public function __construct($instituicao_id, $filename, $year = 2014) {
+    public function __construct($instituicao_id, $filename, $usuario_cad, $year = 2014) {
         $this->instituicao_id = $instituicao_id;
         $this->filename = $filename;
-        $this->_aluno = null;
-        $this->_docente = null;
-        $this->_escola = null;
+        $this->usuario_cad = $usuario_cad;
+        $this->aluno_data = array();
+        $this->docente_data = array();
+        $this->escola_data = array();
     }
 
 
@@ -28,10 +27,17 @@ class EducacensoParser {
     	foreach ( $contents as $text_row ) {
     		if ($text_row) { // A última linha do arquivo é vazia.
     			$data = EducacensoFieldHelper::parse_row( explode ( "|", $text_row ) );
-    			$log = $this->parse_row($data);
-    			if ($log) {
-    				$logs [] = $log;
-    			}
+    			try {
+        			$log = $this->parse_row($data);
+        			if ($log) {
+        				$logs [] = $log;
+        			}
+    			} catch (Exception $e) {
+    			    $logs[] = "Erro ao processar linha: ";
+    			    $logs[] = print_r($data, true);
+    			    $logs[] = print_r($e, true);
+    			    $logs[] = "------------------------------------";
+    			} 
     		}
     	}
     	return $logs;
@@ -40,43 +46,43 @@ class EducacensoParser {
     protected function parse_row($data) {    	
         switch (EducacensoFieldHelper::row_type($data)) {
         	case "Escola":
-        		$this->_escola_data = array();
-        		$this->_escola_data = array_merge($data, $this->_escola_data);
+        		$this->escola_data = array();
+        		$this->escola_data = array_merge($data, $this->escola_data);
         		break;
         	case "Escola/Estrutura":
-        		$this->_escola_data = array_merge($data, $this->_escola_data);
-        		return $this->_escola($_escola);
+        		$this->escola_data = array_merge($data, $this->escola_data);
+        		return $this->check_escola($this->escola_data);
         	case "Turma":
-        		return $this->_turma($data);
+        		return $this->check_turma($data);
         	case "Profissional":
-        		$this->_docente_data = array();
-        		$this->_docente_data = array_merge($data, $this->_docente_data);
+        		$this->docente_data = array();
+        		$this->docente_data = array_merge($data, $this->docente_data);
         		break;
         	case "Profissional/Documentos":
-        		$this->_docente_data = array_merge($data, $this->_docente_data);
+        		$this->docente_data = array_merge($data, $this->docente_data);
         		break;
         	case "Profissional/Variaveis":
-        		$this->_docente_data = array_merge($data, $this->_docente_data);
-        		break;
+        		$this->docente_data = array_merge($data, $this->docente_data);
+        		return $this->check_professor($this->docente_data);
         	case "Profissional/Docentes":
-        		$d = array_merge($data, $this->_docente_data);
-        		return $this->_turma_professor($d);
+        		$d = array_merge($data, $this->docente_data);
+        		return $this->check_turma_professor($d);
         	case "Alunos":
-        		$this->_aluno_data = array();
-        		$this->_aluno_data = array_merge($data, $this->_aluno_data);
+        		$this->aluno_data = array();
+        		$this->aluno_data = array_merge($data, $this->aluno_data);
         		break;
         	case  "Alunos/Documentos":
-        		$this->_aluno_data = array_merge($data, $this->_aluno_data);
-        		return $this->_aluno($data);
+        		$this->aluno_data = array_merge($data, $this->aluno_data);
+        		return $this->check_aluno($this->aluno_data);
         	case "Alunos/Matricula":
-        		$this->_matricula($d);
+        		return $this->check_matricula($data);
         }
     }
     
-    protected function _turma($d) {
+    protected function check_turma($d) {
         $logs = "";
-        $id_turma_inep = int($d['codigo_inep_turma']);
-        $id_escola_inep = int($d['codigo_inep_escola']);
+        $id_turma_inep = $d['codigo_inep_turma'];
+        $id_escola_inep = $d['codigo_inep_escola'];
         $id_turma = clsPmIeducarTurma::id_turma_inep($id_turma_inep);
         $id_escola = clsPmieducarEscola::id_escola_inep($id_escola_inep);
         
@@ -85,14 +91,14 @@ class EducacensoParser {
         } else {
             $logs .= "Turma $id_turma_inep não encontrada. Criando o registro.\n";
             $logs .= var_export($d, true) . "\n";
-            add_turma($d);
+            $this->add_turma($d);
         }
         return $logs;
     }
     
-    protected function _professor($d) {
+    protected function check_professor($d) {
         $logs = "";
-        $id_professor_inep = int($d['codigo_inep_profissional']);
+        $id_professor_inep = $d['codigo_inep_profissional'];
         $id_servidor = clsPmIeducarServidor::id_servidor_inep($id_professor_inep);
         
         if ($id_servidor) {
@@ -100,14 +106,15 @@ class EducacensoParser {
         } else {
             $logs .= "Servidor $id_professor_inep não encontrado. Criando o registro.\n";
             $logs .= $logs .= var_export($d, true) . "\n"; 
+            $this->add_professor($d);
         }
         return $logs;                
     }
     
-    protected function _turma_professor($d) {
-    	$id_turma_inep = int($d['cod_inep_turma']);
-    	$id_professor_inep = int($d['cod_inep_profissional']);
-    	return bind_turma_professor($id_turma_inep, $id_professor_inep);
+    protected function check_turma_professor($d) {
+    	$id_turma_inep = $d['codigo_inep_turma'];
+    	$id_professor_inep = $d['codigo_inep_profissional'];
+    	return $this->bind_turma_professor($id_turma_inep, $id_professor_inep);
     }
     
     protected function bind_turma_professor($id_turma_inep, $id_professor_inep) {
@@ -115,7 +122,7 @@ class EducacensoParser {
         $id_turma = clsPmieducarTurma::id_turma_inep($id_turma_inep);
         $id_servidor = clsPmieducarServidor::id_servidor_inep($id_professor_inep);
         
-        if (bool($id_turma) && bool($id_servidor)) {
+        if ((bool)$id_turma && (bool)$id_servidor) {
             $turma = clsPmieducarTurma($id_turma);
             $turma->detalhe();
             $turma->ref_cod_regente = $id_servidor;
@@ -128,11 +135,11 @@ class EducacensoParser {
         return $logs;
     }
     
-    protected function _matricula($d) {
-    	$id_turma_inep = int($d['codigo_inep_turma']);
-    	$id_aluno_inep = int($d['codigo_inep_aluno']);
-    	$id_escola_inep = int($d['codigo_inep_escola']);
-    	return bind_turma_aluno($id_turma_inep, $id_escola_inep, $id_aluno_inep);
+    protected function check_matricula($d) {
+    	$id_turma_inep = $d['codigo_inep_turma'];
+    	$id_aluno_inep = $d['codigo_inep_aluno'];
+    	$id_escola_inep = $d['codigo_inep_escola'];
+    	return $this->bind_turma_aluno($id_turma_inep, $id_escola_inep, $id_aluno_inep);
     }
     
     protected function bind_turma_aluno($id_turma_inep, $id_escola_inep, $id_aluno_inep) {
@@ -141,7 +148,7 @@ class EducacensoParser {
         $id_aluno = clsPmieducarAluno::id_aluno_inep($id_aluno_inep);
         $id_escola = clsPmieducarEscola::id_escola_inep($id_escola_inep);
         
-        if (bool($id_turma) && bool($id_aluno) && bool ($id_escola)) {
+        if ((bool)$id_turma && (bool)$id_aluno && (bool)$id_escola) {
             // Verifica se o aluno está matriculado na escola para este ano
             // Se sim, adiciona uma matrícula para esta turma
             // Se não, cria a matrícula antes de fazê-lo
@@ -158,7 +165,7 @@ class EducacensoParser {
                         $id_escola, # $ref_ref_cod_escola = NULL, 
                         null, # $ref_ref_cod_serie = NULL, 
                         null, # $ref_usuario_exc = NULL,
-                        null, # $ref_usuario_cad = NULL, 
+                        $this->usuario_cad, # $ref_usuario_cad = NULL, 
                         $id_aluno, # $ref_cod_aluno = NULL, 
                         null, # $aprovado = NULL,
                         null, # $data_cadastro = NULL, 
@@ -187,7 +194,7 @@ class EducacensoParser {
                         $id_matricula, // $ref_cod_matricula = NULL,
                         $id_turma, # $ref_cod_turma = NULL, 
                         null, # $ref_usuario_exc = NULL, 
-                        null, # $ref_usuario_cad = NULL,
+                        $this->usuario_cad, # $ref_usuario_cad = NULL,
                         null, # $data_cadastro = NULL, 
                         null, # $data_exclusao = NULL, 
                         null, # $ativo = NULL,
@@ -204,30 +211,24 @@ class EducacensoParser {
         return $logs;
     }
     
-    protected function _aluno($d) {
+    protected function check_aluno($d) {
         $logs = "";
-        $id_inep = int($d['codigo_inep_aluno']);
-        $id_aluno = clsPmieducarAluno::id_aluno_inep($id_inep);
-        
-        // Verificamos se a escola existe ...
+        $id_inep = $d['codigo_inep_aluno'];
+        $id_aluno = clsPmieducarAluno::id_aluno_inep($id_inep);        
         if ($id_aluno) {
-            // Se sim, atualizamos as informações.
-            // Mas por enquanto não.
             $logs .= "Aluno $id_inep encontrado. Não será atualizado.\n";
         } else {
             $logs .= "Aluno $id_inep não encontrado. Criando o registro.\n";
             $logs .= var_export($d, true) . "\n";
-            add_aluno($d);
+            $this->add_aluno($d);
         }
         return $logs;        
     }
 
-    protected function _escola($d) {
-        
+    protected function check_escola($d) {
         $logs = "";
-        $id_inep = int($d['codigo_inep']);
+        $id_inep = $d['codigo_inep'];
         $id_escola = clsPmieducarEscola::id_escola_inep($id_inep);
-        
         // Verificamos se a escola existe ...
         if ($id_escola) {
             // Se sim, atualizamos as informações.
@@ -236,7 +237,7 @@ class EducacensoParser {
         } else {
             $logs .= "Escola $id_escola não encontrada. Criando o registro.\n";
             $logs .= var_export($d, true) . "\n";
-            add_escola($d);
+            $this->add_escola($d);
         }
         return $logs;
     }
@@ -268,7 +269,7 @@ class EducacensoParser {
             $rede_ensino = new clsPmieducarEscolaRedeEnsino(
                     null, # $cod_escola_rede_ensino = null,
                     null, # $ref_usuario_exc = null
-                    null, # $ref_usuario_cad = null,
+                    $this->usuario_cad, # $ref_usuario_cad = null,
                     "Importação", # $nm_rede = null
                     null, # $data_cadastro = null
                     null, # $data_exclusao = null
@@ -298,7 +299,7 @@ class EducacensoParser {
             $localizacao = clsPmieducarEscolaLocalizacao(
                     null, # $cod_escola_localizacao = null,
                     null, # $ref_usuario_exc = null,
-                    null, # $ref_usuario_cad = null,
+                    $this->usuario_cad, # $ref_usuario_cad = null,
                     $nome_localizacao, # $nm_localizacao = null,
                     null, # $data_cadastro = null,
                     null, # $data_exclusao = null,
@@ -317,7 +318,7 @@ class EducacensoParser {
         
         $escola = new clsPmieducarEscola(
                 null, # $cod_escola = NULL
-                null, # $ref_usuario_cad = NULL,
+                $this->usuario_cad, # $ref_usuario_cad = NULL,
                 null, # $ref_usuario_exc = NULL,
                 $this->instituicao_id, # $ref_cod_instituicao = NULL,
                 $localizacao_id, # $ref_cod_escola_localizacao = NULL,
@@ -330,16 +331,17 @@ class EducacensoParser {
                 null # $bloquear_lancamento_diario_anos_letivos_encerrados = NULL
         );
         $escola_id = $escola->cadastra();
-        $escola->vincula_educacenso(int($d['codigo_inep']), 'Importador');
+        $escola->cod_escola = $escola_id;
+        $escola->vincula_educacenso($d['codigo_inep'], 'Importador');
         
         $municipio = new clsMunicipio();
-        $municipio = $municipio->by_id_IBGE(int($d['_municipio']));
+        $municipio = $municipio->by_id_IBGE($d['_municipio']);
         
         // Complemento do cadastro escolar
-        clsPmieducarEscolaComplemento( 
+        $complemento = new clsPmieducarEscolaComplemento( 
                 $escola_id, # $ref_cod_escola = null
                 null,   # $ref_usuario_exc = null
-                null,  # $ref_usuario_cad = null  
+                $this->usuario_cad,  # $ref_usuario_cad = null  
                 idFederal2int( $d['cep'] ), # $cep = null, 
                 $d['endereco_numero'], # $numero = null,  
                 $d['complemento'], #$complemento = null,
@@ -356,6 +358,7 @@ class EducacensoParser {
                 null, # $data_exclusao = null
                 1 # $ativo = null 
         );
+        $id_complemento = $complemento->cadastra();
         
         //TODO: Cadastro de cursos.
         //$curso_escola = new clsPmieducarEscolaCurso( $cadastrou, $campo, null, $this->pessoa_logada, null, null, 1 );
@@ -363,18 +366,18 @@ class EducacensoParser {
        
     } 
 
-    protected function _date($date) {
+    protected function date_db($date) {
         return implode('-', array_reverse(explode('/', $date)));
     }
     
     protected function add_professor($d) {
-        $id_professor_inep = int($d['codigo_inep_profissional']);
+        $id_professor_inep = $d['codigo_inep_profissional'];
         
         $municipio_nascimento = new clsMunicipio();
-        $municipio_residencia = new $clsMunicipio();
+        $municipio_residencia = new clsMunicipio();
         try {
-            $municipio_nascimento = $municipio_nascimento->by_id_IBGE(int($d['_municipio_nascimento']));
-            $municipio_residencia = $municipio_residencia->by_id_IBGE(int($d['_municipio']));
+            $municipio_nascimento = $municipio_nascimento->by_id_IBGE($d['_municipio_nascimento']);
+            $municipio_residencia = $municipio_residencia->by_id_IBGE($d['_municipio']);
         } catch (Exception $e) {
 
         }
@@ -388,10 +391,10 @@ class EducacensoParser {
         // Então pessoa física ...
         $fisica = new clsFisica();
         $fisica->idpes = $idpes;
-        $fisica->data_nasc = _date($d['data_nascimento']);
+        $fisica->data_nasc = $this->date_db($d['data_nascimento']);
         $fisica->sexo = $d['sexo'] == '1' ? 'M' : 'F';
         $fisica->ref_cod_sistema = null;
-        $fisica->cpf = int($d['cpf']);
+        $fisica->cpf =$d['cpf'];
         $fisica->nacionalidade = $d['nacionalidade'];
         $fisica->idmun_nascimento = $municipio_nascimento ? $municipio_nascimento->idmun : null;
         $fisica->nome_mae = $d['nome_mae'];
@@ -419,24 +422,52 @@ class EducacensoParser {
         );
         $endereco->cadastra();
         // Servidor
-        $servidor = new clsPmieducarServidor(
-                null, # $cod_servidor = NULL, 
-                null, # $ref_cod_deficiencia = NULL, 
+        $funcionario = new clsPortalFuncionario(
+                $idpes, # $ref_cod_pessoa_fj = null, 
+                $d['cpf'], # $matricula = null, 
+                'ieducar@valparaiso', # $senha = null, 
+                1, # $ativo = null, 
+                null, # $ref_sec = null, 
+                null, # $ramal = null, 
+                null, # $sequencial = null, 
+                null, # $opcao_menu = null, 
+                null, # $ref_cod_administracao_secretaria = null, 
+                null, # $ref_ref_cod_administracao_secretaria = null, 
+                null, # $ref_cod_departamento = null, 
+                null, # $ref_ref_ref_cod_administracao_secretaria = null, 
+                null, # $ref_ref_cod_departamento = null, 
+                null, # $ref_cod_setor = null, 
+                null, # $ref_cod_funcionario_vinculo = null, 
+                null, # $tempo_expira_senha = null, 
+                null, # $tempo_expira_conta = null, 
+                null, # $data_troca_senha = null, 
+                null, # $data_reativa_conta = null, 
+                null, # $ref_ref_cod_pessoa_fj = null, 
+                null, # $proibido = null, 
+                null, # $ref_cod_setor_new = null, 
+                null, # $matricula_new = null, 
+                1, # $matricula_permanente = null, 
+                null, # $tipo_menu = null, 
+                $d['email'] # $email = null
+        );
+        $id_funcionario = $funcionario->cadastra();
+        $pmieducarservidor = new clsPmieducarServidor(
+                $idpes, # $cod_servidor = NULL,
+                null, # $ref_cod_deficiencia = NULL,
                 null, # $ref_idesco = NULL,
-                20.0, # $carga_horaria = NULL, 
-                null, # $data_cadastro = NULL, 
+                20.0, # $carga_horaria = NULL,
+                null, # $data_cadastro = NULL,
                 null, # $data_exclusao = NULL,
-                1, # $ativo = NULL, 
-                $this->instituicao_id, # $ref_cod_instituicao = NULL, 
+                1, # $ativo = NULL,
+                $this->instituicao_id, # $ref_cod_instituicao = NULL,
                 null #$ref_cod_subnivel = NULL
         );
-        $id_servidor = $servidor->cadastra();
-        $servidor->vincula_educacenso($id_professor_inep);
+        $pmieducarservidor->vincula_educacenso($id_professor_inep);
     }
 
     protected function add_turma($d) {
-        $id_turma_inep = int($d['codigo_inep_turma']);
-        $id_escola_inep = int($d['codigo_inep_escola']);
+        $id_turma_inep = $d['codigo_inep_turma'];
+        $id_escola_inep = $d['codigo_inep_escola'];
         
         $id_escola = clsPmieducarEscola::id_escola_inep($id_escola_inep);
 
@@ -446,12 +477,12 @@ class EducacensoParser {
         $tipos_turma = $tipos_turma->lista(null, null, null, null, null, null, null, null, null, 1, $this->instituicao_id);
         $id_turma_tipo = null;
         if ($tipos_turma) {
-            $id_tipo_turma = $tipos_turma[0]['cod_turma_tipo'];
+            $id_turma_tipo = $tipos_turma[0]['cod_turma_tipo'];
         } else {
-            $tipo_turma = clsPmieducarTurmaTipo( 
+            $tipo_turma = new clsPmieducarTurmaTipo( 
                     null, # $cod_turma_tipo = null, 
                     null, # $ref_usuario_exc = null, 
-                    null, # $ref_usuario_cad = null, 
+                    $this->usuario_cad, # $ref_usuario_cad = null, 
                     "Não se aplica", # $nm_tipo = null, 
                     "N/A", # $sgl_tipo = null, 
                     null, # $data_cadastro = null, 
@@ -462,13 +493,13 @@ class EducacensoParser {
             $id_turma_tipo = $tipo_turma->cadastra();
         }
         
-        $hora_inicio = sprintf("%02d:%02d:00", int($d['horario_inicial_hora']), int($d['horario_inicial_minuto']));
-        $hora_fim = sprintf("%02d:%02d:00", int($d['horario_final_hora']), int($d['horario_final_minuto']));
+        $hora_inicio = sprintf("%02d:%02d:00", intval($d['horario_inicial_hora']), intval($d['horario_inicial_minuto']));
+        $hora_fim = sprintf("%02d:%02d:00", intval($d['horario_final_hora']), intval($d['horario_final_minuto']));
         
-        $turma = clsPmieducarTurma(
+        $turma = new clsPmieducarTurma(
                 null, # $cod_turma = null
                 null, # $ref_usuario_exc = null
-                null, # $ref_usuario_cad = null
+                $this->usuario_cad, # $ref_usuario_cad = null
                 null, # $ref_ref_cod_serie = null
                 $id_escola, # $ref_ref_cod_escola = null
                 null, # $ref_cod_infra_predio_comodo = null
@@ -496,6 +527,7 @@ class EducacensoParser {
                 $this->year # $ano = null
         );
         $id_turma = $turma->cadastra();
+        $turma->cod_turma = $id_turma;
         $turma->vincula_educacenso($id_turma_inep, 'Importador');
         
         // TODO: Descobrir se módulos e dias da semana são realmente necessários.
@@ -505,8 +537,8 @@ class EducacensoParser {
     	$municipio_nascimento = new clsMunicipio();
     	$municipio_residencia = new clsMunicipio();
     	try {
-    		$municipio_nascimento = $municipio_nascimento->by_id_IBGE(int($d['_municipio_nascimento']));
-    		$municipio_residencia = $municipio_residencia->by_id_IBGE(int($d['_municipio']));
+    		$municipio_nascimento = $municipio_nascimento->by_id_IBGE($d['_municipio_nascimento']);
+    		$municipio_residencia = $municipio_residencia->by_id_IBGE($d['_municipio']);
     	} catch (Exception $e) {
     	
     	}
@@ -518,10 +550,10 @@ class EducacensoParser {
     	
     	$fisica = new clsFisica();
     	$fisica->idpes = $idpes;
-    	$fisica->data_nasc = _date($d['data_nascimento']);
+    	$fisica->data_nasc = $this->date_db($d['data_nascimento']);
     	$fisica->sexo = $d['sexo'] == '1' ? 'M' : 'F';
     	$fisica->ref_cod_sistema = null;
-    	$fisica->cpf = $d['numero_cpf'] ? int($d['numero_cpf']) : null;
+    	$fisica->cpf = $d['numero_cpf'] ? $d['numero_cpf'] : null;
     	$fisica->nacionalidade = $d['nacionalidade'];
     	$fisica->idmun_nascimento = $municipio_nascimento ? $municipio_nascimento->idmun : null;
     	$fisica->nome_mae = $d['nome_mae'];
@@ -554,7 +586,7 @@ class EducacensoParser {
     			null, # $ref_cod_aluno_beneficio = NULL,
     			null, # $ref_cod_religiao = NULL, 
     			null, # $ref_usuario_exc = NULL, 
-    			null, # $ref_usuario_cad = NULL,
+    			$this->usuario_cad, # $ref_usuario_cad = NULL,
     			$idpes, # $ref_idpes = NULL, 
     			null, # $data_cadastro = NULL, 
     			null, # $data_exclusao = NULL, 
@@ -567,7 +599,8 @@ class EducacensoParser {
     			$aluno_estado_id = NULL
     		);
     	$id_aluno = $aluno->cadastra();
-    	$aluno->vincula_educacenso(int($d['cod_inep_aluno']), 'Importador'); 
+    	$aluno->cod_aluno = $id_aluno;
+    	$aluno->vincula_educacenso($d['codigo_inep_aluno'], 'Importador'); 
     }
 
 }

@@ -467,7 +467,7 @@ class EducacensoFieldHelper {
     );
     
     public static function row_type($row) {
-        return self::$rows [$row [0]];
+        return self::$rows [$row ['tipo_registro']];
     }
     
     public static function parse_row($row) {
