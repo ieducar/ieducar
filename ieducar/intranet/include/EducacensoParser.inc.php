@@ -252,6 +252,21 @@ class EducacensoParser {
         );
         $id_pessoa = $pessoa->cadastra();
         
+        // O relacionamento do DB me obriga informar um CNPJ.
+        // Eu não tenho o CNPJ.
+        // Não me julgue.
+        $cnpj = sprintf("%02d.%03d.%03d/%04d-%02d", rand(1, 99), rand(1, 999), rand(1, 999), rand(1, 9999), rand(1, 99));
+        $juridica = new clsJuridica( 
+                $id_pessoa, # $idpes = false, 
+                idFederal2int($cnpj), # $cnpj = false, 
+                $d['nome'], # $fantasia = false, 
+                null, # $insc_estadual = false, 
+                null, # $capital_social = false, 
+                $this->usuario_cad, 
+                null # $idpes_rev =false 
+        );
+        $juridica->cadastra();
+        
         // A escola vai precisar de uma rede de ensino, que é específica
         // da instituição. Se tiver alguma, usa a primeira delas,
         // senão, cria uma e fica por isso.
@@ -333,28 +348,33 @@ class EducacensoParser {
         $municipio = new clsMunicipio();
         $municipio = $municipio->by_id_IBGE($d['_municipio']);
         
-        // Complemento do cadastro escolar
-        $complemento = new clsPmieducarEscolaComplemento( 
-                $escola_id, # $ref_cod_escola = null
-                null,   # $ref_usuario_exc = null
-                $this->usuario_cad,  # $ref_usuario_cad = null  
-                idFederal2int( $d['cep'] ), # $cep = null, 
-                $d['endereco_numero'], # $numero = null,  
-                $d['complemento'], #$complemento = null,
-                $d['email'], # $email = null
-                null, # $nm_escola = null
-                $municipio ? $municipio->nome : null, # $municipio = null 
-                $d['bairro'], # $bairro = null,
-                $d['endereco'], # $logradouro = null
-                $d['ddd'], # $ddd_telefone = null  
-                $d['telefone'], # $telefone = null
-                $d['ddd'], # $ddd_fax = null 
-                $d['fax'], # $fax = null
-                null, # $data_cadastro = null
-                null, # $data_exclusao = null
-                1 # $ativo = null 
+        foreach (array(1 => 'telefone', 2 => 'telefone_publico', 3 => 'telefone_outro', 4 => 'fax') as $t => $f) {
+            if ((bool)$d['_ddd'] && (bool)$d[$f]) {
+                $telefone = new clsPessoaTelefone(
+                        $id_pessoa, 
+                        $t, 
+                        str_replace( "-", "", $d[$f]), 
+                        $d['_ddd'] 
+                );
+                $telefone->cadastra();
+            }
+        }
+        
+        $endereco = new clsEnderecoExterno( 
+                $id_pessoa, 
+                "1", 
+                'QDA', 
+                $d['endereco'], 
+                null, // Endereço é campo numérico e tem letras. 
+                null, // Letra é um campo text de length 1.
+                $d['complemento'], 
+                $d['bairro'], 
+                idFederal2int($d['cep']), 
+                $municipio->idmun, 
+                $municipio->sigla_uf, 
+                false 
         );
-        $id_complemento = $complemento->cadastra();
+        $endereco->cadastra();
         
         //TODO: Cadastro de cursos.
         //$curso_escola = new clsPmieducarEscolaCurso( $cadastrou, $campo, null, $this->pessoa_logada, null, null, 1 );
@@ -375,7 +395,8 @@ class EducacensoParser {
             $municipio_nascimento = $municipio_nascimento->by_id_IBGE($d['_municipio_nascimento']);
             $municipio_residencia = $municipio_residencia->by_id_IBGE($d['_municipio']);
         } catch (Exception $e) {
-
+            $municipio_nascimento = null;
+            $municipio_residencia = null;
         }
         
         // Cadastro de pessoas ...
@@ -402,7 +423,7 @@ class EducacensoParser {
                 'QDA', # $idtlog = FALSE, //TODO: Encontrar uma forma de identificar o tipo.
                 $d['endereco'], # $logradouro = FALSE, 
                 null, # $numero = FALSE, 
-                $d['numero'], # $letra = FALSE, // Sim, o campo 'numero' é tipo Numeric. Geniuses. 
+                null, # $letra = FALSE, // Sim, o campo 'numero' é tipo Numeric. Geniuses. 
                 $d['complemento'], # $complemento = FALSE,
                 $d['bairro'], # $bairro = FALSE, 
                 idFederal2int( $d['cep'] ), # $cep = FALSE, 
@@ -536,7 +557,8 @@ class EducacensoParser {
     		$municipio_nascimento = $municipio_nascimento->by_id_IBGE($d['_municipio_nascimento']);
     		$municipio_residencia = $municipio_residencia->by_id_IBGE($d['_municipio']);
     	} catch (Exception $e) {
-    	
+    	   $municipio_nascimento = null;
+    	   $municipio_residencia = null;
     	}
     	
     	$pessoa = new clsPessoa_();
@@ -562,7 +584,7 @@ class EducacensoParser {
     			'QDA', # $idtlog = FALSE, //TODO: Encontrar uma forma de identificar o tipo.
     			$d['endereco'], # $logradouro = FALSE,
     			null, # $numero = FALSE,
-    			$d['numero'], # $letra = FALSE, // Sim, o campo 'numero' é tipo Numeric. Geniuses.
+    			null, # $letra = FALSE, // Sim, o campo 'numero' é tipo Numeric. Geniuses.
     			$d['complemento'], # $complemento = FALSE,
     			$d['bairro'], # $bairro = FALSE,
     			idFederal2int( $d['cep'] ), # $cep = FALSE,
