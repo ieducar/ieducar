@@ -2,7 +2,7 @@
 
 class EducacensoFieldHelper {
  
-    public $rows = array (
+    public static $rows = array (
             "00" => "Escola",
             "10" => "Escola/Estrutura",
             "20" => "Turma",
@@ -14,7 +14,7 @@ class EducacensoFieldHelper {
             "70" => "Alunos/Documentos",
             "80" => "Alunos/Matricula" 
     );
-    public $fields = array (
+    public static $fields = array (
             "00" => array ( // Escola
                     1 => "tipo_registro",
                     2 => "codigo_inep",
@@ -467,15 +467,15 @@ class EducacensoFieldHelper {
     );
     
     public static function row_type($row) {
-        return $this->rows [$row [0]];
+        return self::$rows [$row [0]];
     }
     
     public static function parse_row($row) {
-        if (! array_key_exists ( $row [0], $this->fields ))
+        if (! array_key_exists ( $row [0], self::$fields ))
             throw new CoreExt_Exception_InvalidArgumentException ( "Não sei o que fazer com linhas de código " . $row [0] );
     
         $result = array ();
-        foreach ( $this->fields [$row [0]] as $pos => $name ) {
+        foreach ( self::$fields [$row [0]] as $pos => $name ) {
             $result [$name] = $row [$pos - 1];
         }
         return $result;

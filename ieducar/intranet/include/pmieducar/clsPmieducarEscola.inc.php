@@ -659,7 +659,7 @@ class clsPmieducarEscola
    * @param $cod_inep int 
    * @return int se houver, null se não.
    */
-  function id_escola_inep ($cod_inep) {
+  public static function id_escola_inep ($cod_inep) {
       $db = new clsBanco();
       $db->Consulta("SELECT cod_escola FROM modules.educacenso_cod_escola WHERE cod_escola_inep = {$cod_inep}");
       $db->ProximoRegistro();
@@ -677,8 +677,8 @@ class clsPmieducarEscola
    * @param fonte str
    * @return true se executar, false se não
    */
-  function vincula_educacenso ($cod_inep, $fonte = '') {
-      if (!id_escola_inep($cod_inep)) {
+  public function vincula_educacenso ($cod_inep, $fonte = '') {
+      if (!clsPmieducarEscola::id_escola_inep($cod_inep)) {
           $db = new clsBanco();
           $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_escola \ 
                   (cod_escola, cod_escola_inep, fonte, created_at) VALUES \

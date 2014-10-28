@@ -2009,7 +2009,7 @@ and  e.cod_escola = t.ref_ref_cod_escola
 	 * @param $cod_inep int
 	 * @return int se houver, null se não.
 	 */
-	function id_turma_inep ($cod_inep) {
+	public static function id_turma_inep ($cod_inep) {
 	    $db = new clsBanco();
 	    $db->Consulta("SELECT cod_turma FROM modules.educacenso_cod_turma WHERE cod_turma_inep = {$cod_inep}");
 	    $db->ProximoRegistro();
@@ -2027,8 +2027,8 @@ and  e.cod_escola = t.ref_ref_cod_escola
 	 * @param fonte str
 	 * @return true se executar, false se não
 	 */
-	function vincula_educacenso ($cod_inep, $fonte = '') {
-	    if (!id_turma_inep($cod_inep)) {
+	public function vincula_educacenso ($cod_inep, $fonte = '') {
+	    if (!clsPmieducarTurma::id_turma_inep($cod_inep)) {
 	        $db = new clsBanco();
 	        $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_turma \
                   (cod_turma, cod_turma_inep, fonte, created_at) VALUES \
