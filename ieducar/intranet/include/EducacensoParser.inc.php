@@ -30,13 +30,13 @@ class EducacensoParser {
     			try {
         			$log = $this->parse_row($data);
         			if ($log) {
-        				$logs [] = $log;
+        				echo "<p>" . $log . "</p>";
         			}
     			} catch (Exception $e) {
-    			    $logs[] = "Erro ao processar linha: ";
-    			    $logs[] = print_r($data, true);
-    			    $logs[] = print_r($e, true);
-    			    $logs[] = "------------------------------------";
+    			    echo "<p> Erro ao processar linha: </p>";
+    			    echo "<pre>";
+    			    print_r($e);
+    			    echo "</pre>";
     			} 
     		}
     	}
@@ -90,7 +90,6 @@ class EducacensoParser {
             $logs .= "Turma $id_turma_inep encontrada. Não será atualizada.\n";
         } else {
             $logs .= "Turma $id_turma_inep não encontrada. Criando o registro.\n";
-            $logs .= var_export($d, true) . "\n";
             $this->add_turma($d);
         }
         return $logs;
@@ -105,7 +104,6 @@ class EducacensoParser {
             $logs .= "Servidor $id_professor_inep encontrado. Não será atualizado.\n";
         } else {
             $logs .= "Servidor $id_professor_inep não encontrado. Criando o registro.\n";
-            $logs .= $logs .= var_export($d, true) . "\n"; 
             $this->add_professor($d);
         }
         return $logs;                
@@ -219,7 +217,6 @@ class EducacensoParser {
             $logs .= "Aluno $id_inep encontrado. Não será atualizado.\n";
         } else {
             $logs .= "Aluno $id_inep não encontrado. Criando o registro.\n";
-            $logs .= var_export($d, true) . "\n";
             $this->add_aluno($d);
         }
         return $logs;        
@@ -236,7 +233,6 @@ class EducacensoParser {
             $logs .= "Escola $id_escola encontrada. Não será atualizada.\n";
         } else {
             $logs .= "Escola $id_escola não encontrada. Criando o registro.\n";
-            $logs .= var_export($d, true) . "\n";
             $this->add_escola($d);
         }
         return $logs;
@@ -323,7 +319,7 @@ class EducacensoParser {
                 $this->instituicao_id, # $ref_cod_instituicao = NULL,
                 $localizacao_id, # $ref_cod_escola_localizacao = NULL,
                 $rede_ensino_id, # $ref_cod_escola_rede_ensino = NULL,
-                null, # $ref_idpes = NULL,
+                $id_pessoa, # $ref_idpes = NULL,
                 $sigla, # $sigla = NULL,
                 null, # $data_cadastro = NULL,
                 null, # $data_exclusao = NULL,
