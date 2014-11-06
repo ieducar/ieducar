@@ -471,259 +471,301 @@ class EducacensoFieldHelper {
                     'curso' => "Educação Infantil",
                     'serie' => "Creche (0 a 3 anos)",
                     'etapa' => 1,
-                    'etapas' => 3
+                    'etapas' => 3,
+                    'nivel' => 'Infantil'
             ),
             2 => array(
                     'curso' => "Educação Infantil",
                     'serie' => "Pré-escola (4 e 5 anos)",
                     'etapa' => 2,
-                    'etapas' => 3
+                    'etapas' => 3,
+                    'nivel' => 'Infantil'
             ),
             3 => array(
                     'curso' => "Educação Infantil",
                     'serie' => "Unificada (0 a 5 anos)",
                     'etapa' => 3,
-                    'etapas' => 3
+                    'etapas' => 3,
+                    'nivel' => 'Infantil'
             ),
             4 => array(
                     'curso' => "Ensino Fundamental de 8 anos",
                     'serie' => "1ª Série",
                     'etapa' => 1,
-                    'etapas' => 8
+                    'etapas' => 8,
+                    'nivel' => 'Fundamental'
             ),
             5 => array(
-                    'curso' =>
-                    "Ensino Fundamental de 8 anos",
+                    'curso' => "Ensino Fundamental de 8 anos",
                     'serie' => "2ª Série",
                     'etapa' => 2,
-                    'etapas' => 8
+                    'etapas' => 8,
+                    'nivel' => 'Fundamental'
             ),
             6 => array(
                     'curso' => "Ensino Fundamental de 8 anos",
                     'serie' => "3ª Série",
                     'etapa' => 3,
-                    'etapas' => 8
+                    'etapas' => 8,
+                    'nivel' => 'Fundamental'
             ),
             7 => array(
                     'curso' => "Ensino Fundamental de 8 anos",
                     'serie' => "4ª Série",
                     'etapa' => 4,
-                    'etapas' => 8
+                    'etapas' => 8,
+                    'nivel' => 'Fundamental'
             ),
             8 => array(
                     'curso' => "Ensino Fundamental de 8 anos",
                     'serie' => "5ª Série",
                     'etapa' => 5,
-                    'etapas' => 8
+                    'etapas' => 8,
+                    'nivel' => 'Fundamental'
             ),
             9 => array(
                     'curso' => "Ensino Fundamental de 8 anos",
                     'serie' => "6ª Série",
                     'etapa' => 6,
-                    'etapas' => 8
+                    'etapas' => 8,
+                    'nivel' => 'Fundamental'
             ),
             10 => array(
                     'curso' => "Ensino Fundamental de 8 anos",
                     'serie' => "7ª Série",
                     'etapa' => 7,
-                    'etapas' => 8
+                    'etapas' => 8,
+                    'nivel' => 'Fundamental'
             ),
             11 => array(
                     'curso' => "Ensino Fundamental de 8 anos",
                     'serie' => "8ª Série",
                     'etapa' => 8,
-                    'etapas' => 8
+                    'etapas' => 8,
+                    'nivel' => 'Fundamental'
             ),
             12 => array(
                     'curso' => "Ensino Fundamental de 8 anos - Multi",
                     'serie' => "Multi",
                     'etapa' => 1,
-                    'etapas' => 1
+                    'etapas' => 1,
+                    'nivel' => 'Fundamental'
             ),
             13 => array(
                     'curso' => "Ensino Fundamental de 8 anos - Correção de Fluxo",
                     'serie' => "Correção de Fluxo",
                     'etapa' => 1,
-                    'etapas' => 1
+                    'etapas' => 1,
+                    'nivel' => 'Fundamental'
             ),
             14 => array(
                     'curso' => "Ensino Fundamental de 9 anos",
                     'serie' => "1º Ano",
                     'etapa' => 1,
-                    'etapas' => 9
+                    'etapas' => 9,
+                    'nivel' => 'Fundamental'
             ),
             15 => array(
                     'curso' => "Ensino Fundamental de 9 anos",
                     'serie' => "2º Ano",
                     'etapa' => 2,
-                    'etapas' => 9
+                    'etapas' => 9,
+                    'nivel' => 'Fundamental'
             ),
             16 => array(
                     'curso' => "Ensino Fundamental de 9 anos",
                     'serie' => "3º Ano",
                     'etapa' => 3,
-                    'etapas' => 9
+                    'etapas' => 9,
+                    'nivel' => 'Fundamental'
             ),
             17 => array(
                     'curso' => "Ensino Fundamental de 9 anos",
                     'serie' => "4º Ano",
                     'etapa' => 4,
-                    'etapas' => 9
+                    'etapas' => 9,
+                    'nivel' => 'Fundamental'
             ),
             18 => array(
                     'curso' => "Ensino Fundamental de 9 anos",
                     'serie' => "5º Ano",
                     'etapa' => 5,
-                    'etapas' => 9
+                    'etapas' => 9,
+                    'nivel' => 'Fundamental'
             ),
             19 => array(
                     'curso' => "Ensino Fundamental de 9 anos",
                     'serie' => "6º Ano",
                     'etapa' => 6,
-                    'etapas' => 9
+                    'etapas' => 9,
+                    'nivel' => 'Fundamental'
             ),
             20 => array(
                     'curso' => "Ensino Fundamental de 9 anos",
                     'serie' => "7º Ano",
                     'etapa' => 7,
-                    'etapas' => 9
+                    'etapas' => 9,
+                    'nivel' => 'Fundamental'
             ),
             21 => array(
                     'curso' => "Ensino Fundamental de 9 anos",
                     'serie' => "8º Ano",
                     'etapa' => 8,
-                    'etapas' => 9
+                    'etapas' => 9,
+                    'nivel' => 'Fundamental'
             ),
             22 => array(
                     'curso' => "Ensino Fundamental de 9 anos - Multi",
                     'serie' => "Multi",
                     'etapa' => 1,
-                    'etapas' => 1
+                    'etapas' => 1,
+                    'nivel' => 'Fundamental'
             ),
             23 => array(
                     'curso' => "Ensino Fundamental de 9 anos - Correção de Fluxo",
                     'serie' => "Correção de Fluxo",
                     'etapa' => 1,
-                    'etapas' => 1
+                    'etapas' => 1,
+                    'nivel' => 'Fundamental'
             ),
             24 => array(
                     'curso' => "Ensino Fundamental de 8 e 9 anos",
                     'serie' => "Multi 8 e 9 anos",
                     'etapa' => 1,
-                    'etapas' => 1
+                    'etapas' => 1,
+                    'nivel' => 'Fundamental'
             ),
             25 => array(
                     'curso' => "Ensino Médio",
                     'serie' => "1ª Série",
                     'etapa' => 1,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             26 => array(
                     'curso' => "Ensino Médio",
                     'serie' => "2ª Série",
                     'etapa' => 2,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             27 => array(
                     'curso' => "Ensino Médio",
                     'serie' => "3ª Série",
                     'etapa' => 3,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             28 => array(
                     'curso' => "Ensino Médio",
                     'serie' => "4ª Série",
                     'etapa' => 4,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             29 => array(
                     'curso' => "Ensino Médio Não-seriado",
                     'serie' => "Não Seriada",
                     'etapa' => 1,
-                    'etapas' => 1
+                    'etapas' => 1,
+                    'nivel' => 'Médio'
             ),
             30 => array(
                     'curso' => "Ensino Médio Integrado",
                     'serie' => "Integrado 1ª Série",
                     'etapa' => 1,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             31 => array(
                     'curso' => "Ensino Médio Integrado",
                     'serie' => "Integrado 2ª Série",
                     'etapa' => 2,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             32 => array(
                     'curso' => "Ensino Médio Integrado",
                     'serie' => "Integrado 3ª Série",
                     'etapa' => 3,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             33 => array(
                     'curso' => "Ensino Médio Integrado",
                     'serie' => "Integrado 4ª Série",
                     'etapa' => 4,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             34 => array('curso' => "Ensino Médio Integrado Não-Seriado",
                     'serie' => "Integrado Não Seriada",
                     'etapa' => 1,
-                    'etapas' => 1
+                    'etapas' => 1,
+                    'nivel' => 'Médio'
             ),
             35 => array(
                     'curso' => "Ensino Médio - Magistério", 
                     'serie' => "Normal/Magistério 1ª Série", 
                     'etapa' => 1,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             36 => array(
                     'curso' => "Ensino Médio - Magistério", 
                     'serie' => "Normal/Magistério 2ª Série", 
                     'etapa' => 2,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             37 => array(
                     'curso' => "Ensino Médio - Magistério", 
                     'serie' => "Normal/Magistério 3ª Série", 
                     'etapa' => 3,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             38 => array(
                     'curso' => "Ensino Médio - Magistério", 
                     'serie' => "Normal/Magistério 4ª Série", 
                     'etapa' => 4,
-                    'etapas' => 4
+                    'etapas' => 4,
+                    'nivel' => 'Médio'
             ),
             39 => array(
                     'curso' => "Educação Profissional (Concomitante)", 
                     'serie' => "Não-seriado", 
                     'etapa' => 1,
-                    'etapas' => 1
+                    'etapas' => 1,
+                    'nivel' => 'Médio'
             ),
             40 => array(
                     'curso' => "Educação Profissional (Subseqüente)", 
                     'serie' => "Não-seriado", 
                     'etapa' => 1,
-                    'etapas' => 1
+                    'etapas' => 1,
+                    'nivel' => 'Médio'
             ),
             41 => array(
                     'curso' => "Ensino Fundamental de 9 anos", 
                     'serie' => "9º Ano", 
                     'etapa' => 9,
-                    'etapas' => 9
+                    'etapas' => 9,
+                    'nivel' => 'Fundamental'
             ),
             43 => array(
                     'curso' => "EJA Presencial", 
                     'serie' => "Anos iniciais", 
                     'etapa' => 1,
-                    'etapas' => 2
+                    'etapas' => 2,
+                    'nivel' => 'Médio'
             ),
             44 => array(
                     'curso' => "EJA Presencial", 
                     'serie' => "Anos finais", 
                     'etapa' => 2,
-                    'etapas' => 2
+                    'etapas' => 2,
+                    'nivel' => 'Médio'
             )
     );
     
