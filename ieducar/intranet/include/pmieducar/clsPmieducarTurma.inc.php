@@ -62,6 +62,8 @@ class clsPmieducarTurma
   	var $ref_ref_cod_serie_mult;
     var $ref_ref_cod_escola_mult;
     var $visivel;
+    var $tipo_boletim;
+    var $ano;
 	// propriedades padrao
 
 	/**
@@ -621,6 +623,7 @@ class clsPmieducarTurma
 			}
 
 			$db->Consulta( "INSERT INTO {$this->_tabela} ( $campos ) VALUES( $valores )" );
+			
 			return $db->InsertId( "{$this->_tabela}_cod_turma_seq");
 		}
 		return false;
