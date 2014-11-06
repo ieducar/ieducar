@@ -61,6 +61,7 @@ class clsPmieducarCurso
   var $ref_cod_instituicao;
   var $padrao_ano_escolar;
   var $hora_falta;
+  var $multi_seriado;
 
   /**
    * Armazena o total de resultados obtidos na última chamada ao método lista().
