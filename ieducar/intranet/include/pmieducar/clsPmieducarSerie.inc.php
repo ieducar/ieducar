@@ -60,6 +60,7 @@ class clsPmieducarSerie
   var $ativo;
   var $intervalo;
   var $regra_avaliacao_id;
+  var $dias_letivos;
 
   var $idade_inicial;
   var $idade_final;
