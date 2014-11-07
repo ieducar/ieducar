@@ -427,7 +427,7 @@ class clsPmieducarCurso
         $gruda = ", ";
       }
 
-      if (is_numeric($multi_seriado)) {
+      if (is_numeric($this->multi_seriado)) {
 				$campos .= "{$gruda}multi_seriado";
 				$valores .= "{$gruda}'{$this->multi_seriado}'";
 				$gruda = ", ";
