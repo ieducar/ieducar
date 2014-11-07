@@ -505,7 +505,7 @@ class EducacensoParser {
         $turma->ref_usuario_cad = $this->usuario_cad;
         $turma->ref_ref_cod_escola = $id_escola;
         $turma->ref_cod_curso = $id_curso;
-        $turma->ref_cod_serie = $id_serie;
+        $turma->ref_ref_cod_serie = $id_serie;
         $turma->nm_turma = $d['nome_turma'];
         $turma->sgl_turma = '';
         $turma->max_aluno = 99;
@@ -696,6 +696,7 @@ class EducacensoParser {
         } else {
             $tipo_ensino = new clsPmieducarTipoEnsino();
             $tipo_ensino->nm_tipo = "Padrão";
+            $tipo_ensino->ativo = 1;
             $tipo_ensino->ref_cod_instituicao = $this->instituicao_id;
             $tipo_ensino->ref_usuario_cad = $this->usuario_cad;
             $id_tipo_ensino = $tipo_ensino->cadastra();
@@ -725,7 +726,7 @@ class EducacensoParser {
         } else {
             $curso = new clsPmieducarCurso();
             $curso->nm_curso = $curso_data['curso'];
-            $curso->sgl_curso = $this->sigla($curso_data['curso']);
+            $curso->sgl_curso = $this->sigla($curso_data['curso'], 0);
             $curso->qtd_etapas = $curso_data['etapas'];
             $curso->carga_horaria = 800 * $curso_data['etapas'];
             $curso->ativo = 1;
@@ -733,6 +734,8 @@ class EducacensoParser {
             $curso->ref_cod_tipo_ensino = $id_tipo_ensino;
             $curso->ref_cod_instituicao = $this->instituicao_id;
             $curso->ref_usuario_cad = $this->usuario_cad;
+            $curso->padrao_ano_escolar = 1;
+            $curso->multi_seriado = 1;
             $id_curso = $curso->cadastra();            
         }
         
@@ -758,16 +761,18 @@ class EducacensoParser {
         $id_serie = null;
         
         $series = new clsPmieducarSerie();
-        $series->lista(null, null, null, $id_curso, null, $serie_data['etapa]'], null, null, null, null, null, null, 1, $this->instituicao_id);
+        $series = $series->lista(null, null, null, $id_curso, null, $serie_data['etapa'], null, null, null, null, null, null, 1, $this->instituicao_id);
         if ($series) {
-            $id_serie = $series[0]['cod_serie'];
+            $id_serie = $series['cod_serie'];
         } else {
             $serie = new clsPmieducarSerie();
+            $serie->ref_usuario_cad = $this->usuario_cad;
             $serie->ref_cod_curso = $id_curso;
             $serie->nm_serie = $serie_data['serie'];
-            $serie->etapa_curso = $serie['etapa'];
-            $serie->concluinte = ($serie['etapa'] == $serie['etapas']) ? 1 : 0;
+            $serie->etapa_curso = $serie_data['etapa'];
+            $serie->concluinte = ($serie_data['etapa'] == $serie_data['etapas']) ? 1 : 0;
             $serie->carga_horaria = 800;
+            $serie->dias_letivos = 200;
             $serie->ativo = 1;
             $serie->intervalo = 1; // Não, não sei o que é isso também.
             $id_serie = $serie->cadastra();
@@ -793,14 +798,14 @@ class EducacensoParser {
         return $id_serie;
     }
     
-    protected function sigla($s, $min_length = 2) {
+    protected function sigla($s, $min_length = 2, $blacklist = array("de", "da", "do", "das", "dos")) {
         $result = "";
         foreach(explode(' ', $s) as $w) {
-            if (strlen($w) > $min_length) {
+            if ((strlen($w) > $min_length) && (!in_array(strtolower($w), $blacklist))) {
                 $result .= $w[0];
             }
         }
-        return $result;
+        return strtoupper($result);
     }
        
 }
