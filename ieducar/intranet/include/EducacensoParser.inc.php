@@ -152,60 +152,110 @@ class EducacensoParser {
         $id_turma = clsPmIeducarTurma::id_turma_inep($id_turma_inep);
         $id_aluno = clsPmieducarAluno::id_aluno_inep($id_aluno_inep);
         $id_escola = clsPmieducarEscola::id_escola_inep($id_escola_inep);
-        
-        if ((bool)$id_turma && (bool)$id_aluno && (bool)$id_escola) {
-            // Verifica se o aluno está matriculado na escola para este ano
+        $id_etapa = intval($d['_etapa']);
+        $id_curso = null;
+        $id_serie = null;
+        if ($id_etapa) {
+            $id_curso = $this->curso($id_etapa, $id_escola);
+            $id_serie = $this->serie($id_etapa, $id_curso, $id_escola);
+        } else {
+            $turma = new clsPmieducarTurma($id_turma);
+            $turma_data = $turma->detalhe();
+            $id_curso = $turma_data['ref_cod_curso'];
+            $id_serie = $turma_data['ref_ref_cod_serie'];
+        }
+            
+        if ((bool)$id_turma && (bool)$id_aluno && (bool)$id_escola && (bool)$id_curso && (bool)$id_serie) {
+            // Verifica se o aluno está matriculado na escola para este ano/etapa
             // Se sim, adiciona uma matrícula para esta turma
             // Se não, cria a matrícula antes de fazê-lo
             $matriculas = new clsPmieducarMatricula();
-            $lista_matriculas = $matriculas->lista(NULL, NULL, NULL, NULL, NULL, NULL, $id_aluno, NULL, NULL, NULL, NULL, NULL, 1, $this->year);
+            $lista_matriculas = $matriculas->lista(
+                        null, # $int_cod_matricula = NULL
+                        null, # $int_ref_cod_reserva_vaga = NULL
+                        $id_escola, # $int_ref_ref_cod_escola = NULL
+                        $id_serie, # $int_ref_ref_cod_serie = NULL
+                        null, # $int_ref_usuario_exc = NULL
+                        null, # $int_ref_usuario_cad = NULL
+                        $id_aluno, # $int_ref_cod_aluno = NULL
+                        null, # $int_aprovado = NULL
+                        null, # $date_data_cadastro_ini = NULL
+                        null, # $date_data_cadastro_fim = NULL
+                        null, # $date_data_exclusao_ini = NULL
+                        null, # $date_data_exclusao_fim = NULL
+                        1, # $int_ativo = NULL
+                        $this->year, # $int_ano = NULL
+                        null, # $int_ref_cod_curso2 = NULL
+                        $this->instituicao_id, # $int_ref_cod_instituicao = NULL
+                        null, # $int_ultima_matricula = NULL
+                        null, # $int_modulo = NULL
+                        null, # $int_padrao_ano_escolar = NULL
+                        null, # $int_analfabeto = NULL
+                        null, # $int_formando = NULL
+                        null, # $str_descricao_reclassificacao = NULL
+                        null, # $int_matricula_reclassificacao = NULL
+                        null, # $boo_com_deficiencia = NULL
+                        $id_curso, # $int_ref_cod_curso = NULL
+                        null, # $bool_curso_sem_avaliacao = NULL
+                        null, # $arr_int_cod_matricula = NULL
+                        null, # $int_mes_defasado = NULL
+                        null, # $boo_data_nasc = NULL
+                        null, # $boo_matricula_transferencia = NULL
+                        null, # $int_semestre = NULL
+                        null # $int_ref_cod_turma = NULL
+                    );
             if ($lista_matriculas) {
                 $logs .= "Aluno $id_aluno_inep já matriculado na escola $id_escola_inep. \n";
                 $id_matricula = $lista_matriculas[0]['cod_matricula'];
             } else {
                 $logs .= "Aluno $id_aluno_inep ainda não matriculado na escola $id_escola_inep. Iniciando matrícula. \n";
-                $matricula = new clsPmieducarMatricula(
-                        null, # $cod_matricula = NULL, 
-                        null, # $ref_cod_reserva_vaga = NULL,
-                        $id_escola, # $ref_ref_cod_escola = NULL, 
-                        null, # $ref_ref_cod_serie = NULL, 
-                        null, # $ref_usuario_exc = NULL,
-                        $this->usuario_cad, # $ref_usuario_cad = NULL, 
-                        $id_aluno, # $ref_cod_aluno = NULL, 
-                        null, # $aprovado = NULL,
-                        null, # $data_cadastro = NULL, 
-                        null, # $data_exclusao = NULL, 
-                        null, # $ativo = NULL, 
-                        $this->year, # $ano = NULL,
-                        null, # $ultima_matricula = NULL, 
-                        null, # $modulo = NULL, 
-                        null, # $formando = NULL,
-                        null, # $descricao_reclassificacao = NULL, 
-                        null, # $matricula_reclassificacao = NULL,
-                        null, # $ref_cod_curso = NULL, 
-                        null, # $matricula_transferencia = NULL, 
-                        null # $semestre = NULL
-                );
+
+                $matricula = new clsPmieducarMatricula();
+                $matricula->ref_ref_cod_escola = $id_escola;
+                $matricula->ref_ref_cod_serie = $id_serie;
+                $matricula->ref_usuario_cad = $this->usuario_cad;
+                $matricula->ref_cod_aluno = $id_aluno;
+                $matricula->ativo = 1;
+                $matricula->aprovado = 0;
+                $matricula->ano = $this->year;
+                $matricula->ref_cod_curso = $id_curso;
+                $matricula->ref_cod_instituicao = $this->instituicao_id;
+                $matricula->ultima_matricula = 0;
                 $id_matricula = $matricula->cadastra();
             }
             // Com a matrícula do aluno na escola, matricula-se ele na turma.
             $matricula_turmas = new clsPmieducarMatriculaTurma();
-            $matricula_turmas->lista($id_matricula, $id_turma, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 
-                    NULL, NULL, null, NULL, NULL, NULL, NULL, $this->year);
+            $matricula_turmas = $matricula_turmas->lista(
+                    $id_matricula, # $int_ref_cod_matricula = NULL
+                    $id_turma, # $int_ref_cod_turma = NULL
+                    null, # $int_ref_usuario_exc = NULL
+                    $this->usuario_cad, # $int_ref_usuario_cad = NULL
+                    null, # $date_data_cadastro_ini = NULL
+                    null, # $date_data_cadastro_fim = NULL
+                    null, # $date_data_exclusao_ini = NULL
+                    null, # $date_data_exclusao_fim = NULL
+                    1, # $int_ativo = NULL
+                    $id_serie, # $int_ref_cod_serie = NULL
+                    $id_curso, # $int_ref_cod_curso = NULL
+                    $id_escola, # $int_ref_cod_escola = NULL
+                    $this->instituicao_id, # $int_ref_cod_instituicao = NULL
+                    $id_aluno, # $int_ref_cod_aluno = NULL
+                    null, # $em_andamento = TRUE
+                    null, # $mes = NULL
+                    null, # $aprovado = NULL
+                    null, # $mes_menor_que = NULL
+                    null, # $int_sequencial = NULL
+                    $this->year # $int_ano_matricula = NULL
+                    );
             if ($matricula_turmas) {
                 $logs .= "Aluno $id_aluno_inep já matriculado na turma $id_turma_inep da escola $id_escola_inep. \n";
             } else {
-                $matricula_turma = new clsPmieducarMatriculaTurma(
-                        $id_matricula, // $ref_cod_matricula = NULL,
-                        $id_turma, # $ref_cod_turma = NULL, 
-                        null, # $ref_usuario_exc = NULL, 
-                        $this->usuario_cad, # $ref_usuario_cad = NULL,
-                        null, # $data_cadastro = NULL, 
-                        null, # $data_exclusao = NULL, 
-                        null, # $ativo = NULL,
-                        null, # $ref_cod_turma_transf = NULL,
-                        null  # $sequencial = NULL
-                );
+                $matricula_turma = new clsPmieducarMatriculaTurma();
+                $matricula_turma->ref_cod_matricula = $id_matricula;
+                $matricula_turma->ref_cod_turma = $id_turma; 
+                $matricula_turma->ref_usuario_cad = $this->usuario_cad;
+                $matricula_turma->ativo = 1;
+
                 if ($matricula_turma->cadastra()) {
                     $logs .= "Aluno $id_aluno_inep matriculado na turma $id_turma_inep da escola $id_escola_inep.\n";
                 } else {
@@ -367,10 +417,10 @@ class EducacensoParser {
                 "1", 
                 'QDA', 
                 $d['endereco'], 
-                null, // Endereço é campo numérico e tem letras. 
+                preg_replace( '/[^0-9]/', '', $d['endereco_numero']),  
                 null, // Letra é um campo text de length 1.
                 $d['complemento'], 
-                $d['bairro'], 
+                strlen($d['bairro']) > 40 ? substr($d['bairro'], 0, 40) : $d['bairro'], 
                 idFederal2int($d['cep']), 
                 $municipio->nome, 
                 $municipio->sigla_uf, 
@@ -424,13 +474,13 @@ class EducacensoParser {
                 '1', # $tipo = FALSE, 
                 'QDA', # $idtlog = FALSE, //TODO: Encontrar uma forma de identificar o tipo.
                 $d['endereco'], # $logradouro = FALSE, 
-                null, # $numero = FALSE, 
+                preg_replace( '/[^0-9]/', '', $d['numero']), # $numero = FALSE, 
                 null, # $letra = FALSE, // Sim, o campo 'numero' é tipo Numeric. Geniuses. 
                 $d['complemento'], # $complemento = FALSE,
-                $d['bairro'], # $bairro = FALSE, 
+                strlen($d['bairro']) > 40 ? substr($d['bairro'], 0, 40) : $d['bairro'], # $bairro = FALSE, 
                 idFederal2int( $d['cep'] ), # $cep = FALSE, 
                 $municipio_residencia ? $municipio_residencia->idmun : null, # $cidade = FALSE, 
-                $municipio_residencia ? $municipio_residencia->uf : null, # $uf = FALSE,
+                $municipio_residencia ? $municipio_residencia->sigla_uf : null, # $uf = FALSE,
                 null, # $reside_desde = FALSE, 
                 null, # $bloco = FALSE, 
                 null, # $apartamento = FALSE, 
@@ -481,6 +531,7 @@ class EducacensoParser {
                 $this->instituicao_id, # $ref_cod_instituicao = NULL,
                 null #$ref_cod_subnivel = NULL
         );
+        $pmieducarservidor->cadastra();
         $pmieducarservidor->vincula_educacenso($id_professor_inep);
     }
 
@@ -557,13 +608,13 @@ class EducacensoParser {
     			'1', # $tipo = FALSE,
     			'QDA', # $idtlog = FALSE, //TODO: Encontrar uma forma de identificar o tipo.
     			$d['endereco'], # $logradouro = FALSE,
-    			null, # $numero = FALSE,
-    			null, # $letra = FALSE, // Sim, o campo 'numero' é tipo Numeric. Geniuses.
+    			preg_replace( '/[^0-9]/', '', $d['numero']), # $numero = FALSE, //TODO: Numero é numeric,
+    			null, # $letra = FALSE,  //      letra é char(1).  
     			$d['complemento'], # $complemento = FALSE,
-    			$d['bairro'], # $bairro = FALSE,
+    			strlen($d['bairro']) > 40 ? substr($d['bairro'], 0, 40) : $d['bairro'], # $bairro = FALSE,
     			idFederal2int( $d['cep'] ), # $cep = FALSE,
     			$municipio_residencia ? $municipio_residencia->idmun : null, # $cidade = FALSE,
-    			$municipio_residencia ? $municipio_residencia->uf : null, # $uf = FALSE,
+    			$municipio_residencia ? $municipio_residencia->sigla_uf : null, # $uf = FALSE,
     			null, # $reside_desde = FALSE,
     			null, # $bloco = FALSE,
     			null, # $apartamento = FALSE,
@@ -763,7 +814,7 @@ class EducacensoParser {
         $series = new clsPmieducarSerie();
         $series = $series->lista(null, null, null, $id_curso, null, $serie_data['etapa'], null, null, null, null, null, null, 1, $this->instituicao_id);
         if ($series) {
-            $id_serie = $series['cod_serie'];
+            $id_serie = $series[0]['cod_serie'];
         } else {
             $serie = new clsPmieducarSerie();
             $serie->ref_usuario_cad = $this->usuario_cad;

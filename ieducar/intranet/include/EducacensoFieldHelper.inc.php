@@ -447,7 +447,7 @@ class EducacensoFieldHelper {
                     6 => "codigo_escola_turma",
                     7 => "codigo_matricula",
                     8 => "turma_unificada",
-                    9 => "etapa",
+                    9 => "_etapa",
                     10 => "escolarizacao_outro_espaco",
                     11 => "transporte_publico",
                     12 => "poder_publico_responsavel_transporte",
