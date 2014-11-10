@@ -21,6 +21,10 @@ class EducacensoParser {
 
 
     public function run() {
+        // This guy is a greedy bastard.
+        ini_set("max_execution_time", 12000);
+        ini_set("memory_limit", 512);
+        
     	$logs = array ();
     	$contents = file_get_contents ( $this->filename );
     	$contents = explode ( "\n", $contents );
