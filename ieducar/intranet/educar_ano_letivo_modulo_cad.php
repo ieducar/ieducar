@@ -521,22 +521,24 @@ class indice extends clsCadastro
     $modulosTurmaOrigem = new clsPmieducarTurmaModulo();
     $modulosTurmaOrigem = $modulosTurmaOrigem->lista($turmaOrigemId);
 
-    foreach ($modulosTurmaOrigem as $moduloOrigem) {
-      $moduloDestino = new clsPmieducarTurmaModulo();
-
-      $moduloDestino->ref_cod_modulo = $moduloOrigem['ref_cod_modulo'];
-      $moduloDestino->sequencial     = $moduloOrigem['sequencial'];
-      $moduloDestino->ref_cod_turma  = $turmaDestinoId;
-
-      $moduloDestino->data_inicio    = str_replace(
-        $anoOrigem, $anoDestino, $moduloOrigem['data_inicio']
-      );
-
-      $moduloDestino->data_fim       = str_replace(
-        $anoOrigem, $anoDestino, $moduloOrigem['data_fim']
-      );
-
-      $moduloDestino->cadastra();
+    if ($modulosTurmaOrigem) {
+        foreach ($modulosTurmaOrigem as $moduloOrigem) {
+          $moduloDestino = new clsPmieducarTurmaModulo();
+    
+          $moduloDestino->ref_cod_modulo = $moduloOrigem['ref_cod_modulo'];
+          $moduloDestino->sequencial     = $moduloOrigem['sequencial'];
+          $moduloDestino->ref_cod_turma  = $turmaDestinoId;
+    
+          $moduloDestino->data_inicio    = str_replace(
+            $anoOrigem, $anoDestino, $moduloOrigem['data_inicio']
+          );
+    
+          $moduloDestino->data_fim       = str_replace(
+            $anoOrigem, $anoDestino, $moduloOrigem['data_fim']
+          );
+    
+          $moduloDestino->cadastra();
+        }
     }
   }
 
@@ -545,15 +547,17 @@ class indice extends clsCadastro
     $diasSemanaTurmaOrigem = $diasSemanaTurmaOrigem->lista(null, $turmaOrigemId);
 
     $fields = array('dia_semana', 'hora_inicial', 'hora_final');
+    
+    if ($diasSemanaTurmaOrigem) {
+        foreach ($diasSemanaTurmaOrigem as $diaSemanaOrigem) {
+          $diaSemanaDestino = new clsPmieducarTurmaDiaSemana();
+    
+          foreach ($fields as $fieldName)
+            $diaSemanaDestino->$fieldName = $diaSemanaOrigem[$fieldName];
 
-    foreach ($diasSemanaTurmaOrigem as $diaSemanaOrigem) {
-      $diaSemanaDestino = new clsPmieducarTurmaDiaSemana();
-
-      foreach ($fields as $fieldName)
-        $diaSemanaDestino->$fieldName = $diaSemanaOrigem[$fieldName];
-
-      $diaSemanaDestino->ref_cod_turma = $turmaDestinoId;
-      $diaSemanaDestino->cadastra();
+          $diaSemanaDestino->ref_cod_turma = $turmaDestinoId;
+          $diaSemanaDestino->cadastra();
+        }
     }
   }
 }
