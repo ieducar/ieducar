@@ -220,7 +220,7 @@ class EducacensoParser {
                 $matricula->ref_usuario_cad = $this->usuario_cad;
                 $matricula->ref_cod_aluno = $id_aluno;
                 $matricula->ativo = 1;
-                $matricula->aprovado = 0;
+                $matricula->aprovado = App_Model_MatriculaSituacao::EM_ANDAMENTO;
                 $matricula->ano = $this->year;
                 $matricula->ref_cod_curso = $id_curso;
                 $matricula->ref_cod_instituicao = $this->instituicao_id;
