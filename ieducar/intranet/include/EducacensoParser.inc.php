@@ -2,6 +2,7 @@
 
 require_once('EducacensoFieldHelper.inc.php');
 require_once('include/funcoes.inc.php');
+require_once('App/Model/MatriculaSituacao.php');
 
 class EducacensoParser {
     private $instituicao_id;
