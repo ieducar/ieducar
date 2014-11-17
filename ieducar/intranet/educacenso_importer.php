@@ -20,14 +20,47 @@ class clsIndex extends clsBase {
 class indice extends clsCadastro {
     var $pessoa_logada;
     var $id_instituicao = null;
+    var $ano_destino = null;
+    var $carga_horaria_professor = null;
+    var $carga_horaria_aluno = null;
 
     function Inicializar() {
         session_start ();
         $this->pessoa_logada = $_SESSION ['id_pessoa'];
         session_write_close ();
         
-        if (array_key_exists ( 'cod_instituicao', $_POST ))
+        if (array_key_exists('cod_instituicao', $_POST ))
             $this->id_instituicao = $_POST ['cod_instituicao'];
+        
+        if (array_key_exists('ano_destino', $_POST)) {
+            $ano = intval($_POST['ano_destino']);
+            $ano_atual = intval(date('Y'));
+            $ano_max = $ano_atual + 4;
+            if (($ano > $ano_max) || ($ano < $ano_atual)) {
+                $this->erros[] = "Ano de destino deve ser de $ano_atual a $ano_max, n&atilde;o $ano.";
+            } else {
+                $this->ano_destino = $ano;
+            }
+        }
+
+        if (array_key_exists('carga_horaria_docente', $_POST)) {
+            list($hours, $minutes) = sscanf($_POST['carga_horaria_docente'], '%02d:%02d');
+            if (($minutes > 59) || ($hours > 12)) {
+                $this->erros[] = sprintf("Hora inv&aacute;lida (docente): %02d:%02d.", $hours, $minutes);
+            } else {
+                $this->carga_horaria_professor = $hours + ($minutes / 60);
+            }
+        }
+        
+        if (array_key_exists('carga_horaria_aluno', $_POST)) {
+            list($hours, $minutes) = sscanf($_POST['carga_horaria_aluno'], '%02d:%02d');
+            if (($minutes > 59) || ($hours > 12)) {
+                $this->erros[] = sprintf("Hora inv&aacute;lida (aluno): %02d:%02d.", $hours, $minutes);
+            } else {
+                $this->carga_horaria_aluno = $hours + ($minutes / 60);
+            }
+        }       
+        
     }
 
     function Gerar() {
@@ -35,14 +68,23 @@ class indice extends clsCadastro {
         $nivel_usuario = $obj_permissoes->nivel_acesso ( $this->pessoa_logada );
         
         if ($nivel_usuario == 1) {
-            
-            if (array_key_exists ( 'arquivo_educacenso', $_FILES ) && $this->id_instituicao) {
-                $parser = new EducacensoParser($this->id_instituicao, $_FILES['arquivo_educacenso']['tmp_name'], $this->pessoa_logada);
+            if (array_key_exists('arquivo_educacenso', $_FILES)
+                    && file_exists($_FILES['arquivo_educacenso']['tmp_name'])
+                    && $this->id_instituicao
+                    && $this->carga_horaria_aluno
+                    && $this->carga_horaria_professor ) {
+                        
+                $parser = new EducacensoParser($this->id_instituicao, $_FILES['arquivo_educacenso']['tmp_name'], $this->pessoa_logada, $this->ano_destino, $this->carga_horaria_professor, $this->carga_horaria_aluno);
                 $results = $parser->run();
                 $this->campoMemo("resultados", "Resultados", implode("\n", $results), 120, 100);
             } else {
+                if ($this->erros) {
+                    foreach($this->erros as $e) {
+                        $this->prependOutput("<P class='error'>" . $e . "</P>");
+                    }
+                }
                 $opcoes = array (
-                        "" => "Selecione uma institui&ccedil;&atilde;o" 
+                        "" => "Selecione uma institui&ccedil;&atilde;o"
                 );
                 $instituicoes = new clsPmieducarInstituicao ();
                 $instituicoes->setCamposLista ( "cod_instituicao, nm_instituicao" );
@@ -54,8 +96,11 @@ class indice extends clsCadastro {
                     }
                 }
                 
-                $this->campoLista ( "cod_instituicao", "Institui&ccedil;&atilde;o", $opcoes, '');
-                $this->campoArquivo ( 'arquivo_educacenso', 'Arquivo', '', '60', 'Arquivo exportado pelo sistema Educacenso.', FALSE );
+                $this->campoLista("cod_instituicao", "Institui&ccedil;&atilde;o", $opcoes, '');
+                $this->campoNumero("ano_destino", "Ano de destino", date('Y'), 4, 4, True);
+                $this->campoHora("carga_horaria_aluno", "Carga horária padrão aluno/dia", "04:00", True);
+                $this->campoHora("carga_horaria_docente", "Carga horária padrão docente/dia", "08:00", True);
+                $this->campoArquivo('arquivo_educacenso', 'Arquivo', '', '60', 'Arquivo exportado pelo sistema Educacenso.', FALSE );
             }
         }
     }
