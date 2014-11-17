@@ -9,14 +9,18 @@ class EducacensoParser {
     private $filename;
     private $usuario_cad;
     private $year;
+    private $carga_horaria_aluno;
+    private $carga_horaria_docente;
 
-    public function __construct($instituicao_id, $filename, $usuario_cad, $year = 2014) {
+    public function __construct($instituicao_id, $filename, $usuario_cad, $year, $carga_horaria_docente = 8, $carga_horaria_aluno = 4) {
         $this->instituicao_id = $instituicao_id;
         $this->filename = $filename;
         $this->usuario_cad = $usuario_cad;
         $this->aluno_data = array();
         $this->docente_data = array();
         $this->escola_data = array();
+        $this->carga_horaria_docente = $carga_horaria_docente;
+        $this->carga_horaria_aluno = $carga_horaria_aluno;
         $this->year = $year;
     }
 
@@ -529,7 +533,8 @@ class EducacensoParser {
                 $idpes, # $cod_servidor = NULL,
                 null, # $ref_cod_deficiencia = NULL,
                 null, # $ref_idesco = NULL,
-                20.0, # $carga_horaria = NULL,
+                // Carga horária semanal, 5 dias.
+                $this->carga_horaria_docente * 5, # $carga_horaria = NULL,
                 null, # $data_cadastro = NULL,
                 null, # $data_exclusao = NULL,
                 1, # $ativo = NULL,
@@ -576,8 +581,6 @@ class EducacensoParser {
         $id_turma = $turma->cadastra();
         $turma->cod_turma = $id_turma;
         $turma->vincula_educacenso($id_turma_inep, 'Importador');
-        
-        // TODO: Descobrir se módulos e dias da semana são realmente necessários.
     }
 
     protected function add_aluno($d) {
@@ -784,7 +787,8 @@ class EducacensoParser {
             $curso->nm_curso = $curso_data['curso'];
             $curso->sgl_curso = $this->sigla($curso_data['curso'], 0);
             $curso->qtd_etapas = $curso_data['etapas'];
-            $curso->carga_horaria = 800 * $curso_data['etapas'];
+            // 200 dias letivos por ano (mínimo estabelecido pelo MEC)
+            $curso->carga_horaria = $this->carga_horaria_aluno * 200 * $curso_data['etapas'];
             $curso->ativo = 1;
             $curso->ref_cod_nivel_ensino = $id_nivel_ensino;
             $curso->ref_cod_tipo_ensino = $id_tipo_ensino;
@@ -827,8 +831,8 @@ class EducacensoParser {
             $serie->nm_serie = $serie_data['serie'];
             $serie->etapa_curso = $serie_data['etapa'];
             $serie->concluinte = ($serie_data['etapa'] == $serie_data['etapas']) ? 1 : 0;
-            $serie->carga_horaria = 800;
             $serie->dias_letivos = 200;
+            $serie->carga_horaria = $this->carga_horaria_aluno * $serie->dias_letivos;
             $serie->ativo = 1;
             $serie->intervalo = 1; // Não, não sei o que é isso também.
             $id_serie = $serie->cadastra();
