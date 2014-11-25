@@ -448,7 +448,8 @@ class EducacensoParser {
     }
     
     protected function add_professor($d) {
-        $id_professor_inep = $d['codigo_inep_profissional'];
+        $id_professor_inep = intval($d['codigo_inep_profissional']);
+        $id_escola = clsPmieducarEscola::id_escola_inep(intval($d['codigo_inep_escola']));
         
         $municipio_nascimento = new clsMunicipio();
         $municipio_residencia = new clsMunicipio();
@@ -543,6 +544,63 @@ class EducacensoParser {
         );
         $pmieducarservidor->cadastra();
         $pmieducarservidor->vincula_educacenso($id_professor_inep);
+        
+        $id_tipo_usuario = null;
+        // Verifica se já existe um tipo de usuário Professor.
+        // Senão, cria um novo.
+        $tipos_usuario = new clsPmieducarTipoUsuario();
+        $tipos_usuario = $tipos_usuario->lista(null, null, null, 'Professor', null, null, null);
+
+        if ($tipos_usuario) {
+            $id_tipo_usuario = $tipos_usuario[0]['cod_tipo_usuario'];
+        } else {
+            $tipo_usuario = new clsPmieducarTipoUsuario();
+            $tipo_usuario->nm_tipo = "Professor";
+            $tipo_usuario->descricao = "Tipo de usuário criado pela importação do Educacenso.";
+            $tipo_usuario->nivel = 4; // Nível escola.
+            $tipo_usuario->ativo = 1;
+            $tipo_usuario->ref_funcionario_cad = $this->usuario_cad;
+            $id_tipo_usuario = $tipo_usuario->cadastra();
+            
+            // This is a disaster waiting to happen.
+            $permissions = array(558, 559, 561, 562, 563, 566, 567, 568, 569, 570, 571, 572, 573, 
+                    574, 575, 576, 577, 578, 579, 580, 581, 583, 584, 585, 586, 587, 590, 591, 
+                    592, 593, 594, 595, 596, 597, 598, 600, 602, 603, 606, 607, 608, 609, 610, 
+                    620, 622, 624, 625, 628, 629, 631, 632, 633, 634, 635, 639, 641, 642, 643, 
+                    644, 647, 659, 678, 829, 845, 945, 946, 947, 948, 949, 999100, 999103, 999200, 
+                    999202, 999203, 999613, 999615, 999616, 999617
+            );
+            foreach ($permissions as $permission) {
+                $p = new clsPmieducarMenuTipoUsuario();
+                $p->ref_cod_menu_submenu = $permission;
+                $p->ref_cod_tipo_usuario = $id_tipo_usuario;
+                $p->visualiza = 1;
+                $p->exclui = 1;
+                $p->cadastra = 1;
+                $p->cadastra();
+            }
+        }
+        // Usuário ...
+        $usuario = new clsPmieducarUsuario();
+        $usuario->ativo = 1;
+        $usuario->ref_cod_escola = $id_escola;
+        $usuario->ref_cod_instituicao = $this->instituicao_id;
+        $usuario->ref_cod_tipo_usuario = $id_tipo_usuario;
+        $usuario->ref_funcionario_cad = $this->usuario_cad;
+        $usuario->cadastra();
+
+        $tipo_usuario_permissions = new clsPmieducarMenuTipoUsuario();
+        $tipo_usuario_permissions = $tipo_usuario_permissions->lista($id_tipo_usuario);
+        if ($tipo_usuario_permissions) {
+            foreach($tipo_usuario_permissions as $permission) {
+                $p = new clsMenuFuncionario();
+                $p->ref_cod_menu_submenu = $permission['ref_cod_menu_submenu'];
+                $p->ref_ref_cod_pessoa_fj = $idpes;
+                $p->exclui = $permission['exclui'];
+                $p->cadastra = $permission['cadastra'];
+                $p->cadastra();
+            }
+        }
     }
 
     protected function add_turma($d) {
