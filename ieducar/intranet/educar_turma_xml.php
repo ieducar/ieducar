@@ -39,7 +39,7 @@
 	{
 		$db = new clsBanco();
 //		$db->Consulta( "SELECT cod_turma, nm_turma FROM pmieducar.turma WHERE ref_ref_cod_escola = {$_GET["esc"]} AND ref_ref_cod_serie = {$_GET["ser"]} AND ativo = 1 ORDER BY nm_turma ASC" );
-		$db->Consulta( "SELECT cod_turma, nm_turma FROM pmieducar.turma WHERE ref_ref_cod_escola = {$_GET["esc"]} AND (ref_ref_cod_serie = {$_GET["ser"]}  OR ref_ref_cod_serie_mult = {$_GET["ser"]}) AND ativo = 1 ORDER BY nm_turma ASC" );
+		$db->Consulta( "SELECT cod_turma, nm_turma || ' - ' || ano AS nome FROM pmieducar.turma WHERE ref_ref_cod_escola = {$_GET["esc"]} AND (ref_ref_cod_serie = {$_GET["ser"]}  OR ref_ref_cod_serie_mult = {$_GET["ser"]}) AND ativo = 1 ORDER BY nm_turma ASC, ano DESC" );
 		while ( $db->ProximoRegistro() )
 		{
 			list( $cod, $nome ) = $db->Tupla();
@@ -47,7 +47,7 @@
 		}
 	}elseif (is_numeric( $_GET["ins"] ) && is_numeric( $_GET["cur"] ) ) {
 		$db = new clsBanco();
-		$db->Consulta( "SELECT cod_turma, nm_turma FROM pmieducar.turma WHERE ref_cod_instituicao = {$_GET["ins"]} AND ref_cod_curso = {$_GET["cur"]} AND ref_ref_cod_escola is null AND ref_ref_cod_serie is null AND ativo = 1 ORDER BY nm_turma ASC" );
+		$db->Consulta( "SELECT cod_turma, nm_turma || ' - ' || ano AS nome FROM pmieducar.turma WHERE ref_cod_instituicao = {$_GET["ins"]} AND ref_cod_curso = {$_GET["cur"]} AND ref_ref_cod_escola is null AND ref_ref_cod_serie is null AND ativo = 1 ORDER BY nm_turma ASC, ano DESC" );
 		while ( $db->ProximoRegistro() )
 		{
 			list( $cod, $nome ) = $db->Tupla();
