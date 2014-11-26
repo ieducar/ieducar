@@ -229,7 +229,7 @@ class EducacensoParser {
                 $matricula->ano = $this->year;
                 $matricula->ref_cod_curso = $id_curso;
                 $matricula->ref_cod_instituicao = $this->instituicao_id;
-                $matricula->ultima_matricula = 0;
+                $matricula->ultima_matricula = 1;
                 $id_matricula = $matricula->cadastra();
             }
             // Com a matrícula do aluno na escola, matricula-se ele na turma.
@@ -563,26 +563,58 @@ class EducacensoParser {
             $id_tipo_usuario = $tipo_usuario->cadastra();
             
             // This is a disaster waiting to happen.
-            $permissions = array(558, 559, 561, 562, 563, 566, 567, 568, 569, 570, 571, 572, 573, 
-                    574, 575, 576, 577, 578, 579, 580, 581, 583, 584, 585, 586, 587, 590, 591, 
-                    592, 593, 594, 595, 596, 597, 598, 600, 602, 603, 606, 607, 608, 609, 610, 
-                    620, 622, 624, 625, 628, 629, 631, 632, 633, 634, 635, 639, 641, 642, 643, 
-                    644, 647, 659, 678, 829, 845, 945, 946, 947, 948, 949, 999100, 999103, 999200, 
-                    999202, 999203, 999613, 999615, 999616, 999617
+            $permissions = array(
+                    155 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
+                    157 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
+                    341 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
+                    343 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
+                    345 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
+                    475 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
+                    590 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    591 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    592 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    593 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    594 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    595 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    596 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    597 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    598 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    600 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    602 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    603 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    606 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    607 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    608 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    609 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    610 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    620 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
+                    622 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    625 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    628 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    629 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    641 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
+                    643 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    644 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    659 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
+                    999202 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
+                    999615 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    999616 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
+                    999617 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1)
             );
-            foreach ($permissions as $permission) {
+            foreach ($permissions as $permission => $values) {
                 $p = new clsPmieducarMenuTipoUsuario();
                 $p->ref_cod_menu_submenu = $permission;
                 $p->ref_cod_tipo_usuario = $id_tipo_usuario;
-                $p->visualiza = 1;
-                $p->exclui = 1;
-                $p->cadastra = 1;
+                $p->visualiza = $values['visualiza'];
+                $p->exclui = $values['exclui'];
+                $p->cadastra = $values['cadastra'];
                 $p->cadastra();
             }
         }
         // Usuário ...
         $usuario = new clsPmieducarUsuario();
         $usuario->ativo = 1;
+        $usuario->cod_usuario = $idpes;
         $usuario->ref_cod_escola = $id_escola;
         $usuario->ref_cod_instituicao = $this->instituicao_id;
         $usuario->ref_cod_tipo_usuario = $id_tipo_usuario;
