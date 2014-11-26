@@ -57,8 +57,8 @@ class Portabilis_Report_ReportCore
     return Portabilis_Array_Utils::merge($options, $defaultOptions);
   }
 
-  function addArg($name, $value) {
-    if (is_string($value))
+  function addArg($name, $value, $encode_value = 1) {
+    if (is_string($value) && $encode_value)
       $value = utf8_encode($value);
 
     $this->args[$name] = $value;

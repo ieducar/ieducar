@@ -66,7 +66,7 @@ class AtestadoVagaController extends Portabilis_Controller_ReportCoreController
     $this->report->addArg('escola',       (int)$this->getRequest()->ref_cod_escola);
     $this->report->addArg('curso',        (int)$this->getRequest()->ref_cod_curso);
     $this->report->addArg('serie',        (int)$this->getRequest()->ref_cod_serie);
-    $this->report->addArg('aluno',        $this->getRequest()->aluno);
+    $this->report->addArg('aluno',        $this->getRequest()->aluno, 0);
   }
 }
 
