@@ -256,7 +256,7 @@ class BoletimController extends Core_Controller_Page_ViewController
 
     // Inclui coluna para % de presença geral.
     if (!$porComponente) {
-      if ($this->alunoPossuiNotaRec()) {
+      if ($sit->recuperacao || $this->alunoPossuiNotaRec()) {
         $labels[] = array('data' => 'Exame', 'attributes' => $attributes);
       }
 
@@ -285,7 +285,7 @@ class BoletimController extends Core_Controller_Page_ViewController
         $subLabels[] = array('data' => 'Média', 'attributes' => $attributes);
       }
 
-      if ($this->alunoPossuiNotaRec()) {
+      if ($sit->recuperacao || $this->alunoPossuiNotaRec()) {
         $subLabels[] = array('data' => 'Exame', 'attributes' => $attributes);
       }
 
@@ -546,7 +546,7 @@ class BoletimController extends Core_Controller_Page_ViewController
       $data[] = array();
     }
 
-    if ($this->alunoPossuiNotaRec()) {
+    if ($sit->recuperacao || $this->alunoPossuiNotaRec()) {
       $data[] = array('data' => '', 'attributes' => $attributes);
     }
 
@@ -590,7 +590,7 @@ class BoletimController extends Core_Controller_Page_ViewController
         }
       }
 
-      if ($this->alunoPossuiNotaRec()) {
+      if ($sit->recuperacao || $this->alunoPossuiNotaRec()) {
         $data[] = array('data' => '', 'attributes' => $attributes);
       }
 
