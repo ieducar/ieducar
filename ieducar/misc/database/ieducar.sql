@@ -10517,7 +10517,8 @@ SET default_with_oids = false;
 CREATE TABLE area_conhecimento (
     id integer NOT NULL,
     instituicao_id integer NOT NULL,
-    nome character varying(40) NOT NULL
+    nome character varying(40) NOT NULL,
+    secao text DEFAULT ''::text
 );
 
 
@@ -24365,7 +24366,7 @@ SET search_path = modules, pg_catalog;
 -- Data for Name: area_conhecimento; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
-COPY area_conhecimento (id, instituicao_id, nome) FROM stdin;
+COPY area_conhecimento (id, instituicao_id, nome, secao) FROM stdin;
 \.
 
 
