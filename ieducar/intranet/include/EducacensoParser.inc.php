@@ -504,7 +504,7 @@ class EducacensoParser {
         $funcionario = new clsPortalFuncionario(
                 $idpes, # $ref_cod_pessoa_fj = null, 
                 $d['cpf'], # $matricula = null, 
-                'ieducar@valparaiso', # $senha = null, 
+                md5('123ieducar'), # $senha = null, 
                 1, # $ativo = null, 
                 null, # $ref_sec = null, 
                 null, # $ramal = null, 
@@ -593,6 +593,7 @@ class EducacensoParser {
                     628 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
                     629 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
                     641 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
+                    642 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1),
                     643 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
                     644 => array("cadastra" => 1, "visualiza" => 1, "exclui" => 1), 
                     659 => array("cadastra" => 0, "visualiza" => 1, "exclui" => 0), 
