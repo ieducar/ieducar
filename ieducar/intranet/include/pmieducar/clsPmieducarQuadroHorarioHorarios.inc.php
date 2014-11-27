@@ -176,7 +176,7 @@ class clsPmieducarQuadroHorarioHorarios
     if (is_numeric($ref_servidor_substituto) && is_numeric($ref_cod_instituicao_substituto)) {
       if (class_exists('clsPmieducarServidor')) {
         $tmp_obj = new clsPmieducarServidor($ref_servidor_substituto, NULL, NULL,
-          NULL, NULL, NULL, NULL, NULL, $ref_cod_instituicao_substituto);
+          NULL, NULL, NULL, NULL, $ref_cod_instituicao_substituto, NULL);
 
           if (method_exists($tmp_obj, 'existe')) {
           if ($tmp_obj->existe()) {

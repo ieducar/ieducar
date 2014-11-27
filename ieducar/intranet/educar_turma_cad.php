@@ -264,6 +264,9 @@ class indice extends clsCadastro
       if($bloqueia)
         $this->inputsHelper()->hidden('ano_hidden', array('value' => $this->ano));
     }
+    
+    $this->inputsHelper()->hidden('ref_cod_instituicao', array('value' => $this->ref_cod_instituicao));
+    
     // Infra prédio cômodo
     $opcoes = array('' => 'Selecione');
 

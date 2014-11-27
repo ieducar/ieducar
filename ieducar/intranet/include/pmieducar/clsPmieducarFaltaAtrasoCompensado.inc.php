@@ -143,7 +143,7 @@ class clsPmieducarFaltaAtrasoCompensado
     if (is_numeric($ref_cod_servidor) && is_numeric($ref_ref_cod_instituicao)) {
       if (class_exists('clsPmieducarServidor')) {
         $tmp_obj = new clsPmieducarServidor($ref_cod_servidor, NULL, NULL, NULL,
-          NULL, NULL, NULL, 1, $ref_ref_cod_instituicao);
+          NULL, NULL, 1, $ref_ref_cod_instituicao);
 
         if (method_exists($tmp_obj, 'existe')) {
           if ($tmp_obj->existe()) {

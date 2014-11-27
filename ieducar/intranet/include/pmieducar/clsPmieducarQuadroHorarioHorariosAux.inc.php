@@ -110,7 +110,7 @@ class clsPmieducarQuadroHorarioHorariosAux
 		{
 			if( class_exists( "clsPmieducarServidor" ) )
 			{
-				$tmp_obj = new clsPmieducarServidor( $ref_servidor,null,null,null,null,null,null,null, $ref_cod_instituicao_servidor );
+				$tmp_obj = new clsPmieducarServidor( $ref_servidor,null,null,null,null,null,null,$ref_cod_instituicao_servidor,null);
 				if( method_exists( $tmp_obj, "existe") )
 				{
 					if( $tmp_obj->existe() )
