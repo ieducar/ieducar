@@ -230,18 +230,11 @@ class indice extends clsListagem
         $nomesTurmas = implode('<br />', $nomesTurmas);
 
         $situacao = $registro['aprovado'];
-        if ($situacao == 1)
-          $situacao = 'Aprovado';
-        elseif ($situacao == 2)
-          $situacao = 'Reprovado';
-        elseif ($situacao == 3)
-          $situacao = 'Em Andamento';
-        elseif ($situacao == 4)
-          $situacao = 'Transferido';
-        elseif ($situacao == 5)
-          $situacao = 'Reclassificado';
-        elseif ($situacao == 6)
-          $situacao = 'Abandono';
+        if ($situacao) {
+            $situacao = App_Model_MatriculaSituacao::getInstance()->getValue($registro['aprovado']);
+        } else {
+            $situacao = "";
+        }
 
 				$lista_busca = array();
 

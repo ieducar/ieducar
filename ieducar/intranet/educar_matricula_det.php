@@ -175,6 +175,7 @@ class indice extends clsDetalhe
       $turma         = $turma->detalhe();
       $nomesTurmas[] = $turma['nm_turma'];
     }
+  
     $nomesTurmas = implode('<br />', $nomesTurmas);
 
     if ($nomesTurmas)
@@ -188,30 +189,7 @@ class indice extends clsDetalhe
 
     $campoObs = false;
     if ($registro['aprovado']) {
-      if ($registro['aprovado'] == 1) {
-        $aprovado = 'Aprovado';
-      }
-      elseif ($registro['aprovado'] == 2) {
-        $aprovado = 'Reprovado';
-      }
-      elseif ($registro['aprovado'] == 3) {
-        $aprovado = 'Em Andamento';
-      }
-      elseif ($registro['aprovado'] == 4) {
-        $aprovado = 'Transferido';
-      }
-      elseif ($registro['aprovado'] == 5) {
-        $aprovado = 'Reclassificado';
-      }
-      elseif ($registro['aprovado'] == 6) {
-        $aprovado = 'Abandono';
-        $campoObs = true;
-      }
-      elseif ($registro['aprovado'] == 7) {
-        $aprovado = 'Em Exame';
-      }
-
-      $this->addDetalhe(array('Situação', $aprovado));
+      $this->addDetalhe(array('Situação', App_Model_MatriculaSituacao::getInstance()->getValue($registro['aprovado'])));
     }
 
     if($campoObs)
@@ -303,6 +281,28 @@ class indice extends clsDetalhe
         $this->array_botao[]            = "Desfazer abandono";
         $this->array_botao_url_script[] = "deleteAbandono({$registro['cod_matricula']})";
       }
+      
+      //TODO: fazer verificação de permissão: apenas carregar quando for usuario multi-institucional
+      $nivel_usuario = $obj_permissoes->nivel_acesso($this->pessoa_logada);
+      // apenas nivel multi-institucional
+      if ($registro['ano'] == 2014 && $nivel_usuario <= 2) { // hack para a matrícula de transição 2014 -> 2015
+          $situacao = App_Model_MatriculaSituacao::APROVADO;
+          $this->array_botao[]            = 'Aprovar (2014)';
+          $this->array_botao_url_script[] = "if(confirm(\"Deseja APROVAR o aluno no período letivo de 2014?\")) go(\"educar_matricula_situacao_2014_cad.php?ref_cod_matricula={$registro['cod_matricula']}&ref_cod_aluno={$registro['ref_cod_aluno']}&situacao_aprovacao={$situacao}\");";
+      
+          $situacao = App_Model_MatriculaSituacao::REPROVADO;
+          $this->array_botao[]            = 'Reprovar (2014)';
+          $this->array_botao_url_script[] = "if(confirm(\"Deseja REPROVAR o aluno no período letivo de 2014?\")) go(\"educar_matricula_situacao_2014_cad.php?ref_cod_matricula={$registro['cod_matricula']}&ref_cod_aluno={$registro['ref_cod_aluno']}&situacao_aprovacao={$situacao}\");";
+      
+          $situacao = App_Model_MatriculaSituacao::APROVADO_APOS_EXAME;
+          $this->array_botao[]            = 'Aprovar em Recuperação (2014)';
+          $this->array_botao_url_script[] = "if(confirm(\"Deseja APROVAR o aluno após as provas recuperação do período letivo de 2014?\")) go(\"educar_matricula_situacao_2014_cad.php?ref_cod_matricula={$registro['cod_matricula']}&ref_cod_aluno={$registro['ref_cod_aluno']}&situacao_aprovacao={$situacao}\");";
+          
+          $situacao = App_Model_MatriculaSituacao::EM_ANDAMENTO;
+          $this->array_botao[]            = 'Situação em Andamento (2014)';
+          $this->array_botao_url_script[] = "if(confirm(\"Deseja configurar a situação do aluno EM ANDAMENTO para o período letivo de 2014?\")) go(\"educar_matricula_situacao_2014_cad.php?ref_cod_matricula={$registro['cod_matricula']}&ref_cod_aluno={$registro['ref_cod_aluno']}&situacao_aprovacao={$situacao}\");";
+      }
+      
     }
 
     $this->url_cancelar = 'educar_aluno_det.php?cod_aluno=' . $registro['ref_cod_aluno'];

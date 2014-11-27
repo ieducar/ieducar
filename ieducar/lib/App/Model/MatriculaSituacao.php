@@ -54,14 +54,14 @@ class App_Model_MatriculaSituacao extends CoreExt_Enum
 
   protected $_data = array(
     self::APROVADO            => 'Aprovado',
-    self::REPROVADO           => 'Retido',
+    self::REPROVADO           => 'Reprovado',
     self::EM_ANDAMENTO        => 'Em andamento',
     self::TRANSFERIDO         => 'Transferido',
     self::RECLASSIFICADO      => 'Reclassificado',
     self::ABANDONO            => 'Abandono',
     self::EM_EXAME            => 'Em exame',
     self::APROVADO_APOS_EXAME => 'Aprovado após exame',
-    self::RETIDO_FALTA        => 'Retido por falta'
+    self::RETIDO_FALTA        => 'Reprovado por falta'
   );
 
   public static function getInstance()
