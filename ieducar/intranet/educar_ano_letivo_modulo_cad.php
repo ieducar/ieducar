@@ -140,6 +140,7 @@ class indice extends clsCadastro
       '', '', '', '', TRUE);
 
     $this->campoQuebra();
+    $this->ano_letivo_modulo = array();
 
     // Módulos do ano letivo
     if ($_POST['ano_letivo_modulo']) {
@@ -157,13 +158,14 @@ class indice extends clsCadastro
       $obj->setOrderBy('sequencial ASC');
       $registros = $obj->lista($this->ref_ano, $this->ref_ref_cod_escola);
 
-      if ($registros) {
+     if ($registros) {
         foreach ($registros as $campo) {
-          $this->ano_letivo_modulo[$campo[$qtd_modulo]]['sequencial_']     = $campo['sequencial'];
-          $this->ano_letivo_modulo[$campo[$qtd_modulo]]['ref_cod_modulo_'] = $campo['ref_cod_modulo'];
-          $this->ano_letivo_modulo[$campo[$qtd_modulo]]['data_inicio_']    = dataFromPgToBr($campo['data_inicio']);
-          $this->ano_letivo_modulo[$campo[$qtd_modulo]]['data_fim_']       = dataFromPgToBr($campo['data_fim']);
           $qtd_modulo++;
+          $this->ano_letivo_modulo[$qtd_modulo] = array();
+          $this->ano_letivo_modulo[$qtd_modulo]['sequencial_']     = $campo['sequencial'];
+          $this->ano_letivo_modulo[$qtd_modulo]['ref_cod_modulo_'] = $campo['ref_cod_modulo'];
+          $this->ano_letivo_modulo[$qtd_modulo]['data_inicio_']    = dataFromPgToBr($campo['data_inicio']);
+          $this->ano_letivo_modulo[$qtd_modulo]['data_fim_']       = dataFromPgToBr($campo['data_fim']);
         }
       }
     }
