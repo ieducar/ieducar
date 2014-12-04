@@ -255,7 +255,7 @@ class indice extends clsCadastro
                   $script);
     }
 
-    $this->campoLista('ref_ref_cod_serie', 'Série', $opcoes_serie, $this->ref_ref_cod_serie,
+    $this->campoLista('ref_ref_cod_serie', Portabilis_String_Utils::toLatin1('Série'), $opcoes_serie, $this->ref_ref_cod_serie,
       '', FALSE, '', $script, $bloqueia);
 
     // o campo ano somente é exibido para turmas novas  ou cadastradas após inclusão deste campo.
@@ -264,8 +264,6 @@ class indice extends clsCadastro
       if($bloqueia)
         $this->inputsHelper()->hidden('ano_hidden', array('value' => $this->ano));
     }
-    
-    $this->inputsHelper()->hidden('ref_cod_instituicao', array('value' => $this->ref_cod_instituicao));
     
     // Infra prédio cômodo
     $opcoes = array('' => 'Selecione');
@@ -341,7 +339,7 @@ class indice extends clsCadastro
 
     $this->campoTexto('sgl_turma', 'Sigla', $this->sgl_turma, 15, 15, FALSE);
 
-    $this->campoNumero('max_aluno', 'Máximo de Alunos', $this->max_aluno, 3, 3, TRUE);
+    $this->campoNumero('max_aluno', Portabilis_String_Utils::toLatin1('Máximo de Alunos'), $this->max_aluno, 3, 3, TRUE);
 
     $ativo = isset($this->cod_turma) ? dbBool($this->visivel) : true;
     $this->campoCheck('visivel', 'Ativo', $ativo);
