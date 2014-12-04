@@ -526,7 +526,7 @@ class EducacensoParser {
                 null, # $ref_cod_setor_new = null, 
                 null, # $matricula_new = null, 
                 1, # $matricula_permanente = null, 
-                null, # $tipo_menu = null, 
+                0, # Menu padrão # $tipo_menu = null, 
                 $d['email'] # $email = null
         );
         $id_funcionario = $funcionario->cadastra();
