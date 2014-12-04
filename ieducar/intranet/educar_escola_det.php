@@ -545,16 +545,21 @@ class indice extends clsDetalhe
 				$matricula_em_andamento = $obj_matricula_ano->lista(null,null,$this->cod_escola,null,null,null,null,3,null,null,null,null,1,$ano['ano'],null,null,1,null,1,null,null,null,null,null,null,false);
 				if(!$matricula_em_andamento && $existe_ano_andamento && $ano['andamento'] == 1)
 					$excluir = "<td><a href='#' onclick=\"preencheForm('{$ano['ano']}','{$ano['ref_cod_escola']}','finalizar');\" ><img src=\"imagens/i-educar/nvp_bot_finalizar_ano.gif\" border=0 style='padding-left:10px;'></a></td>";
-				else
+				elseif ($matricula_em_andamento && $existe_ano_andamento && $ano['andamento'] == 1)
 				{
 
+					$excluir = "<td width='130' align='center'><span class='formlttd'><b>--- Ano Corrente ---</b></span></td>";
+				}
+				else
+				{
 					$excluir = "<td width='130'>&nbsp;</td>";
 				}
+
 
 				$editar = "";//"<td align='center'> - </td>";
 
 				if($ano['andamento'] == 2)
-					$incluir = "<td colspan='3' align='center'><span class='formlttd'><b>--- Ano Finalizado ---</b></span></td>";
+					$incluir = "<td>&nbsp;</td><td align='center'><span class='formlttd'><b>--- Ano Finalizado ---</b></span></td><td>&nbsp;</td>";
 				else
 					$editar = "<td><a href='#' onclick=\"preencheForm('{$ano['ano']}','{$ano['ref_cod_escola']}','editar');\" ><img src=\"imagens/i-educar/nvp_bot_editar_ano.gif\" alt=\"Editar Ano Letivo\" border=0 style='padding-left:10px;'></a></td>";
 

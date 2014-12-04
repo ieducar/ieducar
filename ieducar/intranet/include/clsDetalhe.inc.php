@@ -169,8 +169,9 @@ class clsDetalhe extends Core_Controller_Page_Abstract
         {
           if (is_array($pardetalhe))
           {
-            $campo = $pardetalhe[0].":";
-            $texto = $pardetalhe[1];
+            $campo 			 = $pardetalhe[0].":";
+            $texto			 = $pardetalhe[1];
+            $classe_estilo 	 = $pardetalhe[2];
 
             if ($campo == $campo_anterior)
             {
@@ -193,7 +194,12 @@ class clsDetalhe extends Core_Controller_Page_Abstract
             else
             {
               $classe = $md ? 'formmdtd' : 'formlttd';
-              $retorno .= "<tr><td class='$classe' width='20%'>$campo</td><td class='$classe'>$texto</td></tr>\n";
+              $retorno .= "<tr><td class='$classe' width='20%'>$campo</td><td class='$classe'>";
+              if (isset($classe_estilo))
+              	$retorno .= '<span class="'.$classe_estilo.'">'.$texto.'</span>';
+              else
+              	$retorno .= $texto;
+              $retorno .= '</td></tr>\n';
             }
           }
           else
