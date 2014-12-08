@@ -60,7 +60,7 @@ class indice extends clsListagem
 		$id_pessoa = $_SESSION['id_pessoa'];
 		session_write_close();
 		
-		$sql = "SELECT b.data_hora, b.ip_externo FROM acesso b WHERE cod_pessoa={$id_pessoa}";
+		$sql = "SELECT to_char(b.data_hora, 'DD/MM/YYY - HH24:MI:SS') as data_hora, b.ip_externo FROM acesso b WHERE cod_pessoa={$id_pessoa}";
 		if (!empty($_GET['status']))
 		{
 			if ($_GET['status'] == 'P')
