@@ -52,12 +52,9 @@ class HistoricoEscolarController extends Portabilis_Controller_ReportCoreControl
   protected $_titulo = 'Hist&oacute;rico Escolar';
 
 	function form() {
-    $this->inputsHelper()->dynamic(array('instituicao', 'escola'));
-    $this->inputsHelper()->simpleSearchAluno();
-
-    // carrega javascript HistoricoEscolar.js para listar alunos de todas as escolas
-    $this->loadResourceAssets($this->getDispatcher());
-  }
+    	$this->inputsHelper()->dynamic(array('instituicao', 'escola'));
+    	$this->inputsHelper()->simpleSearchAluno();
+  	}
 
 	function report() {
 	  return new HistoricoEscolarReport();

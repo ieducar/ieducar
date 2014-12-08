@@ -52,12 +52,9 @@ class FichaAlunoController extends Portabilis_Controller_ReportCoreController
   protected $_titulo = 'Relat&oacute;rio Ficha do Aluno';
 
 	function form() {
-    $this->inputsHelper()->dynamic(array('instituicao', 'escola'));//, 'pesquisaAluno'));
-    $this->inputsHelper()->simpleSearchAluno();
-
-    // carrega javascript FichaAluno.js para listar alunos de todas as escolas
-    $this->loadResourceAssets($this->getDispatcher());
-  }
+		$this->inputsHelper()->dynamic(array('instituicao', 'escola'));//, 'pesquisaAluno'));
+		$this->inputsHelper()->simpleSearchAluno();
+  	}
 
 	function report() {
 	  return new FichaAlunoReport();
