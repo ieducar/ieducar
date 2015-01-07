@@ -50,15 +50,15 @@ class AlunosTurmaController extends Portabilis_Controller_ReportCoreController
 
 	protected $_titulo = 'Relat&oacute;rio de Alunos por Turma';
 
-  	// TODO quando tiver um menu para chegar nesta tela, devem ser criados os campos para filtro de turma por instituição, série e turma.
-	function form() {
-  	}
+  function form() {
+		$this->inputsHelper()->dynamic(array('ano', 'instituicao', 'escola', 'curso', 'serie', 'turma'));
+ 	}
 
-	function report() {
+  function report() {
 		return new AlunosTurmaReport();
 	}
 
-	function beforeValidation() {
+  function beforeValidation() {
 		$this->report->addArg('cod_turma', (int)$this->getRequest()->ref_cod_turma);
 	}
 }
