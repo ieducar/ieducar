@@ -633,10 +633,6 @@ makeCM.prototype.getcoords=function(m,bx,by,x,y,maxw,maxh,ox,oy)
 makeCM.prototype.showsub=function(el)
 {
 	entro = 1;
-	for(var i = 0; i< document.getElementsByTagName("select").length; i++)
-	{
-		document.getElementsByTagName("select").item(i).style.visibility = "hidden";
-	}
 
 	baseLeft = DOM_ObjectPosition_getPageOffsetLeft(document.getElementById(div_mostrar));
 	baseTop = DOM_ObjectPosition_getPageOffsetTop(document.getElementById(div_mostrar));
