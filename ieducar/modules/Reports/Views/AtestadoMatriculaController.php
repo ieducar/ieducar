@@ -52,9 +52,11 @@ class AtestadoMatriculaController extends Portabilis_Controller_ReportCoreContro
   protected $_titulo = 'Relat&oacute;rio Atestado de Matr&iacute;cula';
 
 	function form() {
-    $this->inputsHelper()->dynamic(array('ano', 'instituicao', 'escola'));
-    $this->inputsHelper()->simpleSearchMatricula();
-  }
+	    $this->inputsHelper()->dynamic(array('ano', 'instituicao', 'escola'));
+	    $this->inputsHelper()->simpleSearchMatricula();
+	    //carrega o JS AtestadoMatricula.js
+	    $this->loadResourceAssets($this->getDispatcher());
+  	}
 
 	function report() {
 	  return new AtestadoMatriculaReport();
