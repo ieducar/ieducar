@@ -231,7 +231,9 @@ class indice extends clsListagem
 
     // Paginador
     $this->limite = 20;
-    $this->offset = ($_GET['pagina_' . $this->nome]) ? $_GET['pagina_' . $this->nome] * $this->limite-$this->limite: 0;
+    $this->offset = $_GET['pagina_' . $this->nome] ?
+    $_GET['pagina_' . $this->nome] * $this->limite - $this->limite :
+    0;
 
     $obj_servidor = new clsPmieducarServidor();
     $obj_servidor->setOrderby('carga_horaria ASC');
@@ -338,7 +340,7 @@ class indice extends clsListagem
               $script = " onclick=\"addVal1('{$_SESSION['campo1']}','{$registro['nome']}','{$registro['cod_servidor']}'); addVal1('{$_SESSION['campo2']}','{$registro['cod_servidor']}','{$registro['nome']}'); $setAll fecha();\"";
             }
             else {
-              $script = " onclick=\"addVal1('{$_SESSION['campo1']}','{$registro['cod_servidor']}', null); addVal1('{$_SESSION['campo2']}','{$registro['nome']}', null); $setAll fecha();\"";
+              $script = " onclick=\"addVal1('{$_SESSION['campo1']}',null,'{$registro['cod_servidor']}'); addVal1('{$_SESSION['campo2']}',null,'{$registro['nome']}'); $setAll fecha();\"";
             }
           }
           elseif (is_string($_SESSION['campo1'])) {
@@ -364,9 +366,7 @@ class indice extends clsListagem
         ) );
       }
     }
-
-    $this->addPaginador2('educar_pesquisa_servidor_lst.php', $total, $_GET,
-      $this->nome, $this->limite);
+    $this->addPaginador2('educar_pesquisa_servidor_lst.php', $total, $_GET, $this->nome, $this->limite);
 
     $obj_permissoes = new clsPermissoes();
     $this->largura = '100%';
