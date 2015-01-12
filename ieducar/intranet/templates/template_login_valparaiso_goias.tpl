@@ -33,7 +33,7 @@
 				color : black;
 			}
 			label {
-				float: left;
+				float: right;
 				margin-right : 20px;
 				font-family: sans;
 				font-size : 150%;
@@ -68,7 +68,8 @@
 				margin-left : 12em;
 				padding-top : 10px;
 				padding-bottom : 10px;
-				border-radius : 10px; 
+				border-radius : 10px;
+				float: right;
 			}
 			.logo_rodape {
 				margin-top : 20px;
@@ -116,14 +117,17 @@
 		</span>
 	
 		<form action="" method="post" id="login_form">
-			<label for="login">Usu&aacute;rio:</label>
-			<input type="text" name="login" id="login" value="" size="15" /><br />
-				
-			<label for="senha">Senha:</label>
-			<input type="password" name="senha" id="senha" size="15" /><br />
-			<!-- #&RECAPTCHA&# -->
-			
-			<input type="submit" id="botao" value="Entrar" />
+			<table>
+				<tr>
+					<td><label for="login">Login (Matr&iacute;cula ou CPF):</label></td>
+					<td><input type="text" name="login" id="login" value="" size="15" /></td>
+				</tr>
+				<tr>
+					<td><label for="senha">Senha:</label></td>
+					<td><input type="password" name="senha" id="senha" size="15" /></td>
+				</tr>
+				<tr><td colspan="2"><!-- #&RECAPTCHA&# --><input type="submit" id="botao" value="Entrar" /></td></tr>
+			</table>
 		</form>
 		
 		<hr>

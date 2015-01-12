@@ -75,33 +75,42 @@
 
         <form action="" method="post">
         <table>
-          <tbody><tr>
+          <tbody>
+          	<tr>
     		    <td>
-              <label class="" for="login">Matr&iacute;cula:</label>
-              <input type="text" name="login" id="login"></td>
+              		<label class="" for="login">Login (Matr&iacute;cula ou CPF):</label>
+          		</td>
+      		<tr>
+      		</tr>
+          		<td>
+              		<input type="text" name="login" id="login">
+          		</td>
     	    </tr>
-
-          <tr>
+          	<tr>
     		    <td>
-              <label class="" for="senha">Senha:</label>
-              <input type="password" name="senha" id="senha">
-            </td>
-          </tr>
-          <tr>
-            <td><!-- #&RECAPTCHA&# --></td>
-          </tr>
-          <tr>
+              		<label class="" for="senha">Senha:</label>
+          		</td>
+      		<tr>
+      		</tr>
+          		<td>
+              		<input type="password" name="senha" id="senha">
+            	</td>
+          	</tr>
+          	<tr>
+            	<td><!-- #&RECAPTCHA&# --></td>
+          	</tr>
+          	<tr>
     		    <td>
-              <input type="submit" class="submit" src="imagens/nvp_bot_entra_webmail.jpg" value="Entrar">
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <p class="forget-password"><a class="light small" href="/module/Usuario/RedefinirSenha">Esqueceu sua senha?</a></p>
-
-            </td>
-          </tr>
-        </tbody></table>
+              		<input type="submit" class="submit" src="imagens/nvp_bot_entra_webmail.jpg" value="Entrar">
+            	</td>
+          	</tr>
+          	<tr>
+            	<td>
+              		<p class="forget-password"><a class="light small" href="/module/Usuario/RedefinirSenha">Esqueceu sua senha?</a></p>
+            	</td>
+          	</tr>
+    	</tbody>
+    	</table>
         </form>
 
       </div> <!-- end login-form -->
