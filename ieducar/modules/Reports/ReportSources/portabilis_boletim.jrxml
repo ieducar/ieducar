@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="portabilis_boletim" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4f9ea369-c6c3-48c5-ae82-2872022857d3">
 	<property name="ireport.zoom" value="1.3310000000000026"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="586"/>
 	<parameter name="ano" class="java.lang.Integer">
 		<defaultValueExpression><![CDATA[new java.lang.Integer(0)]]></defaultValueExpression>
 	</parameter>
@@ -198,7 +198,7 @@ nome_disciplina,
 
        (SELECT CASE  WHEN nota_componente_curricular.nota_arredondada = '10' THEN
 			                   '10,0'
-		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN 
+		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN
 		                   		nota_componente_curricular.nota_arredondada
 			               WHEN char_length(nota_componente_curricular.nota_arredondada) = 1 THEN
 			                   replace(nota_componente_curricular.nota_arredondada,'.',',') || ',0'
@@ -216,7 +216,7 @@ nome_disciplina,
 
        (SELECT CASE  WHEN nota_componente_curricular.nota_arredondada = '10' THEN
 			                   '10,0'
-		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN 
+		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN
 		                   		nota_componente_curricular.nota_arredondada
 			               WHEN char_length(nota_componente_curricular.nota_arredondada) = 1 THEN
 			                   replace(nota_componente_curricular.nota_arredondada,'.',',') || ',0'
@@ -233,7 +233,7 @@ nome_disciplina,
 
        (SELECT CASE  WHEN nota_componente_curricular.nota_arredondada = '10' THEN
 			                   '10,0'
-		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN 
+		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN
 		                   		nota_componente_curricular.nota_arredondada
 			               WHEN char_length(nota_componente_curricular.nota_arredondada) = 1 THEN
 			                   replace(nota_componente_curricular.nota_arredondada,'.',',') || ',0'
@@ -250,7 +250,7 @@ nome_disciplina,
 
        (SELECT CASE  WHEN nota_componente_curricular.nota_arredondada = '10' THEN
 			                   '10,0'
-		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN 
+		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN
 		                   		nota_componente_curricular.nota_arredondada
 			               WHEN char_length(nota_componente_curricular.nota_arredondada) = 1 THEN
 			                   replace(nota_componente_curricular.nota_arredondada,'.',',') || ',0'
@@ -268,7 +268,7 @@ nome_disciplina,
 
        (SELECT CASE  WHEN nota_componente_curricular.nota_arredondada = '10' THEN
 			                   '10,0'
-		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN 
+		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN
 		                   		nota_componente_curricular.nota_arredondada
 			               WHEN char_length(nota_componente_curricular.nota_arredondada) = 1 THEN
 			                   replace(nota_componente_curricular.nota_arredondada,'.',',') || ',0'
@@ -286,7 +286,7 @@ nome_disciplina,
 
        (SELECT CASE  WHEN nota_componente_curricular_media.media_arredondada = '10' THEN
 			                   '10,0'
-		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN 
+		                   WHEN (SELECT regra_avaliacao.tipo_nota FROM pmieducar.serie, modules.regra_avaliacao WHERE regra_avaliacao.id = serie.regra_avaliacao_id AND serie.cod_serie = $P{serie}) = 2 THEN
 		                   		nota_componente_curricular_media.media_arredondada
 			               WHEN char_length(nota_componente_curricular_media.media_arredondada) = 1 THEN
 			                   replace(nota_componente_curricular_media.media_arredondada,'.',',') || ',0'
@@ -1271,4 +1271,18 @@ ORDER BY nome_aluno, nome_disciplina]]>
 			</textField>
 		</band>
 	</detail>
+	<pageFooter>
+		<band height="35">
+			<line>
+				<reportElement uuid="b4fae3ac-03a1-4683-83b7-aeef2a921e8f" x="336" y="3" width="207" height="1"/>
+			</line>
+			<staticText>
+				<reportElement uuid="e8833d8d-7845-414f-a0a1-2c81957e9e5c" x="339" y="4" width="201" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="DejaVu Sans" size="11"/>
+				</textElement>
+				<text><![CDATA[Assinatura do Responsável]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
 </jasperReport>

@@ -211,6 +211,19 @@ class clsMenu
                   sub2.nivel='1'
               )
             )
+            and (
+					SELECT 
+					  count(1)
+					FROM 
+					  portal.menu_menu mm, 
+					  portal.menu_submenu ms, 
+					  portal.menu_funcionario mf
+					WHERE 
+					  mm.cod_menu_menu = ms.ref_cod_menu_menu AND
+					  mf.ref_cod_menu_submenu = ms.cod_menu_submenu and
+					  mm.cod_menu_menu =  pai.cod_menu_menu and
+					  mf.ref_ref_cod_pessoa_fj = $id_usuario            
+                ) > 0
           ORDER BY
             UPPER(nome_menu.nm_menu), ref_menu_pai, UPPER(pai.nm_menu), sub.nm_submenu";
       }
@@ -250,6 +263,19 @@ class clsMenu
                 WHERE
                   sub2.nivel='2')
             )
+            and (
+					SELECT 
+					  count(1)
+					FROM 
+					  portal.menu_menu mm, 
+					  portal.menu_submenu ms, 
+					  portal.menu_funcionario mf
+					WHERE 
+					  mm.cod_menu_menu = ms.ref_cod_menu_menu AND
+					  mf.ref_cod_menu_submenu = ms.cod_menu_submenu and
+					  mm.cod_menu_menu =  pai.cod_menu_menu and
+					  mf.ref_ref_cod_pessoa_fj = $id_usuario            
+                ) > 0
             $suspenso
           ORDER BY
             UPPER(nome_menu.nm_menu), ref_menu_pai, UPPER(pai.nm_menu), sub.nm_submenu

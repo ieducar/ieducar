@@ -68,4 +68,25 @@ class App_Model_MatriculaSituacao extends CoreExt_Enum
   {
     return self::_getInstance(__CLASS__);
   }
+  
+  public function getCssClass($key)
+  {
+	switch ($key)
+	{
+		case self::APROVADO :
+		case self::APROVADO_APOS_EXAME :
+			return 'success';
+			break;
+		case self::ABANDONO :
+		case self::EM_EXAME :
+		case self::REPROVADO :
+		case self::RETIDO_FALTA :
+			return 'error';
+			break;
+		default :
+			return 'info';
+			break;
+	}
+  }
+
 }

@@ -156,14 +156,15 @@ class BoletimController extends Core_Controller_Page_ViewController
 
     // Situação da matrícula
     $situacao = App_Model_MatriculaSituacao::getInstance();
+    $estilo_situacao = $situacao->getCssClass($matricula['aprovado']);
     $situacao = $situacao->getValue($matricula['aprovado']);
-
+    
     // Dados da matrícula
     $this->addDetalhe(array('Aluno', $nome));
     $this->addDetalhe(array('Escola', $escola));
     $this->addDetalhe(array('Curso', $curso));
     $this->addDetalhe(array('Série/Turma', $serie . ' / ' . $turma));
-    $this->addDetalhe(array('Situação', $situacao));
+    $this->addDetalhe(array('Situação', $situacao, $estilo_situacao));
 
     // Booleano para saber se o tipo de nota é nenhum.
     $nenhumaNota = ($this->_service->getRegra()->get('tipoNota') ==
