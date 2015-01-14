@@ -131,6 +131,9 @@ class indice extends clsListagem
 			$lista_busca[] = "Escola";
 		}
 		$lista_busca[] = "Situação";
+		$lista_busca[] = "Professor Regente";
+		$lista_busca[] = "Alunos";
+		
 		$this->addCabecalhos($lista_busca);
 
 		$get_escola = true;
@@ -300,6 +303,19 @@ class indice extends clsListagem
 				{
 					$lista_busca[] = "<a href=\"educar_turma_det.php?cod_turma={$registro["cod_turma"]}\">Inativo</a>";
 				}
+			
+				if ($registro['ref_cod_regente']) {
+					$obj_pessoa = new clsPessoa_($registro['ref_cod_regente']);
+					$det = $obj_pessoa->detalhe();
+					if ($det["nome"])
+						$lista_busca[] = "<a href=\"educar_turma_det.php?cod_turma={$registro["cod_turma"]}\">{$det["nome"]}</a>";
+					else
+						$lista_busca[] = "<a href=\"educar_turma_det.php?cod_turma={$registro["cod_turma"]}\">-</a>";
+				} else 
+					$lista_busca[] = "<a href=\"educar_turma_det.php?cod_turma={$registro["cod_turma"]}\">-</a>";
+				
+				$lista_busca[] = "<a href=\"educar_matriculas_turma_alunos_cad.php?ref_cod_turma={$registro["cod_turma"]}\">Detalhes</a>";
+				
 				$this->addLinhas($lista_busca);
 			}
 		}
