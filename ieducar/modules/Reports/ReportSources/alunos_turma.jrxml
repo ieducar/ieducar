@@ -12,9 +12,9 @@
 	<parameter name="logo" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT	p.nome AS nome_aluno,
-	i.nm_instituicao AS nome_instituicao,
-	i.nm_responsavel AS nome_responsavel,
-	p2.nome AS nome_escola,
+	upper(i.nm_instituicao) AS nome_instituicao,
+	upper(i.nm_responsavel) AS nome_responsavel,
+	upper(p2.nome) AS nome_escola,
 	ce.logradouro,
 	ce.bairro,
 	ce.cidade as municipio,
@@ -265,7 +265,7 @@ ORDER BY nome_aluno]]>
 					<text><![CDATA[04 - ANO]]></text>
 				</staticText>
 				<image>
-					<reportElement uuid="7529f88a-75cd-4b38-9e6b-b4e23d101da2" x="23" y="11" width="57" height="46"/>
+					<reportElement uuid="7529f88a-75cd-4b38-9e6b-b4e23d101da2" x="23" y="11" width="51"/>
 					<imageExpression><![CDATA[$P{logo}]]></imageExpression>
 				</image>
 				<line>

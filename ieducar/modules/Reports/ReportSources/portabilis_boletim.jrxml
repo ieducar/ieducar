@@ -1014,7 +1014,7 @@ ORDER BY nome_aluno, nome_disciplina]]>
 					<text><![CDATA[04 - TURMA]]></text>
 				</staticText>
 				<image>
-					<reportElement uuid="7529f88a-75cd-4b38-9e6b-b4e23d101da2" x="23" y="11" width="57" height="46"/>
+					<reportElement uuid="7529f88a-75cd-4b38-9e6b-b4e23d101da2" x="23" y="11" width="51" />
 					<imageExpression><![CDATA[$P{logo}]]></imageExpression>
 				</image>
 				<textField isBlankWhenNull="true">
