@@ -147,9 +147,16 @@ class indice extends clsDetalhe
       $this->addDetalhe(array('S&eacute;rie', $nm_serie));
     }
 
+    $obj_ano_letivo = new clsPmieducarEscolaAnoLetivo();
+    $obj_ano_letivo->ref_cod_escola = $this->ref_cod_escola;
+    $obj_ano_letivo->andamento = 1;
+    $ano_letivo = $obj_ano_letivo->detalhe();
+    
     $obj_turmas = new clsPmieducarTurma();
     $lst_turmas = $obj_turmas->lista(NULL, NULL, NULL, $this->ref_cod_serie,
-      $this->ref_cod_escola, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1);
+      $this->ref_cod_escola, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
+      NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
+      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, $ano_letivo["ano"]);
 
     if (is_array($lst_turmas)) {
       $cont = 0;
