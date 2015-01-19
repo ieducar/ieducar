@@ -10,31 +10,34 @@
 	<queryString>
 		<![CDATA[
                 SELECT 
-					    reserva_vaga.nm_aluno as aluno,
-					    instituicao.nm_instituicao, 
-					    instituicao.nm_responsavel, 
-					    pessoa.nome as nm_escola,
+					    escola_ano_letivo.ano as ano_corrente,
+					    COALESCE (al.nome, reserva_vaga.nm_aluno) as aluno,
+					    UPPER(instituicao.nm_instituicao) as nm_instituicao, 
+					    UPPER(instituicao.nm_responsavel) as nm_responsavel, 
+					    UPPER(pessoa.nome) as nm_escola,
 					    v_endereco.logradouro, 
 					    v_endereco.bairro,
 					    v_endereco.cidade as municipio,
 					    v_endereco.numero, 
 					    v_endereco.sigla_uf as uf_municipio, 
 					    v_fone_pessoa.ddd_1 as fone_ddd,
-					    v_endereco.cep,
-					    v_fone_pessoa.fone_1 as fone,
+					    to_char(v_endereco.cep,'99999-999') as cep,
+					    to_char(v_fone_pessoa.fone_1,'9999-9999') as fone,
 					    pessoa.email, 
 					    curso.nm_curso,
 					    serie.nm_serie,
 					    to_char(reserva_vaga.data_cadastro,'dd/mm/yyyy') as data_atual
 					FROM 
-					  pmieducar.reserva_vaga, 
+					  pmieducar.reserva_vaga 
+					  LEFT JOIN (SELECT cadastro.pessoa.nome, pmieducar.aluno.cod_aluno FROM pmieducar.aluno, cadastro.pessoa WHERE cadastro.pessoa.idpes = aluno.ref_idpes) al ON al.cod_aluno = reserva_vaga.ref_cod_aluno,
 					  pmieducar.escola, 
 					  pmieducar.instituicao, 
 					  cadastro.pessoa, 
 					  pmieducar.serie, 
 					  cadastro.v_endereco, 
 					  cadastro.v_fone_pessoa, 
-					  pmieducar.curso
+					  pmieducar.curso,
+					  pmieducar.escola_ano_letivo
 					WHERE 
 					  reserva_vaga.ref_ref_cod_serie = serie.cod_serie AND
 					  escola.cod_escola = reserva_vaga.ref_ref_cod_escola AND
@@ -42,11 +45,15 @@
 					  escola.ref_idpes = pessoa.idpes AND
 					  pessoa.idpes = v_fone_pessoa.idpes AND
 					  serie.ref_cod_curso = curso.cod_curso AND
-					  v_endereco.idpes = pessoa.idpes and
-					    reserva_vaga.cod_reserva_vaga =$P{cod_reserva_vaga};
+					  v_endereco.idpes = pessoa.idpes AND
+					  escola_ano_letivo.ref_cod_escola = escola.cod_escola AND
+					  escola_ano_letivo.andamento = 1 AND
+					  escola_ano_letivo.ativo = 1 AND
+					  reserva_vaga.cod_reserva_vaga =$P{cod_reserva_vaga};
 
         ]]>
 	</queryString>
+	<field name="ano_corrente" class="java.lang.String"/>
 	<field name="aluno" class="java.lang.String"/>
 	<field name="nm_instituicao" class="java.lang.String"/>
 	<field name="nm_responsavel" class="java.lang.String"/>
@@ -111,7 +118,7 @@
 				<textElement textAlignment="Justified">
 					<font fontName="DejaVu Sans" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Atesto para os devidos fins que o aluno "+$F{aluno}+", solicitou reserva de vaga na escola "+$F{nm_escola}+", para o curso "+$F{nm_curso}+", na série "+$F{nm_serie}+" e que esta reserva possui a validade de 48 horas a partir da data de solicitação ("+$F{data_atual}+")."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Atesto para os devidos fins que o aluno "+$F{aluno}+", solicitou reserva de vaga na escola "+$F{nm_escola}+", para o curso "+$F{nm_curso}+", na série "+$F{nm_serie}+", para o ano letivo de "+$F{ano_corrente}+" e que esta reserva possui a validade de 48 horas a partir da data de solicitação ("+$F{data_atual}+")."]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="c412e310-8027-4ac0-83da-9e0eaf860af5" x="79" y="4" width="308" height="13"/>
@@ -152,7 +159,7 @@
 				<text><![CDATA[Assinatura]]></text>
 			</staticText>
 			<image>
-				<reportElement uuid="02f66b90-a668-4320-8b8a-d4ad07e378a4" x="16" y="4" width="57" height="46"/>
+				<reportElement uuid="02f66b90-a668-4320-8b8a-d4ad07e378a4" x="16" y="4" width="56"/>
 				<imageExpression><![CDATA[$P{logo}]]></imageExpression>
 			</image>
 			<textField isBlankWhenNull="true">
