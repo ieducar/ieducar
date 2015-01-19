@@ -321,7 +321,7 @@
 				<text><![CDATA[Assinatura]]></text>
 			</staticText>
 			<image>
-				<reportElement uuid="02f66b90-a668-4320-8b8a-d4ad07e378a4" x="16" y="4" width="57" height="46"/>
+				<reportElement uuid="02f66b90-a668-4320-8b8a-d4ad07e378a4" x="16" y="4" width="56" />
 				<imageExpression><![CDATA[$P{logo}]]></imageExpression>
 			</image>
 			<textField isBlankWhenNull="true">
@@ -329,7 +329,7 @@
 				<textElement>
 					<font fontName="DejaVu Sans" size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Bairro: " +$F{bairro}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Bairro: "+$F{bairro}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="8ede2a59-2714-4613-8c6e-78e8579099af" x="79" y="64" width="201" height="13"/>

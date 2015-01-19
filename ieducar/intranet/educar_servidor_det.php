@@ -301,7 +301,7 @@ class indice extends clsDetalhe
 
       $tabela .= "</table>";
       $this->addDetalhe(array('Função',
-        "<a href='javascript:trocaDisplay(\"det_f\");' >Mostrar detalhe</a><div id='det_f' name='det_f' style='display:none;'>".$tabela."</div>"));
+        "<a href='javascript:trocaDisplay(\"det_f\");' >Mostrar detalhe</a><div id='det_f' name='det_f' style='display:inline;'>".$tabela."</div>"));
     }
 
     $tabela = NULL;
@@ -363,7 +363,7 @@ class indice extends clsDetalhe
       $tabela .= "</table>";
 
       $this->addDetalhe(array('Horários de trabalho',
-        "<a href='javascript:trocaDisplay(\"det_pree\");' >Mostrar detalhe</a><div id='det_pree' name='det_pree' style='display:none;'>".$tabela."</div>"));
+        "<a href='javascript:trocaDisplay(\"det_pree\");' >Mostrar detalhe</a><div id='det_pree' name='det_pree' style='display:inline;'>".$tabela."</div>"));
     }
 
     // Horários do professor
@@ -410,7 +410,7 @@ class indice extends clsDetalhe
       $this->addDetalhe(array(
         'Horários de aula',
         "<a href='javascript:trocaDisplay(\"horarios\");' >Mostrar detalhes</a>" .
-        "<div id='horarios' name='det_pree' style='display:none;'>" . $tabela . "</div>"
+        "<div id='horarios' name='det_pree' style='display:inline;'>" . $tabela . "</div>"
       ));
     }
 

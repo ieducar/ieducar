@@ -224,7 +224,7 @@
 				<text><![CDATA[ATESTADO DE MATRÍCULA]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="771f33a3-af05-4b24-b21a-ed152dbe52bc" x="58" y="486" width="120" height="14"/>
+				<reportElement uuid="771f33a3-af05-4b24-b21a-ed152dbe52bc" x="58" y="486" width="200" height="14"/>
 				<textElement>
 					<font fontName="DejaVu Sans" size="8"/>
 				</textElement>
@@ -280,7 +280,7 @@
 				<textFieldExpression><![CDATA[$F{nm_responsavel}]]></textFieldExpression>
 			</textField>
 			<image>
-				<reportElement uuid="58181b73-1bed-48c6-8004-978d09fbabef" x="16" y="4" width="57" height="46"/>
+				<reportElement uuid="58181b73-1bed-48c6-8004-978d09fbabef" x="16" y="4" height="56"/>
 				<imageExpression><![CDATA[$P{logo}]]></imageExpression>
 			</image>
 			<textField isStretchWithOverflow="true">

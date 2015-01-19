@@ -362,7 +362,7 @@
 				<textFieldExpression><![CDATA[$F{nome_secretaria}]]></textFieldExpression>
 			</textField>
 			<image>
-				<reportElement uuid="2bfc0d62-be99-4c57-98d9-4a76ca5fe719" x="23" y="5" width="57" height="46"/>
+				<reportElement uuid="2bfc0d62-be99-4c57-98d9-4a76ca5fe719" x="23" y="6" width="60" />
 				<imageExpression><![CDATA[$P{logo}]]></imageExpression>
 			</image>
 		</band>

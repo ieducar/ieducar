@@ -105,6 +105,8 @@ report.diario_classe.dias_temporarios = 30
 ; define o nome do logo a ser usado nos relatórios (via parametro logo)
 ; logos são armazenados em /module/Reports/ReportLogos
 report.logo_file_name = brasil.png
+; define o nome do logo a ser usado no Certificado de Conclusão de curso
+report.institution_logo_file_name = brasao_valparaiso.png
 
 ; define se detalhes sobre os erros ocorridos serão exibidos
 report.show_error_details = true

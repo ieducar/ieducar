@@ -268,7 +268,7 @@ function showExpansivel( largura, altura, conteudo )
 	expansivel.setAttribute("id", "div_dinamico_"+exp_id);
 	insertAfter(expansivel, document.getElementById("DOM_expansivel"));
 	DOM_divs[exp_id] = expansivel;
-	expansivel.style.zIndex = 30+exp_id;
+	expansivel.style.zIndex = 1+exp_id;
 	expansivel.style.position = "absolute";
 
 	if( typeof window.innerHeight == 'number' )
@@ -1189,7 +1189,7 @@ function getPDFcoleta()
 	DOM_loadXMLDoc( strURL );
 	Obj = document.getElementById('imprimir');
 	Obj.value = 'Gerando Arquivo...';
-	Obj.onclick = function() { alert('O sistema estï¿½ gerando o arquivo. Aguarde!')};
+	Obj.onclick = function() { alert('O sistema está gerando o arquivo. Aguarde!')};
 	//document.location.href = strURL;
 }
 
@@ -1201,7 +1201,7 @@ function getPDFcoletaDone()
 	Obj = document.getElementById('imprimir');
 	Obj.value = 'Clique para baixar arquivo!';
 	Obj.onclick = function() { document.location.href = link;};
-	//alert('Arquivo Concluï¿½do');
+	//alert('Arquivo Concluído');
 	document.location.href = link;
 }
 
@@ -1551,7 +1551,7 @@ function getPDFouvidoriaEquipeDone()
 	Obj = document.getElementById('imprimir');
 	Obj.value = 'Clique para baixar arquivo!';
 	Obj.onclick = function() { document.location.href = link;};
-	//alert('Arquivo Concluï¿½do');
+	//alert('Arquivo Concluído');
 	document.location.href = link;
 }
 
@@ -1605,7 +1605,7 @@ function getPDFouvidoriaAtendimentoDone()
 	Obj = document.getElementById('imprimir');
 	Obj.value = 'Clique para baixar arquivo!';
 	Obj.onclick = function() { document.location.href = link;};
-	//alert('Arquivo Concluï¿½do');
+	//alert('Arquivo Concluído');
 	document.location.href = link;
 }
 
@@ -1637,7 +1637,7 @@ function getPDFestoquesaidaDone()
 	Obj = document.getElementById('imprimir');
 	Obj.value = 'Clique para baixar arquivo!';
 	Obj.onclick = function() { document.location.href = link;};
-	//alert('Arquivo Concluï¿½do');
+	//alert('Arquivo Concluído');
 	document.location.href = link;
 }
 
@@ -1669,7 +1669,7 @@ function getPDFouvidoriaAtendimentoSetorDone()
 	Obj = document.getElementById('imprimir');
 	Obj.value = 'Clique para baixar arquivo!';
 	Obj.onclick = function() { document.location.href = link;};
-	//alert('Arquivo Concluï¿½do');
+	//alert('Arquivo Concluído');
 	document.location.href = link;
 }
 
@@ -1681,7 +1681,7 @@ function getPDFouvidoriaTipoServicoDone()
 	Obj = document.getElementById('imprimir');
 	Obj.value = 'Clique para baixar arquivo!';
 	Obj.onclick = function() { document.location.href = link;};
-	//alert('Arquivo Concluï¿½do');
+	//alert('Arquivo Concluído');
 	document.location.href = link;
 }
 function getPDFouvidoriaOrdem()
