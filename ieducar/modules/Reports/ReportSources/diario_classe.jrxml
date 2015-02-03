@@ -108,7 +108,7 @@ ORDER BY p_aluno.nome;]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<text><![CDATA[Avaliaçoes e trabalhos]]></text>
+				<text><![CDATA[Avaliações e trabalhos]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="201" y="75" width="404" height="12" uuid="7c910c17-a548-4f4d-bcc6-a5f3e16a1df8"/>

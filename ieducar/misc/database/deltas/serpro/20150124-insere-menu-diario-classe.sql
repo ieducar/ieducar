@@ -51,7 +51,7 @@ INSERT INTO pmicontrolesis.menu (
   999701,
   999700,
   999700,
-  'Diario de Classe',
+  'Diário de Classe',
   1,
   'module/Reports/DiarioClasse',
   '_self',
