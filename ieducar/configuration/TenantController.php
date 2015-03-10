@@ -1,4 +1,5 @@
 <?php
+
 include 'Tenant.php';
 
 function getNextTenantPosition($file_contents, $offset) {
@@ -131,7 +132,7 @@ if ($new_tenant) {
 	}
 }	
 
-echo utf8_decode($tenant->to_json());
+echo utf8_decode($tenant->toJson());
 exit();
 
 ?>

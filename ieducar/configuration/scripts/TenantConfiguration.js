@@ -48,7 +48,7 @@ function defineSaveConfigBehavior() {
 				div.prepend($(showMessage(json.message, errorMessage)));
 				$('#error_message').fadeToggle('slow','linear').delay(3000).fadeToggle('slow','linear');
 			} else {
-				$('#accordion h3:contains("'+tenantName+'")').text($(html).closest('h3').text());
+				$('#accordion_config h3:contains("'+tenantName+'")').text($(html).closest('h3').text());
 				div.prepend($(showMessage("Configuração salva com sucesso.", false)));
 				$('#info_message').fadeToggle('slow','linear').delay(3000).fadeToggle('slow','linear');
 			}
@@ -93,7 +93,7 @@ function defineNewTenantBehavior() {
 				var tenantName = json.tenantName;
 				var tenantTitle = json.tenantTitle;
 				if (tenantName && tenantConfig && tenantTitle) {
-					var tenantDivs = $("#accordion div").not("#info_message").not("#error_message");
+					var tenantDivs = $("#accordion_config div").not("#info_message").not("#error_message");
 					if (tenantDivs.length) {
 						tenantDivs.each(function(index) {
 							divTitle = $(this).prev("h3").text();
@@ -111,18 +111,18 @@ function defineNewTenantBehavior() {
 							}
 						});
 					} else {
-						$("#accordion").prepend(tenantConfig);
+						$("#accordion_config").prepend(tenantConfig);
 					}
 					//aplica estilos e exibe o novo tenant criado com mensagem de sucesso
 					$("input[type='button']").button();
-					$("#accordion").accordion("refresh");
+					$("#accordion_config").accordion("refresh");
 					$('#info_message').remove();
 					$("#error_message").remove();
-					$("#accordion h3:contains('"+tenantName+"')").next().prepend($(showMessage("Novo tenant criado com sucesso.", false)));
-					var index = $("#accordion").find(":contains('"+tenantName+"')").index();
+					$("#accordion_config h3:contains('"+tenantName+"')").next().prepend($(showMessage("Novo tenant criado com sucesso.", false)));
+					var index = $("#accordion_config").find(":contains('"+tenantName+"')").index();
 					if (index >= 0)
-						$("#accordion").accordion("option","active",index/2);
-					$("body").scrollTop($('#accordion').find(':contains("'+tenantName+'")').position().top);
+						$("#accordion_config").accordion("option","active",index/2);
+					$("body").scrollTop($('#accordion_config').find(':contains("'+tenantName+'")').position().top);
 					$('#info_message').fadeToggle('slow','linear').delay(3000).fadeToggle('slow','linear');
 					//limpa configurações do form #new_tenant_box
 					$("#box_new_tenant input[type='text']").each(function() { 
@@ -186,6 +186,7 @@ function showMessage(message, error) {
 		divId = "info_message";
 	}
 	var html = '<div id="'+divId+'" class="ui-widget message" style="display: none;">';
+//	var html = '<div class="ui-widget message" style="display: none;">';
 	html += '<div class="'+css[0]+' ui-corner-all message-container">';
 	html += '<p><span class="ui-icon '+css[1]+' message-text"></span>';
 	html += '<strong>'+label+'</strong> '+message+'</p>';
@@ -195,7 +196,7 @@ function showMessage(message, error) {
 }
 
 function defineRemoveTenantBehavior() {
-	$('#accordion').on('click', '.btn-remove-tenant', function() {
+	$('#accordion_config').on('click', '.btn-remove-tenant', function() {
 		var btnRemoveTenant = $(this);
 		var tenantName = btnRemoveTenant.parent().prev("h3").text(); 
 		if (confirm('Você tem certeza que deseja remover a configuração do Tenant - "'+tenantName+'"?')) {
@@ -213,8 +214,8 @@ function defineRemoveTenantBehavior() {
 					btnRemoveTenant.parent().prepend($(showMessage(message, errorMessage)));
 					$('#error_message').fadeToggle('slow','linear').delay(3000).fadeToggle('slow','linear');
 				} else {
-					$(showMessage(message)).insertAfter($(".demoHeaders"));
-					$("#accordion").accordion({heightStyle: "content",active: false,collapsible: true});
+					$("#tabs-2").prepend($(showMessage(message)));
+					$("#accordion_config").accordion({heightStyle: "content",active: false,collapsible: true});
 					$('body').scrollTop($('#info_message').position().top);
 					$('#info_message').fadeToggle('slow','linear').delay(3000).fadeToggle('slow','linear');
 					btnRemoveTenant.parent().prev('h3').fadeOut('slow', function(){ $(this).next('div').remove(); $(this).remove(); });
@@ -253,6 +254,8 @@ function filledRequiredFields(tenantName, tableLines) {
 
 $(document).ready(function(){
 
+	$('#tabs').tabs();
+
 	var newTenantBox = $("#box_new_tenant"); 
 			
     $("#btn_new_tenant").click(function(){
@@ -264,7 +267,7 @@ $(document).ready(function(){
         newTenantBox.hide();
     });
 
-    $("#accordion").accordion({
+    $("#accordion_config").accordion({
 		heightStyle: "content",
 		active: false,
 		collapsible: true
