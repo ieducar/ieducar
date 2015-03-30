@@ -16,6 +16,7 @@ $(document).ready(function(){
 	
 	$("#accordion_stats").on("accordionbeforeactivate", function(event, ui) {
 		$(".stats-box").remove();
+		$("#error_message").remove();
 	});
 	
 	$("#accordion_stats").on("accordionactivate", function(event, ui) {
@@ -242,7 +243,7 @@ $(document).ready(function(){
 						} else {
 							htmlTable = montaQuadroSemGrafico("Não existe registro de índices não utilizados até o momento.");
 						}
-						ui.newPanel.children("div:last").append($("<div class='stats-box' style='width: 400px'><h2>Índices não utilizados</h2>"+htmlTable+"</div>"));
+						ui.newPanel.children("div:last").append($("<div class='stats-box' style='width: 400px;height: auto;'><h2>Índices não utilizados</h2>"+htmlTable+"</div>"));
 					}
 					
 					// DEADLOCKS, CONFLICTS
@@ -262,12 +263,12 @@ $(document).ready(function(){
 						if (json.graph.db_conflicts.errorMessage)
 							ui.newPanel.children("div:first").prepend(showMessage(json.graph.db_conflicts.errorMessage, true));
 						else {
-							htmlTable += '<tr><td>Conflitos</td><td>';
+							htmlTable += '<tr title="Consultas canceladas por conflitos"><td>Conflitos</td><td>';
 							htmlTable += json.graph.db_conflicts.value;
 						}
 						htmlTable += '</td></tr></tbody>';
 						htmlTable += '</table>';
-						ui.newPanel.children("div:last").append($("<div class='stats-box' style='width:300px;height:auto;'><h2>Deadlocks/Conflicts ("+json.db_name+")</h2>"+htmlTable+"</div>"));
+						ui.newPanel.children("div:last").append($("<div class='stats-box' style='width:380px;height:auto;'><h2>Deadlocks/Conflicts ("+json.db_name+")</h2>"+htmlTable+"</div>"));
 					}
 					
 					// CHECKPOINTS
@@ -301,7 +302,7 @@ $(document).ready(function(){
 						} else {
 							htmlTable = montaQuadroSemGrafico("Nenhuma função foi executada até o momento.");
 						}
-						ui.newPanel.children("div:last").append($("<div class='stats-box' style='width:450px;height:auto;'><h2>Execução de Funções</h2>"+htmlTable+"</div>"));
+						ui.newPanel.children("div:last").append($("<div class='stats-box' style='width:450px;height:380px;'><h2>Execução de Funções</h2>"+htmlTable+"</div>"));
 					}
 					
 					// VACCUM e ANALYZE
