@@ -144,7 +144,7 @@ class Tenant {
 					$db_size['indexes'] = $row[1];
 					$stats['db_size'] = $db_size;
 				}
-				$json .= '"raw_data" : { "value" : "'.number_format($stats["db_size"]["raw_data"] / 1048576,2).'"}, "indexes" : { "value" : "'.number_format($stats["db_size"]["indexes"] / 1048576,2).'" }';
+				$json .= '"raw_data" : { "value" : "'.number_format($stats["db_size"]["raw_data"] / 1048576,3).'"}, "indexes" : { "value" : "'.number_format($stats["db_size"]["indexes"] / 1048576,3).'" }';
 			} else {
 				$json .= '"errorMessage" : "Ocorreu um erro na consulta do tamanho do banco."';
 			}
