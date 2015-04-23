@@ -119,6 +119,14 @@ class indice extends clsCadastro
   {
     $this->cod_pessoa_fj = @$_GET['cod_pessoa_fj'];
     $this->retorno       = 'Novo';
+    
+    @session_start();
+    $this->pessoa_logada = $_SESSION['id_pessoa'];
+    @session_write_close();
+    
+    $obj_permissoes = new clsPermissoes();
+    $obj_permissoes->permissao_cadastra(43, $this->pessoa_logada, 3,
+    		'atendidos_lst.php');
 
     if (is_numeric($this->cod_pessoa_fj)) {
       $this->retorno = 'Editar';

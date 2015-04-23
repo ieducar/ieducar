@@ -28,6 +28,7 @@ $desvio_diretorio = "";
 require_once ("include/clsBase.inc.php");
 require_once ("include/clsCadastro.inc.php");
 require_once ("include/clsBanco.inc.php");
+require_once 'include/pmieducar/geral.inc.php';
 
 class clsIndex extends clsBase
 {
@@ -89,6 +90,10 @@ class indice extends clsCadastro
 		$this->busca_empresa = $_POST['busca_empresa'];
 		$this->cod_pessoa_fj = $_GET['idpes'];
 		$this->idpes_cad = $_SESSION['id_pessoa'];
+		
+		$obj_permissoes = new clsPermissoes();
+		$obj_permissoes->permissao_cadastra(41, $this->idpes_cad, 3,
+				'empresas_lst.php');
 
 		if($this->busca_empresa)
 		{
