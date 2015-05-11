@@ -278,7 +278,7 @@ class indice extends clsCadastro
       $menuTipoUsuario = new clsPmieducarMenuTipoUsuario($this->cod_tipo_usuario);
       $menuTipoUsuario->excluirTudo();
 
-      // vinvula ao tipo de usuário, menus com alguma permissão marcada
+      // vincula ao tipo de usuário, menus com as permissão marcadas
       foreach ($this->permissoes as $menuSubmenuId => $permissao) {
         if ($permissao['cadastra'] || $permissao['visualiza'] || $permissao['exclui']) {
 
@@ -301,6 +301,23 @@ class indice extends clsCadastro
 
         }
       } //for
+      
+      // atualizar permissões de usuários com o cod_tipo_usuario alterado
+      $menu_tipo_usuario = new clsPmieducarMenuTipoUsuario();
+      $menu_tipo_usuario_lst = $menu_tipo_usuario->lista($this->cod_tipo_usuario);
+      
+      $usuario = new clsPmieducarUsuario();
+      $usuarios = $usuario->lista(null, null, null, null, null, $this->cod_tipo_usuario);
+      foreach ($usuarios as $usuario) {
+      	$menu_funcionario = new clsMenuFuncionario($usuario['cod_usuario']);
+      	$menu_funcionario->exclui_todos();
+      	
+      	foreach ($menu_tipo_usuario_lst as $menu)
+      	{
+      		$menu_func = new clsMenuFuncionario($usuario['cod_usuario'], $menu["cadastra"], $menu["exclui"], $menu["ref_cod_menu_submenu"]);
+      		$menu_func->cadastra();
+      	}
+      }
     }
 
     $this->mensagem .= 'Altera&ccedil;&atilde;o efetuada com sucesso.<br>';
