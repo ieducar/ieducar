@@ -61,6 +61,9 @@ app.database.port     = 5432
 ; Define uma url para redirecionar todas as requisições;
 ; app.routes.redirect_to = /intranet/manutencao.php
 
+; Define a nomenclatura do exame no diario ou relatórios (0 exame, 1 conselho)
+app.diario.nomenclatura_exame  = 0
+
 ; Configurações do armazenamento de imagem amazon s3
 ;app.aws.bucketname = nome do bucket
 ;app.aws.awsacesskey = chave
@@ -155,7 +158,13 @@ app.recaptcha.options.theme  = white
 
 ; por padrao o sistema efetua a rematricula automatica de alunos ao inicializar um novo ano letivo,
 ; esta configuracao permite desativar este comportamento.
-;app.regras_negocio.desativar_rematricula_automatica = true
+;app.regras_negocio.desativar_rematricula_automatica = false
+
+; Ativa obrigatoriedade de utilização de endereço normalizado no cadastro de pessoas
+app.obriga_endereco_normalizado_pf = true
+
+; Define que poderá ser feito matrícula para cursos diferentes (0 false, 1 true)
+app.matricula.multiplas_matriculas = 0
 
 [development : production]
 ; Herda configurações de banco de dados

@@ -12,6 +12,8 @@ var DELETE_LABEL = '';
 
 var SEARCH_ORIENTATION = '';
 
+var nomenclatura_exame = '';
+
 // funcoes usados pelo modulo Frontend/Process.js
 var onClickSelectAllEvent = false;
 var onClickActionEvent    = false;
@@ -501,6 +503,8 @@ function setTableSearchDetails($tableSearchDetails, dataDetails) {
   $linha.appendTo($tableSearchDetails);
   $tableSearchDetails.show();
 
+  nomenclatura_exame = dataDetails.nomenclatura_exame;
+
   //dataDetails.opcoes_notas = safeSortArray(dataDetails.opcoes_notas);
   $tableSearchDetails.data('details', dataDetails);
 }
@@ -624,6 +628,15 @@ function notaExameField(matriculaId, componenteCurricularId, value) {
                     value);
 }
 
+function notaNecessariaField(matriculaId, componenteCurricularId, value){
+  if (value=='' || value==undefined) value = '-';
+  var $notaNecessariaField = $j('<span />').addClass('nn-matricula-cc')
+                                   .addClass('nn-matricula-' + matriculaId + '-cc')
+                                   .attr('id', 'nn-matricula-' + matriculaId + '-cc-' + componenteCurricularId)
+                                   .text(value);
+  setNextTabIndex($notaNecessariaField);
+  return $j('<td />').html($notaNecessariaField).addClass('center');                                   
+}
 
 function faltaField(matriculaId, componenteCurricularId, value) {
   var $faltaField = $j('<input />').addClass('falta-matricula-cc')
@@ -676,10 +689,17 @@ function updateComponenteCurricular($targetElement, matriculaId, cc) {
     if ($tableSearchDetails.data('details').quantidade_etapas == $j('#etapa').val()) {
       var $fieldNotaExame = notaExameField(matriculaId, cc.id, cc.nota_exame);
 
-      if (cc.nota_exame == '' && safeToLowerCase(cc.situacao) != 'em exame')
+      var $fieldNN = notaNecessariaField(matriculaId, cc.id, cc.nota_necessaria_exame);
+
+      if (cc.nota_exame == '' && safeToLowerCase(cc.situacao) != 'em exame'){
         $fieldNotaExame.children().hide();
+        $fieldNN.children().text('-');
+      }
 
       $fieldNotaExame.appendTo($targetElement);
+
+      // Adiciona campo com nota necessária      
+      $fieldNN.appendTo($targetElement);      
     }
 
   }
@@ -699,8 +719,10 @@ function updateComponenteCurricularHeaders($targetElement, $tagElement) {
   if (useNota) {
     $tagElement.clone().addClass('center').html('Nota').appendTo($targetElement);
 
-    if ($tableSearchDetails.data('details').quantidade_etapas == $j('#etapa').val())
-      $tagElement.clone().addClass('center').html('Nota exame').appendTo($targetElement);
+    if ($tableSearchDetails.data('details').quantidade_etapas == $j('#etapa').val()){
+      $tagElement.clone().addClass('center').html('Nota '+nomenclatura_exame).appendTo($targetElement);
+      $tagElement.clone().addClass('center').html(safeUtf8Decode('Nota necessária no '+nomenclatura_exame)).appendTo($targetElement);
+    }
   }
 
   $tagElement.clone().addClass('center').html('Falta').appendTo($targetElement);
@@ -779,6 +801,7 @@ function updateResourceRow(dataResponse) {
 
   var $situacaoField  = $j('#situacao-matricula-' + matriculaId + '-cc-' + ccId);
   var $fieldNotaExame = $j('#nota-exame-matricula-' + matriculaId + '-cc-' + ccId);
+  var $fieldNN = $j('#nn-matricula-' + matriculaId + '-cc-' + ccId);
 
   $situacaoField.html(dataResponse.situacao);
   colorizeSituacaoTd($situacaoField.closest('td'), dataResponse.situacao);
@@ -788,9 +811,14 @@ function updateResourceRow(dataResponse) {
 
     $fieldNotaExame.show();
     $fieldNotaExame.focus();
+    $fieldNN.text(dataResponse.nota_necessaria_exame);
   }
-  else if($fieldNotaExame.val() == '' && safeToLowerCase(dataResponse.situacao) != 'em exame')
+  else if($fieldNotaExame.val() == '' && safeToLowerCase(dataResponse.situacao) != 'em exame'){
     $fieldNotaExame.hide();
+    $fieldNN.text('-');
+  }else{
+    $fieldNN.text(dataResponse.nota_necessaria_exame);
+  }
 }
 
 function colorizeSituacaoTd(tdElement, situacao) {

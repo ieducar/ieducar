@@ -143,6 +143,9 @@ class indice extends clsCadastro
              (m.cod_menu_menu = 7 OR m.ref_cod_menu_pai = 7) OR
              (m.cod_menu_menu = 23 OR m.ref_cod_menu_pai = 23) OR
              (m.cod_menu_menu = 5 OR m.ref_cod_menu_pai = 5) OR
+             (m.cod_menu_menu = 25 OR m.ref_cod_menu_pai = 25) OR
+             (m.cod_menu_menu = 38 OR m.ref_cod_menu_pai = 38) OR
+             (m.cod_menu_menu = 56 OR m.ref_cod_menu_pai = 56) OR
              (m.cod_menu_menu = 57 OR m.ref_cod_menu_pai = 57))
       ORDER BY
         cod_menu_menu, upper(sub.nm_submenu)
@@ -391,6 +394,7 @@ function selAction(menu_pai, tipo, acao)
     for (var ct = 0; ct < element.length; ct++) {
       if(element[ct].getAttribute('type') == 'checkbox') {
         element[ct].checked = state;
+        element[ct].value = ( state ? 'on' : '');
       }
     }
 
@@ -398,7 +402,7 @@ function selAction(menu_pai, tipo, acao)
   }
 
   for (var ct=0; ct < menu[menu_pai].length; ct++){
-    document.getElementsByName('permissoes[' + menu[menu_pai][ct]  + '][' + tipo + ']')[0].checked = state;
+    document.getElementsByName('permissoes[' + menu[menu_pai][ct]  + '][' + tipo + ']')[0].value = ( state ? 'on' : '');
   }
 }
 </script>

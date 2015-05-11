@@ -61,6 +61,8 @@ class clsPmieducarMatricula
   var $formando;
   var $ref_cod_curso;
   var $semestre;
+  var $data_matricula;
+  var $data_cancel;
 
   /**
    * caso seja a primeira matricula do aluno
@@ -132,13 +134,14 @@ class clsPmieducarMatricula
     $data_cadastro = NULL, $data_exclusao = NULL, $ativo = NULL, $ano = NULL,
     $ultima_matricula = NULL, $modulo = NULL, $formando = NULL,
     $descricao_reclassificacao = NULL, $matricula_reclassificacao = NULL,
-    $ref_cod_curso = NULL, $matricula_transferencia = NULL, $semestre = NULL
+    $ref_cod_curso = NULL, $matricula_transferencia = NULL, $semestre = NULL,
+    $data_matricula = NULL, $data_cancel = NULL
   ) {
     $db = new clsBanco();
     $this->_schema = 'pmieducar.';
     $this->_tabela = $this->_schema . 'matricula';
 
-    $this->_campos_lista = $this->_todos_campos = "m.cod_matricula, m.ref_cod_reserva_vaga, m.ref_ref_cod_escola, m.ref_ref_cod_serie, m.ref_usuario_exc, m.ref_usuario_cad, m.ref_cod_aluno, m.aprovado, m.data_cadastro, m.data_exclusao, m.ativo, m.ano, m.ultima_matricula, m.modulo,formando,descricao_reclassificacao,matricula_reclassificacao, m.ref_cod_curso,m.matricula_transferencia,m.semestre";
+    $this->_campos_lista = $this->_todos_campos = "m.cod_matricula, m.ref_cod_reserva_vaga, m.ref_ref_cod_escola, m.ref_ref_cod_serie, m.ref_usuario_exc, m.ref_usuario_cad, m.ref_cod_aluno, m.aprovado, m.data_cadastro, m.data_exclusao, m.ativo, m.ano, m.ultima_matricula, m.modulo,formando,descricao_reclassificacao,matricula_reclassificacao, m.ref_cod_curso,m.matricula_transferencia,m.semestre, m.data_matricula, m.data_cancel";
 
     if (is_numeric($ref_usuario_exc)) {
       if (class_exists("clsPmieducarUsuario")) {
@@ -304,6 +307,13 @@ class clsPmieducarMatricula
     if (is_numeric($semestre)) {
       $this->semestre = $semestre;
     }
+    if (is_string($data_matricula)) {
+      $this->data_matricula = $data_matricula;
+    }
+
+    if (is_string($data_cancel)) {
+      $this->data_cancel = $data_cancel;
+    }    
   }
 
   /**
@@ -420,6 +430,18 @@ class clsPmieducarMatricula
         $gruda = ", ";
       }
 
+      if (is_string($this->data_matricula)) {
+        $campos .= "{$gruda}data_matricula";
+        $valores .= "{$gruda}'{$this->data_matricula}'";
+        $gruda = ", ";
+      }      
+
+      if (is_string($this->data_cancel)) {
+        $campos .= "{$gruda}data_cancel";
+        $valores .= "{$gruda}'{$this->data_cancel}'";
+        $gruda = ", ";
+      }         
+
       $db->Consulta("INSERT INTO {$this->_tabela} ($campos) VALUES ($valores)");
       return $db->InsertId("{$this->_tabela}_cod_matricula_seq");
     }
@@ -533,6 +555,16 @@ class clsPmieducarMatricula
         $gruda = ", ";
       }
 
+      if (is_string($this->data_matricula)) {
+        $set .= "{$gruda}data_matricula = '{$this->data_matricula}'";
+        $gruda = ", ";
+      }
+
+      if (is_string($this->data_cancel)) {
+        $set .= "{$gruda}data_cancel = '{$this->data_cancel}'";
+        $gruda = ", ";
+      }      
+
       if ($set) {
         $db->Consulta("UPDATE {$this->_tabela} SET $set WHERE cod_matricula = '{$this->cod_matricula}'");
         return TRUE;
@@ -567,7 +599,7 @@ class clsPmieducarMatricula
                     ) as data_nasc";
     }
 
-    $sql = "SELECT {$this->_campos_lista}, c.ref_cod_instituicao, p.nome, a.cod_aluno, a.ref_idpes, c.cod_curso, m.observacao FROM {$this->_tabela} m, {$this->_schema}curso c, {$this->_schema}aluno a, cadastro.pessoa p ";
+    $sql = "SELECT {$this->_campos_lista}, c.ref_cod_instituicao, p.nome, a.cod_aluno, a.ref_idpes, c.cod_curso, m.observacao, (SELECT sequencial_fechamento FROM pmieducar.matricula_turma WHERE ref_cod_matricula = cod_matricula AND ativo = 1 LIMIT 1) as sequencial_fechamento FROM {$this->_tabela} m, {$this->_schema}curso c, {$this->_schema}aluno a, cadastro.pessoa p ";
 
     $whereAnd = " AND ";
     $filtros = " WHERE m.ref_cod_aluno = a.cod_aluno AND a.ativo = 1 AND m.ref_cod_curso = c.cod_curso AND p.idpes = a.ref_idpes ";
@@ -638,7 +670,7 @@ class clsPmieducarMatricula
     }
 
     if ($int_ativo) {
-      $filtros .= "{$whereAnd} m.ativo = '1'";
+      $filtros .= "{$whereAnd} m.ativo = '1' AND a.ativo = '1' ";
       $whereAnd = " AND ";
     }
     elseif (!is_null($int_ativo) && is_numeric($int_ativo)) {

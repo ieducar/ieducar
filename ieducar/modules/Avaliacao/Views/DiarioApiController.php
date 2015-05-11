@@ -47,6 +47,7 @@ require_once 'RegraAvaliacao/Model/TipoPresenca.php';
 require_once 'RegraAvaliacao/Model/TipoParecerDescritivo.php';
 
 require_once 'include/pmieducar/clsPmieducarMatricula.inc.php';
+require_once 'include/modules/clsModulesNotaExame.inc.php';
 
 require_once 'Portabilis/Controller/ApiCoreController.php';
 require_once 'Portabilis/Array/Utils.php';
@@ -55,15 +56,16 @@ require_once 'Portabilis/Object/Utils.php';
 class DiarioApiController extends ApiCoreController
 {
   protected $_dataMapper  = 'Avaliacao_Model_NotaComponenteDataMapper';
-  protected $_processoAp  = 644;
+  protected $_processoAp  = 642;
 
   // validations
 
   // post nota validations
 
   protected function validatesValueOfAttValueIsInOpcoesNotas() {
-    $expectedValues = array_keys($this->getOpcoesNotas());
-    return $this->validator->validatesValueInSetOf($this->getRequest()->att_value, $expectedValues, 'att_value');
+    //$expectedValues = array_keys($this->getOpcoesNotas());
+    //return $this->validator->validatesValueInSetOf($this->getRequest()->att_value, $expectedValues, 'att_value');
+    return true;
   }
 
 
@@ -403,6 +405,12 @@ class DiarioApiController extends ApiCoreController
     $this->appendResponse('componente_curricular_id', $this->getRequest()->componente_curricular_id);
     $this->appendResponse('matricula_id', $this->getRequest()->matricula_id);
     $this->appendResponse('situacao',     $this->getSituacaoMatricula());
+    $this->appendResponse('nota_necessaria_exame', $notaNecessariaExame = $this->getNotaNecessariaExame($this->getRequest()->componente_curricular_id));
+
+    if (!empty($notaNecessariaExame) && $this->getSituacaoMatricula()=='Em Exame')
+      $this->createOrUpdateNotaExame($this->getRequest()->matricula_id, $this->getRequest()->componente_curricular_id, $notaNecessariaExame);
+    else
+      $this->deleteNotaExame($this->getRequest()->matricula_id, $this->getRequest()->componente_curricular_id);
   }
 
 
@@ -534,7 +542,7 @@ class DiarioApiController extends ApiCoreController
 
     if ($this->canGetMatriculas()) {
       $alunos = new clsPmieducarMatriculaTurma();
-      $alunos->setOrderby("translate(pessoa.nome,'".Portabilis_String_Utils::toLatin1(åáàãâäéèêëíìîïóòõôöúùüûçÿýñÅÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÝÑ)."', '".Portabilis_String_Utils::toLatin1(aaaaaaeeeeiiiiooooouuuucyynAAAAAAEEEEIIIIOOOOOUUUUCYN)."')");
+      $alunos->setOrderby("sequencial_fechamento , translate(pessoa.nome,'".Portabilis_String_Utils::toLatin1(åáàãâäéèêëíìîïóòõôöúùüûçÿýñÅÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÝÑ)."', '".Portabilis_String_Utils::toLatin1(aaaaaaeeeeiiiiooooouuuucyynAAAAAAEEEEIIIIOOOOOUUUUCYN)."')");
 
       $alunos = $alunos->lista(
         $this->getRequest()->matricula_id,
@@ -751,10 +759,15 @@ class DiarioApiController extends ApiCoreController
       $componente['nome']                  = $this->safeString(strtoupper($_componente->get('nome')), false);
       $componente['nota_atual']            = $this->getNotaAtual($etapa = null, $componente['id']);
       $componente['nota_exame']            = $this->getNotaExame($componente['id']);
-      //$componente['nota_necessaria_exame'] = $this->getNotaNecessariaExame($componente['id']);
       $componente['falta_atual']           = $this->getFaltaAtual($etapa = null, $componente['id']);
       $componente['parecer_atual']         = $this->getParecerAtual($componente['id']);
       $componente['situacao']              = $this->getSituacaoMatricula($componente['id']);
+      $componente['nota_necessaria_exame'] = ($componente['situacao'] == 'Em Exame' ? $this->getNotaNecessariaExame($componente['id']) : null );
+
+      if (!empty($componente['nota_necessaria_exame']))
+        $this->createOrUpdateNotaExame($matriculaId, $componente['id'], $componente['nota_necessaria_exame']);
+      else
+        $this->deleteNotaExame($matriculaId, $componente['id']);      
       
       //buscando pela área do conhecimento
       $area                                = $this->getAreaConhecimento($componente['id']);
@@ -803,6 +816,17 @@ class DiarioApiController extends ApiCoreController
     return $areaConhecimento;
   }
 
+  protected function createOrUpdateNotaExame($matriculaId, $componenteCurricularId, $notaExame) {
+    
+    $obj = new clsModulesNotaExame($matriculaId, $componenteCurricularId, $notaExame);
+
+    return ($obj->existe() ? $obj->edita() : $obj->cadastra());
+  }     
+
+  protected function deleteNotaExame($matriculaId, $componenteCurricularId){
+    $obj = new clsModulesNotaExame($matriculaId, $componenteCurricularId);
+    return ($obj->excluir());
+  }
 
   protected function getNotaAtual($etapa = null, $componenteCurricularId = null) {
     // defaults
@@ -1006,6 +1030,8 @@ class DiarioApiController extends ApiCoreController
       // etapas
       $itensRegra['quantidade_etapas'] = $this->serviceBoletim()->getOption('etapas');
     }
+
+    $itensRegra['nomenclatura_exame'] = ($GLOBALS['coreExt']['Config']->app->diario->nomenclatura_exame == 0 ? 'exame' : 'conselho');
 
     return $itensRegra;
   }

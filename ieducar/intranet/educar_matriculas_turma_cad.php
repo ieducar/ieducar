@@ -32,6 +32,7 @@ require_once 'include/clsBase.inc.php';
 require_once 'include/clsCadastro.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
+require_once 'lib/Portabilis/Date/Utils.php';
 
 /**
  * clsIndexBase class.
@@ -83,6 +84,9 @@ class indice extends clsCadastro
 
   var $matriculas_turma;
   var $incluir_matricula;
+  var $data_enturmacao;
+
+  var $check_desenturma;
 
   function Inicializar()
   {
@@ -199,14 +203,17 @@ class indice extends clsCadastro
       $this->matriculas_turma = unserialize(urldecode($_POST['matriculas_turma']));
     }
 
+    $alunosEnturmados = false;
+
     if (is_numeric($this->ref_cod_turma) && !$_POST) {
       $obj_matriculas_turma = new clsPmieducarMatriculaTurma();
-      $obj_matriculas_turma->setOrderby('nome_aluno');
+      $obj_matriculas_turma->setOrderby('sequencial_fechamento, nome_aluno');
       $lst_matriculas_turma = $obj_matriculas_turma->lista(NULL, $this->ref_cod_turma,
          NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL,
          array(1, 2, 3), NULL, NULL, $ano_letivo, NULL, TRUE, NULL, 1, TRUE);
 
       if (is_array($lst_matriculas_turma)) {
+        $alunosEnturmados = true;
         foreach ($lst_matriculas_turma as $key => $campo) {
           $this->matriculas_turma[$campo['ref_cod_matricula']]['sequencial_'] = $campo['sequencial'];
         }
@@ -224,6 +231,7 @@ class indice extends clsCadastro
     }
 
     if ($this->matriculas_turma) {
+      $this->campoRotulo('titulo', 'Matr&iacute;culas', "<b>&nbsp;Alunos matriculados&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Marque alunos para desenturmar</b><label style='display: block; width: 350px; margin-left: 196px;'><input type='checkbox' name='CheckTodos' onClick='marcarCheck(".'"check_desenturma[]"'.");'/>Marcar Todos</label>");
       foreach ($this->matriculas_turma as $matricula => $campo) {
         $obj_matricula = new clsPmieducarMatricula($matricula);
         $det_matricula = $obj_matricula->detalhe();
@@ -234,7 +242,9 @@ class indice extends clsCadastro
         $nm_aluno = $det_aluno['nome_aluno'];
 
         $this->campoTextoInv('ref_cod_matricula_' . $matricula, '', $nm_aluno,
-          30, 255, FALSE, FALSE, FALSE, '', '', '', '', 'ref_cod_matricula');
+          30, 255, FALSE, FALSE, TRUE, '', '', '', '', 'ref_cod_matricula');
+
+        $this->campoCheck('check_desenturma['.$matricula.']','',$matricula);
       }
     }
 
@@ -260,14 +270,17 @@ class indice extends clsCadastro
     }
 
     if (count($opcoes)) {
+      $this->inputsHelper()->date('data_enturmacao', array('label' => 'Data da enturmação', 'value' => date('Y-m-d')));
       asort($opcoes);
       foreach ($opcoes as $key => $aluno) {
         $this->campoCheck('ref_cod_matricula[' . $key . ']', 'Aluno', $key,
           $aluno, NULL, NULL, NULL);
       }
     }
-    else {
+    else if($alunosEnturmados){
       $this->campoRotulo('rotulo_1', '-', 'Todos os alunos matriculados na série já se encontram enturmados.');
+    }else {      
+      $this->campoRotulo('rotulo_1', '-', 'Não há alunos enturmados.');
     }
 
     $this->campoQuebra();
@@ -281,7 +294,13 @@ class indice extends clsCadastro
   {
     @session_start();
     $this->pessoa_logada = $_SESSION['id_pessoa'];
+    $this->data_enturmacao = Portabilis_Date_Utils::brToPgSQL($this->data_enturmacao);
     @session_write_close();
+
+    // realiza desenturmações
+    foreach ($this->check_desenturma as $matricula) {
+      $this->removerEnturmacao($matricula,$this->ref_cod_turma);
+    }    
 
     if ($this->matriculas_turma) {
       foreach ($this->ref_cod_matricula as $matricula => $campo) {
@@ -291,6 +310,7 @@ class indice extends clsCadastro
         $existe = $obj->existe();
 
         if (!$existe) {
+          $obj->data_enturmacao = $this->data_enturmacao;
           $cadastrou = $obj->cadastra();
 
           if (!$cadastrou) {
@@ -312,6 +332,34 @@ class indice extends clsCadastro
   function Excluir()
   {
   }
+
+  function removerEnturmacao($matriculaId, $turmaId) {
+    $sequencialEnturmacao = $this->getSequencialEnturmacaoByTurmaId($matriculaId, $turmaId);
+    $enturmacao = new clsPmieducarMatriculaTurma($matriculaId,
+                                                 $turmaId,
+                                                 $this->pessoa_logada, 
+                                                 NULL, 
+                                                 NULL,
+                                                 NULL, 
+                                                 0,
+                                                 NULL,
+                                                 $sequencialEnturmacao);
+
+    return $enturmacao->edita();
+  }
+
+
+  function getSequencialEnturmacaoByTurmaId($matriculaId, $turmaId) {
+    $db = new clsBanco();
+    $sql = 'select coalesce(max(sequencial), 1) from pmieducar.matricula_turma where ativo = 1 and ref_cod_matricula = $1 and ref_cod_turma = $2';
+
+    if ($db->execPreparedQuery($sql, array($matriculaId, $turmaId)) != false) {
+      $db->ProximoRegistro();
+      $sequencial = $db->Tupla();
+      return $sequencial[0];
+    }
+    return 1;
+  }  
 }
 
 // Instancia objeto de página
@@ -325,3 +373,30 @@ $pagina->addForm($miolo);
 
 // Gera o código HTML
 $pagina->MakeAll();
+
+?>
+
+<script type="text/javascript">
+
+  function fixUpCheckBoxes(){
+    $j('input[name^=check_desenturma]').each(function(index, element){
+      element.id = 'check_desenturma[]';
+      element.checked = false;
+    });
+  }
+
+  fixUpCheckBoxes();
+
+  function marcarCheck(idValue) {
+      // testar com formcadastro
+      var contaForm = document.formcadastro.elements.length;
+      var campo = document.formcadastro;
+      var i;
+        for (i=0; i<contaForm; i++) {
+            if (campo.elements[i].id == idValue) {
+
+                campo.elements[i].checked = campo.CheckTodos.checked;
+            }
+        }
+  }
+</script>

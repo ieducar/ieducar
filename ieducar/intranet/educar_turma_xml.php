@@ -38,7 +38,6 @@
 	if( is_numeric( $_GET["esc"] ) && is_numeric( $_GET["ser"] ) )
 	{
 		$db = new clsBanco();
-//		$db->Consulta( "SELECT cod_turma, nm_turma FROM pmieducar.turma WHERE ref_ref_cod_escola = {$_GET["esc"]} AND ref_ref_cod_serie = {$_GET["ser"]} AND ativo = 1 ORDER BY nm_turma ASC" );
 		$db->Consulta( "SELECT cod_turma, nm_turma || ' - ' || ano AS nome FROM pmieducar.turma WHERE ref_ref_cod_escola = {$_GET["esc"]} AND (ref_ref_cod_serie = {$_GET["ser"]}  OR ref_ref_cod_serie_mult = {$_GET["ser"]}) AND ativo = 1 ORDER BY nm_turma ASC, ano DESC" );
 		while ( $db->ProximoRegistro() )
 		{

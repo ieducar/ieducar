@@ -54,16 +54,17 @@ class clsPmieducarTurma
 	var $hora_fim_intervalo;
 
 	var $ref_cod_regente;
-  	var $ref_cod_instituicao_regente;
+	var $ref_cod_instituicao_regente;
 
-  	var $ref_cod_instituicao;
-  	var $ref_cod_curso;
+	var $ref_cod_instituicao;
+	var $ref_cod_curso;
 
-  	var $ref_ref_cod_serie_mult;
-    var $ref_ref_cod_escola_mult;
-    var $visivel;
-    var $tipo_boletim;
-    var $ano;
+	var $ref_ref_cod_serie_mult;
+  var $ref_ref_cod_escola_mult;
+  var $visivel;
+  var $tipo_boletim;
+  var $ano;
+  var $data_fechamento;
 	// propriedades padrao
 
 	/**
@@ -128,18 +129,13 @@ class clsPmieducarTurma
 	 *
 	 * @return object
 	 */
-	function clsPmieducarTurma( $cod_turma = null, $ref_usuario_exc = null, $ref_usuario_cad = null, $ref_ref_cod_serie = null, 
-	        $ref_ref_cod_escola = null, $ref_cod_infra_predio_comodo = null, $nm_turma = null, $sgl_turma = null, $max_aluno = null, 
-	        $multiseriada = null, $data_cadastro = null, $data_exclusao = null, $ativo = null, $ref_cod_turma_tipo = null, 
-	        $hora_inicial = null, $hora_final = null, $hora_inicio_intervalo = null, $hora_fim_intervalo = null, $ref_cod_regente = null, 
-	        $ref_cod_instituicao_regente = null, $ref_cod_instituicao = null, $ref_cod_curso = null, $ref_ref_cod_serie_mult = null, 
-	        $ref_ref_cod_escola_mult = null, $visivel = null, $turma_turno_id = null, $tipo_boletim = null, $ano = null)
-	{
+	function clsPmieducarTurma( $cod_turma = null, $ref_usuario_exc = null, $ref_usuario_cad = null, $ref_ref_cod_serie = null, $ref_ref_cod_escola = null, $ref_cod_infra_predio_comodo = null, $nm_turma = null, $sgl_turma = null, $max_aluno = null, $multiseriada = null, $data_cadastro = null, $data_exclusao = null, $ativo = null, $ref_cod_turma_tipo = null, $hora_inicial = null, $hora_final = null, $hora_inicio_intervalo = null, $hora_fim_intervalo = null, $ref_cod_regente = null, $ref_cod_instituicao_regente = null, $ref_cod_instituicao = null, $ref_cod_curso = null, $ref_ref_cod_serie_mult = null, $ref_ref_cod_escola_mult = null, $visivel = null, $turma_turno_id = null, $tipo_boletim = null, $ano = null, $data_fechamento = NULL)
+ 	{
 		$db = new clsBanco();
 		$this->_schema = "pmieducar.";
 		$this->_tabela = "{$this->_schema}turma";
 
-		$this->_campos_lista = $this->_todos_campos = "t.cod_turma, t.ref_usuario_exc, t.ref_usuario_cad, t.ref_ref_cod_serie, t.ref_ref_cod_escola, t.ref_cod_infra_predio_comodo, t.nm_turma, t.sgl_turma, t.max_aluno, t.multiseriada, t.data_cadastro, t.data_exclusao, t.ativo, t.ref_cod_turma_tipo, t.hora_inicial, t.hora_final, t.hora_inicio_intervalo, t.hora_fim_intervalo, t.ref_cod_regente, t.ref_cod_instituicao_regente,t.ref_cod_instituicao, t.ref_cod_curso, t.ref_ref_cod_serie_mult, t.ref_ref_cod_escola_mult, t.visivel, t.turma_turno_id, t.tipo_boletim, t.ano";
+		$this->_campos_lista = $this->_todos_campos = "t.cod_turma, t.ref_usuario_exc, t.ref_usuario_cad, t.ref_ref_cod_serie, t.ref_ref_cod_escola, t.ref_cod_infra_predio_comodo, t.nm_turma, t.sgl_turma, t.max_aluno, t.multiseriada, t.data_cadastro, t.data_exclusao, t.ativo, t.ref_cod_turma_tipo, t.hora_inicial, t.hora_final, t.hora_inicio_intervalo, t.hora_fim_intervalo, t.ref_cod_regente, t.ref_cod_instituicao_regente,t.ref_cod_instituicao, t.ref_cod_curso, t.ref_ref_cod_serie_mult, t.ref_ref_cod_escola_mult, t.visivel, t.turma_turno_id, t.tipo_boletim, t.ano, t.data_fechamento ";
 
 		if( is_numeric( $ref_cod_turma_tipo ) )
 		{
@@ -460,9 +456,10 @@ class clsPmieducarTurma
 			$this->visivel = dbBool($visivel);
 		}
 
-    $this->turma_turno_id = $turma_turno_id;
-    $this->tipo_boletim   = $tipo_boletim;
-    $this->ano            = $ano;
+    $this->turma_turno_id  = $turma_turno_id;
+    $this->tipo_boletim    = $tipo_boletim;
+    $this->ano             = $ano;
+    $this->data_fechamento = $data_fechamento;
 	}
 
 	/**
@@ -626,6 +623,12 @@ class clsPmieducarTurma
 				$valores .= "{$gruda}'{$this->ano}'";
 				$gruda    = ", ";
 			}
+
+			if(is_string($this->data_fechamento)  && $this->data_fechamento!=''){
+				$campos  .= "{$gruda}data_fechamento";
+				$valores .= "{$gruda}'{$this->data_fechamento}'";
+				$gruda    = ", ";
+			}				
 
 			$db->Consulta( "INSERT INTO {$this->_tabela} ( $campos ) VALUES( $valores )" );
 			
@@ -812,6 +815,15 @@ class clsPmieducarTurma
 				$set  .= "{$gruda}ano = NULL";
 				$gruda = ", ";
 			}
+
+			if(is_string($this->data_fechamento) && $this->data_fechamento!='') {
+				$set  .= "{$gruda}data_fechamento = '{$this->data_fechamento}'";
+				$gruda = ", ";
+			}
+			else {
+				$set  .= "{$gruda}data_fechamento = NULL";
+				$gruda = ", ";
+			}			
 
 			if( $set )
 			{
@@ -1914,12 +1926,8 @@ and  e.cod_escola = t.ref_ref_cod_escola
 			$whereAnd = " AND ";
 		}
 
-		$filtros .= "{$whereAnd} (ano = (SELECT max(ano)
-					  FROM pmieducar.escola_ano_letivo mat	        
-					  WHERE ativo = 1 and mat.andamento = 1) or ((t.ano is null) AND (select 1 from pmieducar.matricula_turma 
-					  where ativo = 1 and date_part('year',data_cadastro) = (SELECT max(ano)
-					  FROM pmieducar.escola_ano_letivo
-					  WHERE ativo = 1 and andamento = 1) and t.cod_turma = ref_cod_turma limit 1) is not null))";
+		// Retirar OR quando todas turmas tiverem a coluna ANO definido.
+		$filtros .= "{$whereAnd} t.ano = ( SELECT ano FROM pmieducar.escola_ano_letivo enl WHERE enl.ref_cod_escola = t.ref_ref_cod_escola AND andamento = 1)";
 
 		$db = new clsBanco();
 		$countCampos = count( explode( ",", $this->_campos_lista ) );
