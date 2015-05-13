@@ -11167,7 +11167,7 @@ ALTER TABLE cadastro.aviso_nome OWNER TO ieducar;
 --
 
 CREATE SEQUENCE deficiencia_cod_deficiencia_seq
-    START WITH 1
+    START WITH 15
     INCREMENT BY 1
     MINVALUE 0
     NO MAXVALUE
