@@ -4976,6 +4976,254 @@ END; $$;
 
 ALTER FUNCTION historico.fcn_grava_historico_socio() OWNER TO ieducar;
 
+SET search_path = modules, pg_catalog;
+
+--
+-- Name: copia_notas_transf(integer, integer); Type: FUNCTION; Schema: modules; Owner: ieducar
+--
+
+CREATE FUNCTION copia_notas_transf(old_matricula_id integer, new_matricula_id integer) RETURNS character varying
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+  cur_comp RECORD;
+  cur_comp_media RECORD;
+  cur_falta_geral RECORD;
+  cur_falta_comp RECORD;
+  cur_parecer_geral RECORD;
+  cur_parecer_comp RECORD;
+  v_tipo_nota integer;
+  v_tipo_parecer integer;
+  v_tipo_falta integer;
+  v_nota_id integer;
+  v_old_nota_id integer;
+  v_falta_id integer;
+  v_old_falta_id integer;
+  v_parecer_id integer;
+  v_old_parecer_id integer;
+  begin
+
+  /* VERIFICA SE AS MATRICULAS FAZEM PARTE DO MESMO ANO LETIVO*/
+  IF ((SELECT eal.ano FROM pmieducar.escola_ano_letivo eal
+        INNER JOIN pmieducar.matricula mat ON (mat.ref_ref_cod_escola = eal.ref_cod_escola)
+         WHERE mat.cod_matricula = old_matricula_id and eal.andamento = 1 limit 1) = (SELECT eal.ano FROM pmieducar.escola_ano_letivo eal
+                                        INNER JOIN pmieducar.matricula mat ON (mat.ref_ref_cod_escola = eal.ref_cod_escola)
+                                         WHERE mat.cod_matricula = new_matricula_id and eal.andamento = 1 limit 1) ) THEN
+
+
+    IF (
+     (  CASE WHEN (select padrao_ano_escolar from pmieducar.curso 
+        where cod_curso = (select ref_cod_curso from pmieducar.matricula 
+        where cod_matricula = new_matricula_id)) = 1
+       THEN  (select max(sequencial) as qtd_etapa from pmieducar.ano_letivo_modulo mod
+        inner join pmieducar.matricula mat on (mat.ref_ref_cod_escola = mod.ref_ref_cod_escola)
+                    where mat.cod_matricula = new_matricula_id)
+             ELSE (select count(ref_cod_modulo) from pmieducar.turma_modulo
+        where ref_cod_turma = (select ref_cod_turma from pmieducar.matricula_turma 
+        where ref_cod_matricula = new_matricula_id))
+             END
+   ) = (CASE WHEN (select padrao_ano_escolar from pmieducar.curso 
+        where cod_curso = (select ref_cod_curso from pmieducar.matricula 
+        where cod_matricula = old_matricula_id)) = 1
+       THEN  (select max(sequencial) as qtd_etapa from pmieducar.ano_letivo_modulo mod
+              inner join pmieducar.matricula mat on (mat.ref_ref_cod_escola = mod.ref_ref_cod_escola)
+                    where mat.cod_matricula = old_matricula_id)
+             ELSE  (select count(ref_cod_modulo) from pmieducar.turma_modulo
+        where ref_cod_turma = (select ref_cod_turma from pmieducar.matricula_turma 
+        where ref_cod_matricula = old_matricula_id))
+             END
+        )
+  ) THEN
+
+   -- IF (TRUE) THEN
+      /* VERIFICA SE UTILIZAM A MESMA REGRA DE AVALIAÃ‡ÃƒO*/
+      IF ((SELECT id FROM modules.regra_avaliacao rg
+          INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+          INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+          where m.cod_matricula = old_matricula_id ) = 
+            (SELECT id FROM modules.regra_avaliacao rg
+              INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+              INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+              where m.cod_matricula = new_matricula_id ) ) THEN
+
+
+        v_tipo_nota := (SELECT tipo_nota FROM modules.regra_avaliacao rg
+                  INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+                  INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+                  where m.cod_matricula = old_matricula_id);
+
+        v_tipo_falta := (SELECT tipo_presenca FROM modules.regra_avaliacao rg
+                  INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+                  INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+                  where m.cod_matricula = old_matricula_id);
+
+        v_tipo_parecer := (SELECT parecer_descritivo FROM modules.regra_avaliacao rg
+                  INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+                  INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+                  where m.cod_matricula = old_matricula_id);
+        /* SE A REGRA UTILIZAR NOTA, COPIA AS NOTAS*/
+        IF (v_tipo_nota >0) THEN
+
+          INSERT INTO modules.nota_aluno (matricula_id)VALUES (new_matricula_id);
+          v_nota_id := (SELECT max(id) FROM modules.nota_aluno WHERE matricula_id = new_matricula_id);
+
+          v_old_nota_id := (SELECT max(id) FROM modules.nota_aluno WHERE matricula_id = old_matricula_id);
+
+          FOR cur_comp IN (SELECT * FROM modules.nota_componente_curricular where nota_aluno_id = v_old_nota_id) LOOP
+            INSERT INTO modules.nota_componente_curricular (nota_aluno_id,componente_curricular_id,nota,nota_arredondada,etapa)
+            VALUES(v_nota_id,cur_comp.componente_curricular_id,cur_comp.nota,cur_comp.nota_arredondada,cur_comp.etapa);
+          END LOOP;
+
+          FOR cur_comp_media IN (SELECT * FROM modules.nota_componente_curricular_media where nota_aluno_id = v_old_nota_id) LOOP
+            INSERT INTO modules.nota_componente_curricular_media (nota_aluno_id,componente_curricular_id,media,media_arredondada,etapa)
+            VALUES(v_nota_id,cur_comp_media.componente_curricular_id,cur_comp_media.media,cur_comp_media.media_arredondada,cur_comp_media.etapa);
+          END LOOP;
+        END IF;
+
+        IF (v_tipo_falta = 1) THEN
+
+            INSERT INTO modules.falta_aluno (matricula_id, tipo_falta) VALUES (new_matricula_id,1);
+            v_falta_id = (SELECT max(id) FROM modules.falta_aluno WHERE matricula_id = new_matricula_id);
+          v_old_falta_id := (SELECT max(id) FROM modules.falta_aluno WHERE matricula_id = old_matricula_id);
+
+          FOR cur_falta_geral IN (SELECT * FROM modules.falta_geral where falta_aluno_id = v_old_falta_id) LOOP
+            INSERT INTO modules.falta_geral (falta_aluno_id,quantidade,etapa)
+            VALUES(v_falta_id,cur_falta_geral.quantidade, cur_falta_geral.etapa);
+          END LOOP;
+        END IF;
+
+        IF (v_tipo_falta = 2) THEN
+
+          INSERT INTO modules.falta_aluno (matricula_id, tipo_falta) VALUES (new_matricula_id,2);
+          v_falta_id = (SELECT max(id) FROM modules.falta_aluno WHERE matricula_id = new_matricula_id);
+          v_old_falta_id := (SELECT max(id) FROM modules.falta_aluno WHERE matricula_id = old_matricula_id);
+
+          FOR cur_falta_comp IN (SELECT * FROM modules.falta_componente_curricular where falta_aluno_id = v_old_falta_id) LOOP
+            INSERT INTO modules.falta_componente_curricular (falta_aluno_id,componente_curricular_id,quantidade,etapa)
+            VALUES(v_falta_id,cur_falta_comp.componente_curricular_id,cur_falta_comp.quantidade, cur_falta_comp.etapa);
+          END LOOP;
+        END IF;
+
+        IF (v_tipo_parecer = 2) THEN
+
+          INSERT INTO modules.parecer_aluno (matricula_id, parecer_descritivo)VALUES (new_matricula_id,2);
+          v_parecer_id := (SELECT max(id) FROM modules.parecer_aluno WHERE matricula_id = new_matricula_id);
+          v_old_parecer_id := (SELECT max(id) FROM modules.parecer_aluno WHERE matricula_id = old_matricula_id);
+
+          FOR cur_parecer_comp IN (SELECT * FROM modules.parecer_componente_curricular where parecer_aluno_id = v_old_parecer_id) LOOP
+            INSERT INTO modules.parecer_componente_curricular (parecer_aluno_id,componente_curricular_id,parecer,etapa)
+            VALUES(v_parecer_id,cur_parecer_comp.componente_curricular_id,cur_parecer_comp.parecer, cur_parecer_comp.etapa);
+          END LOOP;
+        END IF;
+
+        IF (v_tipo_parecer = 3) THEN
+
+          INSERT INTO modules.parecer_aluno (matricula_id, parecer_descritivo)VALUES (new_matricula_id,3);
+          v_parecer_id := (SELECT max(id) FROM modules.parecer_aluno WHERE matricula_id = new_matricula_id);
+          v_old_parecer_id := (SELECT max(id) FROM modules.parecer_aluno WHERE matricula_id = old_matricula_id);
+
+          FOR cur_parecer_geral IN (SELECT * FROM modules.parecer_geral where parecer_aluno_id = v_old_parecer_id) LOOP
+            INSERT INTO modules.parecer_geral (parecer_aluno_id,parecer,etapa)
+            VALUES(v_parecer_id,cur_parecer_geral.parecer, cur_parecer_geral.etapa);
+          END LOOP;
+        END IF;
+
+      ELSE RETURN 'REGRA AVALIACAO DIFERENTE'; END IF;
+    ELSE RETURN 'ETAPA DIFERENTE'; END IF;
+  RETURN '';
+  END IF;
+
+  end;$$;
+
+
+ALTER FUNCTION modules.copia_notas_transf(old_matricula_id integer, new_matricula_id integer) OWNER TO ieducar;
+
+--
+-- Name: frequencia_da_matricula(integer); Type: FUNCTION; Schema: modules; Owner: ieducar
+--
+
+CREATE FUNCTION frequencia_da_matricula(p_matricula_id integer) RETURNS double precision
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE 
+  v_regra_falta integer;
+  v_falta_aluno_id  integer;
+  v_qtd_dias_letivos_serie integer;
+  v_total_faltas integer;
+  v_qtd_horas_serie integer;
+  v_hora_falta FLOAT;
+  begin 
+
+  /*
+    regra_falta: 
+    1- Global
+    2- Por componente
+  */
+  v_regra_falta:= (SELECT rg.tipo_presenca FROM modules.regra_avaliacao rg
+            INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+            INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+            where m.cod_matricula = p_matricula_id);
+
+    v_falta_aluno_id := ( SELECT id FROM modules.falta_aluno WHERE matricula_id = p_matricula_id ORDER BY id DESC LIMIT 1 );
+
+  IF (v_regra_falta = 1) THEN
+
+    v_qtd_dias_letivos_serie := (SELECT s.dias_letivos 
+                    FROM pmieducar.serie s 
+                    INNER JOIN pmieducar.matricula m ON (m.ref_ref_cod_serie = s.cod_serie) 
+                    WHERE m.cod_matricula = p_matricula_id);
+
+    v_total_faltas := ( SELECT SUM(quantidade) FROM falta_geral WHERE falta_aluno_id = v_falta_aluno_id);
+
+    RETURN (((v_qtd_dias_letivos_serie - v_total_faltas) * 100 ) / v_qtd_dias_letivos_serie );
+
+  ELSE
+    
+    v_qtd_horas_serie := ( SELECT s.carga_horaria 
+                    FROM pmieducar.serie s 
+                    INNER JOIN pmieducar.matricula m ON (m.ref_ref_cod_serie = s.cod_serie) 
+                    WHERE m.cod_matricula = p_matricula_id);
+    
+    v_total_faltas := ( SELECT SUM(quantidade) FROM falta_componente_curricular WHERE falta_aluno_id = v_falta_aluno_id);
+
+    v_hora_falta := (SELECT hora_falta FROM pmieducar.curso c 
+              INNER JOIN pmieducar.matricula m ON (c.cod_curso = m.ref_cod_curso)
+              WHERE m.cod_matricula = p_matricula_id);
+
+    RETURN  (100 - ((v_total_faltas * (v_hora_falta*100))/v_qtd_horas_serie));
+
+  END IF;
+
+  end;$$;
+
+
+ALTER FUNCTION modules.frequencia_da_matricula(p_matricula_id integer) OWNER TO ieducar;
+
+--
+-- Name: preve_data_emprestimo(integer, date); Type: FUNCTION; Schema: modules; Owner: ieducar
+--
+
+CREATE FUNCTION preve_data_emprestimo(biblioteca_id integer, data_prevista date) RETURNS date
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE 
+  begin           
+  
+  IF (( select 1 from pmieducar.biblioteca_dia WHERE ref_cod_biblioteca = biblioteca_id AND dia = ((SELECT EXTRACT(DOW FROM data_prevista))+1) limit 1) IS NOT null) THEN    
+    IF ((SELECT 1 FROM pmieducar.biblioteca_feriados WHERE ref_cod_biblioteca = biblioteca_id and data_feriado = data_prevista) IS NULL) THEN
+      RETURN data_prevista;
+    ELSE
+      RETURN modules.preve_data_emprestimo(biblioteca_id, data_prevista+1);
+    END IF;
+  ELSE
+    RETURN modules.preve_data_emprestimo(biblioteca_id, data_prevista+1);
+  END IF;
+
+  end;$$;
+
+
+ALTER FUNCTION modules.preve_data_emprestimo(biblioteca_id integer, data_prevista date) OWNER TO ieducar;
+
 SET search_path = pmieducar, pg_catalog;
 
 --
@@ -7498,6 +7746,29 @@ CREATE FUNCTION fcn_upper_nrm(text) RETURNS text
 
 
 ALTER FUNCTION public.fcn_upper_nrm(text) OWNER TO ieducar;
+
+--
+-- Name: retira_data_cancel_matricula_fun(); Type: FUNCTION; Schema: public; Owner: ieducar
+--
+
+CREATE FUNCTION retira_data_cancel_matricula_fun() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+  BEGIN
+
+  UPDATE pmieducar.matricula
+  SET    data_cancel = NULL
+  WHERE  cod_matricula = new.cod_matricula
+  AND    data_cancel IS DISTINCT FROM NULL
+  AND    aprovado = 3 
+  AND (SELECT 1 FROM pmieducar.transferencia_solicitacao WHERE ativo = 1 AND ref_cod_matricula_saida = new.cod_matricula limit 1) is null;
+
+  RETURN NULL;
+  END
+  $$;
+
+
+ALTER FUNCTION public.retira_data_cancel_matricula_fun() OWNER TO ieducar;
 
 SET search_path = acesso, pg_catalog;
 
@@ -11073,6 +11344,66 @@ ALTER TABLE falta_geral_id_seq OWNER TO ieducar;
 ALTER SEQUENCE falta_geral_id_seq OWNED BY falta_geral.id;
 
 
+SET default_with_oids = true;
+
+--
+-- Name: ficha_medica_aluno; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE ficha_medica_aluno (
+    ref_cod_aluno integer NOT NULL,
+    altura character(4),
+    peso character(7),
+    grupo_sanguineo character(2),
+    fator_rh character(1),
+    alergia_medicamento character(1),
+    desc_alergia_medicamento character varying(100),
+    alergia_alimento character(1),
+    desc_alergia_alimento character varying(100),
+    doenca_congenita character(1),
+    desc_doenca_congenita character varying(100),
+    fumante character(1),
+    doenca_caxumba character(1),
+    doenca_sarampo character(1),
+    doenca_rubeola character(1),
+    doenca_catapora character(1),
+    doenca_escarlatina character(1),
+    doenca_coqueluche character(1),
+    doenca_outras character varying(100),
+    epiletico character(1),
+    epiletico_tratamento character(1),
+    hemofilico character(1),
+    hipertenso character(1),
+    asmatico character(1),
+    diabetico character(1),
+    insulina character(1),
+    tratamento_medico character(1),
+    desc_tratamento_medico character varying(100),
+    medicacao_especifica character(1),
+    desc_medicacao_especifica character varying(100),
+    acomp_medico_psicologico character(1),
+    desc_acomp_medico_psicologico character varying(100),
+    restricao_atividade_fisica character(1),
+    desc_restricao_atividade_fisica character varying(100),
+    fratura_trauma character(1),
+    desc_fratura_trauma character varying(100),
+    plano_saude character(1),
+    desc_plano_saude character varying(50),
+    hospital_clinica character varying(100),
+    hospital_clinica_endereco character varying(50),
+    hospital_clinica_telefone character varying(20),
+    responsavel character varying(50),
+    responsavel_parentesco character varying(20),
+    responsavel_parentesco_telefone character varying(20),
+    responsavel_parentesco_celular character varying(20),
+    observacao character varying(255)
+);
+
+
+ALTER TABLE ficha_medica_aluno OWNER TO ieducar;
+
+SET default_with_oids = false;
+
 --
 -- Name: formula_media; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
 --
@@ -11141,6 +11472,46 @@ CREATE TABLE itinerario_transporte_escolar (
 
 
 ALTER TABLE itinerario_transporte_escolar OWNER TO ieducar;
+
+--
+-- Name: moradia_aluno; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE moradia_aluno (
+    ref_cod_aluno integer NOT NULL,
+    moradia character(1),
+    material character(1) DEFAULT 'A'::bpchar,
+    casa_outra character varying(20),
+    moradia_situacao integer,
+    quartos integer,
+    sala integer,
+    copa integer,
+    banheiro integer,
+    garagem integer,
+    empregada_domestica character(1),
+    automovel character(1),
+    motocicleta character(1),
+    computador character(1),
+    geladeira character(1),
+    fogao character(1),
+    maquina_lavar character(1),
+    microondas character(1),
+    video_dvd character(1),
+    televisao character(1),
+    celular character(1),
+    telefone character(1),
+    quant_pessoas integer,
+    renda double precision,
+    agua_encanada character(1),
+    poco character(1),
+    energia character(1),
+    esgoto character(1),
+    fossa character(1),
+    lixo character(1)
+);
+
+
+ALTER TABLE moradia_aluno OWNER TO ieducar;
 
 --
 -- Name: motorista_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -11260,6 +11631,23 @@ CREATE TABLE nota_componente_curricular_media (
 
 
 ALTER TABLE nota_componente_curricular_media OWNER TO ieducar;
+
+SET default_with_oids = true;
+
+--
+-- Name: nota_exame; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE nota_exame (
+    ref_cod_matricula integer NOT NULL,
+    ref_cod_componente_curricular integer NOT NULL,
+    nota_exame numeric(5,3)
+);
+
+
+ALTER TABLE nota_exame OWNER TO ieducar;
+
+SET default_with_oids = false;
 
 --
 -- Name: parecer_aluno; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -11624,6 +12012,34 @@ CREATE TABLE transporte_aluno (
 
 ALTER TABLE transporte_aluno OWNER TO ieducar;
 
+SET default_with_oids = true;
+
+--
+-- Name: uniforme_aluno; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE uniforme_aluno (
+    ref_cod_aluno integer NOT NULL,
+    recebeu_uniforme character(1),
+    quantidade_camiseta integer,
+    tamanho_camiseta character(2),
+    quantidade_blusa_jaqueta integer,
+    tamanho_blusa_jaqueta character(2),
+    quantidade_bermuda integer,
+    tamanho_bermuda character(2),
+    quantidade_calca integer,
+    tamanho_calca character(2),
+    quantidade_saia integer,
+    tamanho_saia character(2),
+    quantidade_calcado integer,
+    tamanho_calcado character(2),
+    quantidade_meia integer,
+    tamanho_meia character(2)
+);
+
+
+ALTER TABLE uniforme_aluno OWNER TO ieducar;
+
 --
 -- Name: veiculo_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
 --
@@ -11637,8 +12053,6 @@ CREATE SEQUENCE veiculo_seq
 
 
 ALTER TABLE veiculo_seq OWNER TO ieducar;
-
-SET default_with_oids = true;
 
 --
 -- Name: veiculo; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -14357,7 +14771,9 @@ CREATE TABLE matricula (
     ref_cod_curso integer,
     matricula_transferencia boolean DEFAULT false NOT NULL,
     semestre smallint,
-    observacao text DEFAULT ''::text
+    observacao text DEFAULT ''::text,
+    data_matricula timestamp without time zone,
+    data_cancel timestamp without time zone
 );
 
 
@@ -14433,7 +14849,9 @@ CREATE TABLE matricula_turma (
     ref_usuario_cad integer NOT NULL,
     data_cadastro timestamp without time zone NOT NULL,
     data_exclusao timestamp without time zone,
-    ativo smallint DEFAULT (1)::smallint NOT NULL
+    ativo smallint DEFAULT (1)::smallint NOT NULL,
+    data_enturmacao date NOT NULL,
+    sequencial_fechamento integer DEFAULT 0 NOT NULL
 );
 
 
@@ -15672,7 +16090,8 @@ CREATE TABLE turma (
     visivel boolean,
     tipo_boletim integer,
     turma_turno_id integer,
-    ano integer
+    ano integer,
+    data_fechamento date
 );
 
 
@@ -18300,7 +18719,6 @@ COPY aviso_nome (idpes, aviso) FROM stdin;
 --
 
 COPY deficiencia (cod_deficiencia, nm_deficiencia) FROM stdin;
-1	Nenhuma
 2	Cegueira
 3	Baixa Visão
 4	Surdez
@@ -30148,6 +30566,14 @@ SELECT pg_catalog.setval('falta_geral_id_seq', 1, false);
 
 
 --
+-- Data for Name: ficha_medica_aluno; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY ficha_medica_aluno (ref_cod_aluno, altura, peso, grupo_sanguineo, fator_rh, alergia_medicamento, desc_alergia_medicamento, alergia_alimento, desc_alergia_alimento, doenca_congenita, desc_doenca_congenita, fumante, doenca_caxumba, doenca_sarampo, doenca_rubeola, doenca_catapora, doenca_escarlatina, doenca_coqueluche, doenca_outras, epiletico, epiletico_tratamento, hemofilico, hipertenso, asmatico, diabetico, insulina, tratamento_medico, desc_tratamento_medico, medicacao_especifica, desc_medicacao_especifica, acomp_medico_psicologico, desc_acomp_medico_psicologico, restricao_atividade_fisica, desc_restricao_atividade_fisica, fratura_trauma, desc_fratura_trauma, plano_saude, desc_plano_saude, hospital_clinica, hospital_clinica_endereco, hospital_clinica_telefone, responsavel, responsavel_parentesco, responsavel_parentesco_telefone, responsavel_parentesco_celular, observacao) FROM stdin;
+\.
+
+
+--
 -- Data for Name: formula_media; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
@@ -30177,6 +30603,14 @@ COPY itinerario_transporte_escolar (cod_itinerario_transporte_escolar, ref_cod_r
 --
 
 SELECT pg_catalog.setval('itinerario_transporte_escolar_seq', 1, false);
+
+
+--
+-- Data for Name: moradia_aluno; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY moradia_aluno (ref_cod_aluno, moradia, material, casa_outra, moradia_situacao, quartos, sala, copa, banheiro, garagem, empregada_domestica, automovel, motocicleta, computador, geladeira, fogao, maquina_lavar, microondas, video_dvd, televisao, celular, telefone, quant_pessoas, renda, agua_encanada, poco, energia, esgoto, fossa, lixo) FROM stdin;
+\.
 
 
 --
@@ -30229,6 +30663,14 @@ SELECT pg_catalog.setval('nota_componente_curricular_id_seq', 1, true);
 --
 
 COPY nota_componente_curricular_media (nota_aluno_id, componente_curricular_id, media, media_arredondada, etapa) FROM stdin;
+\.
+
+
+--
+-- Data for Name: nota_exame; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY nota_exame (ref_cod_matricula, ref_cod_componente_curricular, nota_exame) FROM stdin;
 \.
 
 
@@ -30534,6 +30976,14 @@ COPY transporte_aluno (aluno_id, responsavel, user_id, created_at, updated_at) F
 
 
 --
+-- Data for Name: uniforme_aluno; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY uniforme_aluno (ref_cod_aluno, recebeu_uniforme, quantidade_camiseta, tamanho_camiseta, quantidade_blusa_jaqueta, tamanho_blusa_jaqueta, quantidade_bermuda, tamanho_bermuda, quantidade_calca, tamanho_calca, quantidade_saia, tamanho_saia, quantidade_calcado, tamanho_calcado, quantidade_meia, tamanho_meia) FROM stdin;
+\.
+
+
+--
 -- Data for Name: veiculo; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
@@ -30809,9 +31259,6 @@ COPY menu (cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ord_menu, 
 999400	\N	21127	Atestados	1	\N	_self	1	15	17
 999450	\N	21127	Boletins	2	\N	_self	1	15	19
 999460	\N	21127	Históricos	5	\N	_self	1	15	25
-643	643	21152	Lançamento por Aluno	3	educar_falta_nota_aluno_lst.php	_self	1	15	192
-21152	642	21124	Faltas/Notas	4		_self	1	15	1
-644	644	21152	Lançamento por Turma	4	module/Avaliacao/diario	_self	1	15	192
 15880	591	15858	Biblioteca	1	educar_biblioteca_lst.php	_self	1	16	1
 15881	594	15858	Autores	2	educar_acervo_autor_lst.php	_self	1	16	141
 15882	593	15858	Coleção	3	educar_acervo_colecao_lst.php	_self	1	16	119
@@ -30843,6 +31290,7 @@ COPY menu (cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ord_menu, 
 20711	\N	\N	Movimentação	2	\N	_self	1	17	1
 20712	\N	\N	Relatórios	3	\N	_self	1	17	1
 21240	21240	20711	Usuários de Transporte	5	transporte_pessoa_lst.php	_self	1	17	192
+21152	642	21124	Faltas/Notas	4	module/Avaliacao/diario	_self	1	15	1
 \.
 
 
@@ -31904,7 +32352,7 @@ SELECT pg_catalog.setval('material_tipo_cod_material_tipo_seq', 1, false);
 -- Data for Name: matricula; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
-COPY matricula (cod_matricula, ref_cod_reserva_vaga, ref_ref_cod_escola, ref_ref_cod_serie, ref_usuario_exc, ref_usuario_cad, ref_cod_aluno, aprovado, data_cadastro, data_exclusao, ativo, ano, ultima_matricula, modulo, descricao_reclassificacao, formando, matricula_reclassificacao, ref_cod_curso, matricula_transferencia, semestre, observacao) FROM stdin;
+COPY matricula (cod_matricula, ref_cod_reserva_vaga, ref_ref_cod_escola, ref_ref_cod_serie, ref_usuario_exc, ref_usuario_cad, ref_cod_aluno, aprovado, data_cadastro, data_exclusao, ativo, ano, ultima_matricula, modulo, descricao_reclassificacao, formando, matricula_reclassificacao, ref_cod_curso, matricula_transferencia, semestre, observacao, data_matricula, data_cancel) FROM stdin;
 \.
 
 
@@ -31942,7 +32390,7 @@ COPY matricula_ocorrencia_disciplinar (ref_cod_matricula, ref_cod_tipo_ocorrenci
 -- Data for Name: matricula_turma; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
-COPY matricula_turma (ref_cod_matricula, ref_cod_turma, sequencial, ref_usuario_exc, ref_usuario_cad, data_cadastro, data_exclusao, ativo) FROM stdin;
+COPY matricula_turma (ref_cod_matricula, ref_cod_turma, sequencial, ref_usuario_exc, ref_usuario_cad, data_cadastro, data_exclusao, ativo, data_enturmacao, sequencial_fechamento) FROM stdin;
 \.
 
 
@@ -31956,8 +32404,6 @@ COPY menu_tipo_usuario (ref_cod_tipo_usuario, ref_cod_menu_submenu, cadastra, vi
 1	999202	1	0	1
 1	999203	1	0	1
 1	999200	1	0	1
-1	643	1	0	1
-1	644	1	0	1
 1	999613	1	0	1
 1	999615	1	0	1
 1	999616	1	0	1
@@ -32485,7 +32931,7 @@ SELECT pg_catalog.setval('transferencia_tipo_cod_transferencia_tipo_seq', 1, fal
 -- Data for Name: turma; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
-COPY turma (cod_turma, ref_usuario_exc, ref_usuario_cad, ref_ref_cod_serie, ref_ref_cod_escola, ref_cod_infra_predio_comodo, nm_turma, sgl_turma, max_aluno, multiseriada, data_cadastro, data_exclusao, ativo, ref_cod_turma_tipo, hora_inicial, hora_final, hora_inicio_intervalo, hora_fim_intervalo, ref_cod_regente, ref_cod_instituicao_regente, ref_cod_instituicao, ref_cod_curso, ref_ref_cod_serie_mult, ref_ref_cod_escola_mult, visivel, tipo_boletim, turma_turno_id, ano) FROM stdin;
+COPY turma (cod_turma, ref_usuario_exc, ref_usuario_cad, ref_ref_cod_serie, ref_ref_cod_escola, ref_cod_infra_predio_comodo, nm_turma, sgl_turma, max_aluno, multiseriada, data_cadastro, data_exclusao, ativo, ref_cod_turma_tipo, hora_inicial, hora_final, hora_inicio_intervalo, hora_fim_intervalo, ref_cod_regente, ref_cod_instituicao_regente, ref_cod_instituicao, ref_cod_curso, ref_ref_cod_serie_mult, ref_ref_cod_escola_mult, visivel, tipo_boletim, turma_turno_id, ano, data_fechamento) FROM stdin;
 \.
 
 
@@ -33270,8 +33716,6 @@ COPY menu_funcionario (ref_ref_cod_pessoa_fj, cadastra, exclui, ref_cod_menu_sub
 1	0	0	343
 1	0	0	341
 1	0	0	999200
-1	0	0	643
-1	0	0	644
 1	0	0	999613
 1	0	0	999615
 1	0	0	999616
@@ -33292,7 +33736,6 @@ COPY menu_funcionario (ref_ref_cod_pessoa_fj, cadastra, exclui, ref_cod_menu_sub
 COPY menu_menu (cod_menu_menu, nm_menu, title, ref_cod_menu_pai) FROM stdin;
 1	Todos		\N
 25	DRH	Sistemas do RH	\N
-7	Pessoa F/J	Pessoas Físicas e Jurídicas	\N
 23	Principal		\N
 68	Endereçamento		\N
 38	i-Pauta		\N
@@ -33301,6 +33744,7 @@ COPY menu_menu (cod_menu_menu, nm_menu, title, ref_cod_menu_pai) FROM stdin;
 57	i-Educar - Biblioteca	\N	\N
 5	Agenda	Agendas	\N
 69	Transporte Escolar	\N	\N
+7	Pessoa FJ	Pessoas Físicas e Jurídicas	\N
 \.
 
 
@@ -33404,9 +33848,6 @@ COPY menu_submenu (cod_menu_submenu, ref_cod_menu_menu, cod_sistema, nm_submenu,
 341	5	2	Agendas	agenda_responsavel.php	\N	2
 343	5	2	Agenda Admin	agenda_admin_lst.php	\N	3
 345	5	2	Agenda Pessoal	agenda.php	Agenda pessoal	2
-643	55	2	Lançamento por Aluno	educar_falta_nota_aluno_lst.php	\N	3
-642	55	2	Faltas/Notas Aluno			3
-644	55	2	Lançamento por Turma	module/Avaliacao/diario	\N	3
 999613	55	2	Processamento Histórico Escolar	module/HistoricoEscolar/processamento	\N	3
 610	57	2	Empréstimo	module/Biblioteca/emprestimo		3
 999203	55	2	Ficha do Aluno	module/Reports/FichaAluno	\N	3
@@ -33424,6 +33865,7 @@ COPY menu_submenu (cod_menu_submenu, ref_cod_menu_menu, cod_sistema, nm_submenu,
 21238	69	2	Rotas	transporte_rota_lst.php	\N	3
 21239	69	2	Pontos	transporte_ponto_lst.php	\N	3
 21240	69	2	Usuários de Transporte	transporte_pessoa_lst.php	\N	3
+642	55	2	Faltas/Notas Aluno	module/Avaliacao/diario		3
 \.
 
 
@@ -40732,6 +41174,14 @@ ALTER TABLE ONLY falta_geral
 
 
 --
+-- Name: ficha_medica_cod_aluno_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY ficha_medica_aluno
+    ADD CONSTRAINT ficha_medica_cod_aluno_pkey PRIMARY KEY (ref_cod_aluno);
+
+
+--
 -- Name: formula_media_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
 --
 
@@ -40745,6 +41195,14 @@ ALTER TABLE ONLY formula_media
 
 ALTER TABLE ONLY itinerario_transporte_escolar
     ADD CONSTRAINT itinerario_transporte_escolar_cod_itinerario_transporte_escolar PRIMARY KEY (cod_itinerario_transporte_escolar);
+
+
+--
+-- Name: moradia_aluno_pkei; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY moradia_aluno
+    ADD CONSTRAINT moradia_aluno_pkei PRIMARY KEY (ref_cod_aluno);
 
 
 --
@@ -40865,6 +41323,14 @@ ALTER TABLE ONLY tipo_veiculo
 
 ALTER TABLE ONLY transporte_aluno
     ADD CONSTRAINT transporte_aluno_pk PRIMARY KEY (aluno_id);
+
+
+--
+-- Name: uniforme_aluno_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY uniforme_aluno
+    ADD CONSTRAINT uniforme_aluno_pkey PRIMARY KEY (ref_cod_aluno);
 
 
 --
@@ -44586,6 +45052,13 @@ CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON turma_tipo FOR EACH ROW 
 CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON usuario FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
+--
+-- Name: retira_data_cancel_matricula_trg; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
+--
+
+CREATE TRIGGER retira_data_cancel_matricula_trg AFTER UPDATE ON matricula FOR EACH ROW EXECUTE PROCEDURE public.retira_data_cancel_matricula_fun();
+
+
 SET search_path = public, pg_catalog;
 
 --
@@ -46317,11 +46790,35 @@ ALTER TABLE ONLY falta_geral
 
 
 --
+-- Name: ficha_medica_aluno_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY ficha_medica_aluno
+    ADD CONSTRAINT ficha_medica_aluno_fkey FOREIGN KEY (ref_cod_aluno) REFERENCES pmieducar.aluno(cod_aluno) ON UPDATE RESTRICT ON DELETE RESTRICT;
+
+
+--
 -- Name: itinerario_transporte_escolar_ref_cod_rota_transporte_escolar_f; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
 --
 
 ALTER TABLE ONLY itinerario_transporte_escolar
     ADD CONSTRAINT itinerario_transporte_escolar_ref_cod_rota_transporte_escolar_f FOREIGN KEY (ref_cod_rota_transporte_escolar) REFERENCES rota_transporte_escolar(cod_rota_transporte_escolar);
+
+
+--
+-- Name: moradia_aluno_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY moradia_aluno
+    ADD CONSTRAINT moradia_aluno_fkey FOREIGN KEY (ref_cod_aluno) REFERENCES pmieducar.aluno(cod_aluno) ON UPDATE RESTRICT ON DELETE RESTRICT;
+
+
+--
+-- Name: moradia_aluno_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY nota_exame
+    ADD CONSTRAINT moradia_aluno_fkey FOREIGN KEY (ref_cod_matricula) REFERENCES pmieducar.matricula(cod_matricula) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 --
@@ -46466,6 +46963,14 @@ ALTER TABLE ONLY tabela_arredondamento_valor
 
 ALTER TABLE ONLY transporte_aluno
     ADD CONSTRAINT transporte_aluno_aluno_fk FOREIGN KEY (aluno_id) REFERENCES pmieducar.aluno(cod_aluno) ON DELETE CASCADE;
+
+
+--
+-- Name: uniforme_aluno_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY uniforme_aluno
+    ADD CONSTRAINT uniforme_aluno_fkey FOREIGN KEY (ref_cod_aluno) REFERENCES pmieducar.aluno(cod_aluno) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 --

@@ -3,11 +3,11 @@
 --
 
 SET statement_timeout = 0;
+SET lock_timeout = 0;
 SET client_encoding = 'LATIN1';
-SET standard_conforming_strings = off;
+SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
-SET escape_string_warning = off;
 
 SET search_path = urbano, pg_catalog;
 
@@ -543,6 +543,7 @@ SET search_path = modules, pg_catalog;
 
 ALTER TABLE ONLY modules.veiculo DROP CONSTRAINT veiculo_ref_cod_tipo_veiculo_fkey;
 ALTER TABLE ONLY modules.veiculo DROP CONSTRAINT veiculo_ref_cod_empresa_transporte_escolar_fkey;
+ALTER TABLE ONLY modules.uniforme_aluno DROP CONSTRAINT uniforme_aluno_fkey;
 ALTER TABLE ONLY modules.transporte_aluno DROP CONSTRAINT transporte_aluno_aluno_fk;
 ALTER TABLE ONLY modules.tabela_arredondamento_valor DROP CONSTRAINT tabela_arredondamento_tabela_arredondamento_valor_fk;
 ALTER TABLE ONLY modules.rota_transporte_escolar DROP CONSTRAINT rota_transporte_escolar_ref_idpes_destino_fkey;
@@ -561,7 +562,10 @@ ALTER TABLE ONLY modules.nota_componente_curricular DROP CONSTRAINT nota_compone
 ALTER TABLE ONLY modules.nota_componente_curricular_media DROP CONSTRAINT nota_componente_curricular_media_nota_aluno_fk;
 ALTER TABLE ONLY modules.motorista DROP CONSTRAINT motorista_ref_idpes_fkey;
 ALTER TABLE ONLY modules.motorista DROP CONSTRAINT motorista_ref_cod_empresa_transporte_escolar_fkey;
+ALTER TABLE ONLY modules.nota_exame DROP CONSTRAINT moradia_aluno_fkey;
+ALTER TABLE ONLY modules.moradia_aluno DROP CONSTRAINT moradia_aluno_fkey;
 ALTER TABLE ONLY modules.itinerario_transporte_escolar DROP CONSTRAINT itinerario_transporte_escolar_ref_cod_rota_transporte_escolar_f;
+ALTER TABLE ONLY modules.ficha_medica_aluno DROP CONSTRAINT ficha_medica_aluno_fkey;
 ALTER TABLE ONLY modules.falta_geral DROP CONSTRAINT falta_geral_falta_aluno_fk;
 ALTER TABLE ONLY modules.falta_componente_curricular DROP CONSTRAINT falta_componente_curricular_falta_aluno_fk;
 ALTER TABLE ONLY modules.empresa_transporte_escolar DROP CONSTRAINT empresa_transporte_escolar_ref_resp_idpes_fkey;
@@ -792,6 +796,7 @@ DROP TRIGGER trg_bef_bairro_historico ON public.bairro;
 DROP TRIGGER trg_aft_logradouro_fonetiza ON public.logradouro;
 SET search_path = pmieducar, pg_catalog;
 
+DROP TRIGGER retira_data_cancel_matricula_trg ON pmieducar.matricula;
 DROP TRIGGER fcn_aft_update ON pmieducar.usuario;
 DROP TRIGGER fcn_aft_update ON pmieducar.turma_tipo;
 DROP TRIGGER fcn_aft_update ON pmieducar.turma_modulo;
@@ -1318,6 +1323,7 @@ ALTER TABLE ONLY pmiacoes.acao_governo_arquivo DROP CONSTRAINT acao_governo_arqu
 SET search_path = modules, pg_catalog;
 
 ALTER TABLE ONLY modules.veiculo DROP CONSTRAINT veiculo_pkey;
+ALTER TABLE ONLY modules.uniforme_aluno DROP CONSTRAINT uniforme_aluno_pkey;
 ALTER TABLE ONLY modules.transporte_aluno DROP CONSTRAINT transporte_aluno_pk;
 ALTER TABLE ONLY modules.tipo_veiculo DROP CONSTRAINT tipo_veiculo_pkey;
 ALTER TABLE ONLY modules.tabela_arredondamento_valor DROP CONSTRAINT tabela_arredondamento_valor_pkey;
@@ -1333,8 +1339,10 @@ ALTER TABLE ONLY modules.nota_componente_curricular DROP CONSTRAINT nota_compone
 ALTER TABLE ONLY modules.nota_componente_curricular_media DROP CONSTRAINT nota_componente_curricular_media_pkey;
 ALTER TABLE ONLY modules.nota_aluno DROP CONSTRAINT nota_aluno_pkey;
 ALTER TABLE ONLY modules.motorista DROP CONSTRAINT motorista_pkey;
+ALTER TABLE ONLY modules.moradia_aluno DROP CONSTRAINT moradia_aluno_pkei;
 ALTER TABLE ONLY modules.itinerario_transporte_escolar DROP CONSTRAINT itinerario_transporte_escolar_cod_itinerario_transporte_escolar;
 ALTER TABLE ONLY modules.formula_media DROP CONSTRAINT formula_media_pkey;
+ALTER TABLE ONLY modules.ficha_medica_aluno DROP CONSTRAINT ficha_medica_cod_aluno_pkey;
 ALTER TABLE ONLY modules.falta_geral DROP CONSTRAINT falta_geral_pkey;
 ALTER TABLE ONLY modules.falta_componente_curricular DROP CONSTRAINT falta_componente_curricular_pkey;
 ALTER TABLE ONLY modules.falta_aluno DROP CONSTRAINT falta_aluno_pkey;
@@ -1861,6 +1869,7 @@ SET search_path = modules, pg_catalog;
 
 DROP TABLE modules.veiculo;
 DROP SEQUENCE modules.veiculo_seq;
+DROP TABLE modules.uniforme_aluno;
 DROP TABLE modules.transporte_aluno;
 DROP TABLE modules.tipo_veiculo;
 DROP SEQUENCE modules.tipo_veiculo_seq;
@@ -1882,6 +1891,7 @@ DROP SEQUENCE modules.parecer_componente_curricular_id_seq;
 DROP TABLE modules.parecer_componente_curricular;
 DROP SEQUENCE modules.parecer_aluno_id_seq;
 DROP TABLE modules.parecer_aluno;
+DROP TABLE modules.nota_exame;
 DROP TABLE modules.nota_componente_curricular_media;
 DROP SEQUENCE modules.nota_componente_curricular_id_seq;
 DROP TABLE modules.nota_componente_curricular;
@@ -1889,10 +1899,12 @@ DROP SEQUENCE modules.nota_aluno_id_seq;
 DROP TABLE modules.nota_aluno;
 DROP TABLE modules.motorista;
 DROP SEQUENCE modules.motorista_seq;
+DROP TABLE modules.moradia_aluno;
 DROP TABLE modules.itinerario_transporte_escolar;
 DROP SEQUENCE modules.itinerario_transporte_escolar_seq;
 DROP SEQUENCE modules.formula_media_id_seq;
 DROP TABLE modules.formula_media;
+DROP TABLE modules.ficha_medica_aluno;
 DROP SEQUENCE modules.falta_geral_id_seq;
 DROP TABLE modules.falta_geral;
 DROP SEQUENCE modules.falta_componente_curricular_id_seq;
@@ -2103,6 +2115,7 @@ DROP TABLE acesso.funcao;
 DROP SEQUENCE acesso.funcao_idfunc_seq;
 SET search_path = public, pg_catalog;
 
+DROP FUNCTION public.retira_data_cancel_matricula_fun();
 DROP FUNCTION public.fcn_upper_nrm(text);
 DROP FUNCTION public.fcn_upper(text);
 DROP FUNCTION public.fcn_update_pessoa(integer, text, character varying, character varying, character varying, integer, character varying, integer, integer);
@@ -2147,6 +2160,11 @@ DROP FUNCTION public.fcn_aft_logradouro_fonetiza();
 SET search_path = pmieducar, pg_catalog;
 
 DROP FUNCTION pmieducar.fcn_aft_update();
+SET search_path = modules, pg_catalog;
+
+DROP FUNCTION modules.preve_data_emprestimo(biblioteca_id integer, data_prevista date);
+DROP FUNCTION modules.frequencia_da_matricula(p_matricula_id integer);
+DROP FUNCTION modules.copia_notas_transf(old_matricula_id integer, new_matricula_id integer);
 SET search_path = historico, pg_catalog;
 
 DROP FUNCTION historico.fcn_grava_historico_socio();
@@ -2390,7 +2408,7 @@ CREATE TYPE typ_idlog AS (
 );
 
 
-ALTER TYPE public.typ_idlog OWNER TO ieducar;
+ALTER TYPE typ_idlog OWNER TO ieducar;
 
 --
 -- Name: typ_idpes; Type: TYPE; Schema: public; Owner: ieducar
@@ -2401,7 +2419,7 @@ CREATE TYPE typ_idpes AS (
 );
 
 
-ALTER TYPE public.typ_idpes OWNER TO ieducar;
+ALTER TYPE typ_idpes OWNER TO ieducar;
 
 SET search_path = alimentos, pg_catalog;
 
@@ -7215,6 +7233,254 @@ END; $$;
 
 ALTER FUNCTION historico.fcn_grava_historico_socio() OWNER TO ieducar;
 
+SET search_path = modules, pg_catalog;
+
+--
+-- Name: copia_notas_transf(integer, integer); Type: FUNCTION; Schema: modules; Owner: ieducar
+--
+
+CREATE FUNCTION copia_notas_transf(old_matricula_id integer, new_matricula_id integer) RETURNS character varying
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+  cur_comp RECORD;
+  cur_comp_media RECORD;
+  cur_falta_geral RECORD;
+  cur_falta_comp RECORD;
+  cur_parecer_geral RECORD;
+  cur_parecer_comp RECORD;
+  v_tipo_nota integer;
+  v_tipo_parecer integer;
+  v_tipo_falta integer;
+  v_nota_id integer;
+  v_old_nota_id integer;
+  v_falta_id integer;
+  v_old_falta_id integer;
+  v_parecer_id integer;
+  v_old_parecer_id integer;
+  begin
+
+  /* VERIFICA SE AS MATRICULAS FAZEM PARTE DO MESMO ANO LETIVO*/
+  IF ((SELECT eal.ano FROM pmieducar.escola_ano_letivo eal
+        INNER JOIN pmieducar.matricula mat ON (mat.ref_ref_cod_escola = eal.ref_cod_escola)
+         WHERE mat.cod_matricula = old_matricula_id and eal.andamento = 1 limit 1) = (SELECT eal.ano FROM pmieducar.escola_ano_letivo eal
+                                        INNER JOIN pmieducar.matricula mat ON (mat.ref_ref_cod_escola = eal.ref_cod_escola)
+                                         WHERE mat.cod_matricula = new_matricula_id and eal.andamento = 1 limit 1) ) THEN
+
+
+    IF (
+     (  CASE WHEN (select padrao_ano_escolar from pmieducar.curso 
+        where cod_curso = (select ref_cod_curso from pmieducar.matricula 
+        where cod_matricula = new_matricula_id)) = 1
+       THEN  (select max(sequencial) as qtd_etapa from pmieducar.ano_letivo_modulo mod
+        inner join pmieducar.matricula mat on (mat.ref_ref_cod_escola = mod.ref_ref_cod_escola)
+                    where mat.cod_matricula = new_matricula_id)
+             ELSE (select count(ref_cod_modulo) from pmieducar.turma_modulo
+        where ref_cod_turma = (select ref_cod_turma from pmieducar.matricula_turma 
+        where ref_cod_matricula = new_matricula_id))
+             END
+   ) = (CASE WHEN (select padrao_ano_escolar from pmieducar.curso 
+        where cod_curso = (select ref_cod_curso from pmieducar.matricula 
+        where cod_matricula = old_matricula_id)) = 1
+       THEN  (select max(sequencial) as qtd_etapa from pmieducar.ano_letivo_modulo mod
+              inner join pmieducar.matricula mat on (mat.ref_ref_cod_escola = mod.ref_ref_cod_escola)
+                    where mat.cod_matricula = old_matricula_id)
+             ELSE  (select count(ref_cod_modulo) from pmieducar.turma_modulo
+        where ref_cod_turma = (select ref_cod_turma from pmieducar.matricula_turma 
+        where ref_cod_matricula = old_matricula_id))
+             END
+        )
+  ) THEN
+
+   -- IF (TRUE) THEN
+      /* VERIFICA SE UTILIZAM A MESMA REGRA DE AVALIAÃ‡ÃƒO*/
+      IF ((SELECT id FROM modules.regra_avaliacao rg
+          INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+          INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+          where m.cod_matricula = old_matricula_id ) = 
+            (SELECT id FROM modules.regra_avaliacao rg
+              INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+              INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+              where m.cod_matricula = new_matricula_id ) ) THEN
+
+
+        v_tipo_nota := (SELECT tipo_nota FROM modules.regra_avaliacao rg
+                  INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+                  INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+                  where m.cod_matricula = old_matricula_id);
+
+        v_tipo_falta := (SELECT tipo_presenca FROM modules.regra_avaliacao rg
+                  INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+                  INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+                  where m.cod_matricula = old_matricula_id);
+
+        v_tipo_parecer := (SELECT parecer_descritivo FROM modules.regra_avaliacao rg
+                  INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+                  INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+                  where m.cod_matricula = old_matricula_id);
+        /* SE A REGRA UTILIZAR NOTA, COPIA AS NOTAS*/
+        IF (v_tipo_nota >0) THEN
+
+          INSERT INTO modules.nota_aluno (matricula_id)VALUES (new_matricula_id);
+          v_nota_id := (SELECT max(id) FROM modules.nota_aluno WHERE matricula_id = new_matricula_id);
+
+          v_old_nota_id := (SELECT max(id) FROM modules.nota_aluno WHERE matricula_id = old_matricula_id);
+
+          FOR cur_comp IN (SELECT * FROM modules.nota_componente_curricular where nota_aluno_id = v_old_nota_id) LOOP
+            INSERT INTO modules.nota_componente_curricular (nota_aluno_id,componente_curricular_id,nota,nota_arredondada,etapa)
+            VALUES(v_nota_id,cur_comp.componente_curricular_id,cur_comp.nota,cur_comp.nota_arredondada,cur_comp.etapa);
+          END LOOP;
+
+          FOR cur_comp_media IN (SELECT * FROM modules.nota_componente_curricular_media where nota_aluno_id = v_old_nota_id) LOOP
+            INSERT INTO modules.nota_componente_curricular_media (nota_aluno_id,componente_curricular_id,media,media_arredondada,etapa)
+            VALUES(v_nota_id,cur_comp_media.componente_curricular_id,cur_comp_media.media,cur_comp_media.media_arredondada,cur_comp_media.etapa);
+          END LOOP;
+        END IF;
+
+        IF (v_tipo_falta = 1) THEN
+
+            INSERT INTO modules.falta_aluno (matricula_id, tipo_falta) VALUES (new_matricula_id,1);
+            v_falta_id = (SELECT max(id) FROM modules.falta_aluno WHERE matricula_id = new_matricula_id);
+          v_old_falta_id := (SELECT max(id) FROM modules.falta_aluno WHERE matricula_id = old_matricula_id);
+
+          FOR cur_falta_geral IN (SELECT * FROM modules.falta_geral where falta_aluno_id = v_old_falta_id) LOOP
+            INSERT INTO modules.falta_geral (falta_aluno_id,quantidade,etapa)
+            VALUES(v_falta_id,cur_falta_geral.quantidade, cur_falta_geral.etapa);
+          END LOOP;
+        END IF;
+
+        IF (v_tipo_falta = 2) THEN
+
+          INSERT INTO modules.falta_aluno (matricula_id, tipo_falta) VALUES (new_matricula_id,2);
+          v_falta_id = (SELECT max(id) FROM modules.falta_aluno WHERE matricula_id = new_matricula_id);
+          v_old_falta_id := (SELECT max(id) FROM modules.falta_aluno WHERE matricula_id = old_matricula_id);
+
+          FOR cur_falta_comp IN (SELECT * FROM modules.falta_componente_curricular where falta_aluno_id = v_old_falta_id) LOOP
+            INSERT INTO modules.falta_componente_curricular (falta_aluno_id,componente_curricular_id,quantidade,etapa)
+            VALUES(v_falta_id,cur_falta_comp.componente_curricular_id,cur_falta_comp.quantidade, cur_falta_comp.etapa);
+          END LOOP;
+        END IF;
+
+        IF (v_tipo_parecer = 2) THEN
+
+          INSERT INTO modules.parecer_aluno (matricula_id, parecer_descritivo)VALUES (new_matricula_id,2);
+          v_parecer_id := (SELECT max(id) FROM modules.parecer_aluno WHERE matricula_id = new_matricula_id);
+          v_old_parecer_id := (SELECT max(id) FROM modules.parecer_aluno WHERE matricula_id = old_matricula_id);
+
+          FOR cur_parecer_comp IN (SELECT * FROM modules.parecer_componente_curricular where parecer_aluno_id = v_old_parecer_id) LOOP
+            INSERT INTO modules.parecer_componente_curricular (parecer_aluno_id,componente_curricular_id,parecer,etapa)
+            VALUES(v_parecer_id,cur_parecer_comp.componente_curricular_id,cur_parecer_comp.parecer, cur_parecer_comp.etapa);
+          END LOOP;
+        END IF;
+
+        IF (v_tipo_parecer = 3) THEN
+
+          INSERT INTO modules.parecer_aluno (matricula_id, parecer_descritivo)VALUES (new_matricula_id,3);
+          v_parecer_id := (SELECT max(id) FROM modules.parecer_aluno WHERE matricula_id = new_matricula_id);
+          v_old_parecer_id := (SELECT max(id) FROM modules.parecer_aluno WHERE matricula_id = old_matricula_id);
+
+          FOR cur_parecer_geral IN (SELECT * FROM modules.parecer_geral where parecer_aluno_id = v_old_parecer_id) LOOP
+            INSERT INTO modules.parecer_geral (parecer_aluno_id,parecer,etapa)
+            VALUES(v_parecer_id,cur_parecer_geral.parecer, cur_parecer_geral.etapa);
+          END LOOP;
+        END IF;
+
+      ELSE RETURN 'REGRA AVALIACAO DIFERENTE'; END IF;
+    ELSE RETURN 'ETAPA DIFERENTE'; END IF;
+  RETURN '';
+  END IF;
+
+  end;$$;
+
+
+ALTER FUNCTION modules.copia_notas_transf(old_matricula_id integer, new_matricula_id integer) OWNER TO ieducar;
+
+--
+-- Name: frequencia_da_matricula(integer); Type: FUNCTION; Schema: modules; Owner: ieducar
+--
+
+CREATE FUNCTION frequencia_da_matricula(p_matricula_id integer) RETURNS double precision
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE 
+  v_regra_falta integer;
+  v_falta_aluno_id  integer;
+  v_qtd_dias_letivos_serie integer;
+  v_total_faltas integer;
+  v_qtd_horas_serie integer;
+  v_hora_falta FLOAT;
+  begin 
+
+  /*
+    regra_falta: 
+    1- Global
+    2- Por componente
+  */
+  v_regra_falta:= (SELECT rg.tipo_presenca FROM modules.regra_avaliacao rg
+            INNER JOIN pmieducar.serie s ON (rg.id = s.regra_avaliacao_id)
+            INNER JOIN pmieducar.matricula m ON (s.cod_serie = m.ref_ref_cod_serie)
+            where m.cod_matricula = p_matricula_id);
+
+    v_falta_aluno_id := ( SELECT id FROM modules.falta_aluno WHERE matricula_id = p_matricula_id ORDER BY id DESC LIMIT 1 );
+
+  IF (v_regra_falta = 1) THEN
+
+    v_qtd_dias_letivos_serie := (SELECT s.dias_letivos 
+                    FROM pmieducar.serie s 
+                    INNER JOIN pmieducar.matricula m ON (m.ref_ref_cod_serie = s.cod_serie) 
+                    WHERE m.cod_matricula = p_matricula_id);
+
+    v_total_faltas := ( SELECT SUM(quantidade) FROM falta_geral WHERE falta_aluno_id = v_falta_aluno_id);
+
+    RETURN (((v_qtd_dias_letivos_serie - v_total_faltas) * 100 ) / v_qtd_dias_letivos_serie );
+
+  ELSE
+    
+    v_qtd_horas_serie := ( SELECT s.carga_horaria 
+                    FROM pmieducar.serie s 
+                    INNER JOIN pmieducar.matricula m ON (m.ref_ref_cod_serie = s.cod_serie) 
+                    WHERE m.cod_matricula = p_matricula_id);
+    
+    v_total_faltas := ( SELECT SUM(quantidade) FROM falta_componente_curricular WHERE falta_aluno_id = v_falta_aluno_id);
+
+    v_hora_falta := (SELECT hora_falta FROM pmieducar.curso c 
+              INNER JOIN pmieducar.matricula m ON (c.cod_curso = m.ref_cod_curso)
+              WHERE m.cod_matricula = p_matricula_id);
+
+    RETURN  (100 - ((v_total_faltas * (v_hora_falta*100))/v_qtd_horas_serie));
+
+  END IF;
+
+  end;$$;
+
+
+ALTER FUNCTION modules.frequencia_da_matricula(p_matricula_id integer) OWNER TO ieducar;
+
+--
+-- Name: preve_data_emprestimo(integer, date); Type: FUNCTION; Schema: modules; Owner: ieducar
+--
+
+CREATE FUNCTION preve_data_emprestimo(biblioteca_id integer, data_prevista date) RETURNS date
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE 
+  begin           
+  
+  IF (( select 1 from pmieducar.biblioteca_dia WHERE ref_cod_biblioteca = biblioteca_id AND dia = ((SELECT EXTRACT(DOW FROM data_prevista))+1) limit 1) IS NOT null) THEN    
+    IF ((SELECT 1 FROM pmieducar.biblioteca_feriados WHERE ref_cod_biblioteca = biblioteca_id and data_feriado = data_prevista) IS NULL) THEN
+      RETURN data_prevista;
+    ELSE
+      RETURN modules.preve_data_emprestimo(biblioteca_id, data_prevista+1);
+    END IF;
+  ELSE
+    RETURN modules.preve_data_emprestimo(biblioteca_id, data_prevista+1);
+  END IF;
+
+  end;$$;
+
+
+ALTER FUNCTION modules.preve_data_emprestimo(biblioteca_id integer, data_prevista date) OWNER TO ieducar;
+
 SET search_path = pmieducar, pg_catalog;
 
 --
@@ -9738,6 +10004,29 @@ CREATE FUNCTION fcn_upper_nrm(text) RETURNS text
 
 ALTER FUNCTION public.fcn_upper_nrm(text) OWNER TO ieducar;
 
+--
+-- Name: retira_data_cancel_matricula_fun(); Type: FUNCTION; Schema: public; Owner: ieducar
+--
+
+CREATE FUNCTION retira_data_cancel_matricula_fun() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+  BEGIN
+
+  UPDATE pmieducar.matricula
+  SET    data_cancel = NULL
+  WHERE  cod_matricula = new.cod_matricula
+  AND    data_cancel IS DISTINCT FROM NULL
+  AND    aprovado = 3 
+  AND (SELECT 1 FROM pmieducar.transferencia_solicitacao WHERE ativo = 1 AND ref_cod_matricula_saida = new.cod_matricula limit 1) is null;
+
+  RETURN NULL;
+  END
+  $$;
+
+
+ALTER FUNCTION public.retira_data_cancel_matricula_fun() OWNER TO ieducar;
+
 SET search_path = acesso, pg_catalog;
 
 --
@@ -9752,7 +10041,7 @@ CREATE SEQUENCE funcao_idfunc_seq
     CACHE 1;
 
 
-ALTER TABLE acesso.funcao_idfunc_seq OWNER TO ieducar;
+ALTER TABLE funcao_idfunc_seq OWNER TO ieducar;
 
 SET default_tablespace = '';
 
@@ -9775,7 +10064,7 @@ CREATE TABLE funcao (
 );
 
 
-ALTER TABLE acesso.funcao OWNER TO ieducar;
+ALTER TABLE funcao OWNER TO ieducar;
 
 --
 -- Name: grupo_idgrp_seq; Type: SEQUENCE; Schema: acesso; Owner: ieducar
@@ -9789,7 +10078,7 @@ CREATE SEQUENCE grupo_idgrp_seq
     CACHE 1;
 
 
-ALTER TABLE acesso.grupo_idgrp_seq OWNER TO ieducar;
+ALTER TABLE grupo_idgrp_seq OWNER TO ieducar;
 
 --
 -- Name: grupo; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -9804,7 +10093,7 @@ CREATE TABLE grupo (
 );
 
 
-ALTER TABLE acesso.grupo OWNER TO ieducar;
+ALTER TABLE grupo OWNER TO ieducar;
 
 --
 -- Name: grupo_funcao; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -9818,7 +10107,7 @@ CREATE TABLE grupo_funcao (
 );
 
 
-ALTER TABLE acesso.grupo_funcao OWNER TO ieducar;
+ALTER TABLE grupo_funcao OWNER TO ieducar;
 
 --
 -- Name: grupo_menu; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -9831,7 +10120,7 @@ CREATE TABLE grupo_menu (
 );
 
 
-ALTER TABLE acesso.grupo_menu OWNER TO ieducar;
+ALTER TABLE grupo_menu OWNER TO ieducar;
 
 --
 -- Name: grupo_operacao; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -9846,7 +10135,7 @@ CREATE TABLE grupo_operacao (
 );
 
 
-ALTER TABLE acesso.grupo_operacao OWNER TO ieducar;
+ALTER TABLE grupo_operacao OWNER TO ieducar;
 
 --
 -- Name: grupo_sistema; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -9858,7 +10147,7 @@ CREATE TABLE grupo_sistema (
 );
 
 
-ALTER TABLE acesso.grupo_sistema OWNER TO ieducar;
+ALTER TABLE grupo_sistema OWNER TO ieducar;
 
 --
 -- Name: historico_senha; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -9871,7 +10160,7 @@ CREATE TABLE historico_senha (
 );
 
 
-ALTER TABLE acesso.historico_senha OWNER TO ieducar;
+ALTER TABLE historico_senha OWNER TO ieducar;
 
 --
 -- Name: instituicao_idins_seq; Type: SEQUENCE; Schema: acesso; Owner: ieducar
@@ -9885,7 +10174,7 @@ CREATE SEQUENCE instituicao_idins_seq
     CACHE 1;
 
 
-ALTER TABLE acesso.instituicao_idins_seq OWNER TO ieducar;
+ALTER TABLE instituicao_idins_seq OWNER TO ieducar;
 
 --
 -- Name: instituicao; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -9899,7 +10188,7 @@ CREATE TABLE instituicao (
 );
 
 
-ALTER TABLE acesso.instituicao OWNER TO ieducar;
+ALTER TABLE instituicao OWNER TO ieducar;
 
 --
 -- Name: log_acesso; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -9916,7 +10205,7 @@ CREATE TABLE log_acesso (
 );
 
 
-ALTER TABLE acesso.log_acesso OWNER TO ieducar;
+ALTER TABLE log_acesso OWNER TO ieducar;
 
 --
 -- Name: log_erro; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -9933,7 +10222,7 @@ CREATE TABLE log_erro (
 );
 
 
-ALTER TABLE acesso.log_erro OWNER TO ieducar;
+ALTER TABLE log_erro OWNER TO ieducar;
 
 --
 -- Name: menu_idmen_seq; Type: SEQUENCE; Schema: acesso; Owner: ieducar
@@ -9947,7 +10236,7 @@ CREATE SEQUENCE menu_idmen_seq
     CACHE 1;
 
 
-ALTER TABLE acesso.menu_idmen_seq OWNER TO ieducar;
+ALTER TABLE menu_idmen_seq OWNER TO ieducar;
 
 --
 -- Name: menu; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -9966,7 +10255,7 @@ CREATE TABLE menu (
 );
 
 
-ALTER TABLE acesso.menu OWNER TO ieducar;
+ALTER TABLE menu OWNER TO ieducar;
 
 --
 -- Name: operacao_idope_seq; Type: SEQUENCE; Schema: acesso; Owner: ieducar
@@ -9980,7 +10269,7 @@ CREATE SEQUENCE operacao_idope_seq
     CACHE 1;
 
 
-ALTER TABLE acesso.operacao_idope_seq OWNER TO ieducar;
+ALTER TABLE operacao_idope_seq OWNER TO ieducar;
 
 --
 -- Name: operacao; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -9996,7 +10285,7 @@ CREATE TABLE operacao (
 );
 
 
-ALTER TABLE acesso.operacao OWNER TO ieducar;
+ALTER TABLE operacao OWNER TO ieducar;
 
 --
 -- Name: operacao_funcao; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -10010,7 +10299,7 @@ CREATE TABLE operacao_funcao (
 );
 
 
-ALTER TABLE acesso.operacao_funcao OWNER TO ieducar;
+ALTER TABLE operacao_funcao OWNER TO ieducar;
 
 --
 -- Name: pessoa_instituicao; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -10022,7 +10311,7 @@ CREATE TABLE pessoa_instituicao (
 );
 
 
-ALTER TABLE acesso.pessoa_instituicao OWNER TO ieducar;
+ALTER TABLE pessoa_instituicao OWNER TO ieducar;
 
 --
 -- Name: sistema_idsis_seq; Type: SEQUENCE; Schema: acesso; Owner: ieducar
@@ -10036,7 +10325,7 @@ CREATE SEQUENCE sistema_idsis_seq
     CACHE 1;
 
 
-ALTER TABLE acesso.sistema_idsis_seq OWNER TO ieducar;
+ALTER TABLE sistema_idsis_seq OWNER TO ieducar;
 
 --
 -- Name: sistema; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -10052,7 +10341,7 @@ CREATE TABLE sistema (
 );
 
 
-ALTER TABLE acesso.sistema OWNER TO ieducar;
+ALTER TABLE sistema OWNER TO ieducar;
 
 --
 -- Name: usuario; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -10080,7 +10369,7 @@ CREATE TABLE usuario (
 );
 
 
-ALTER TABLE acesso.usuario OWNER TO ieducar;
+ALTER TABLE usuario OWNER TO ieducar;
 
 --
 -- Name: usuario_grupo; Type: TABLE; Schema: acesso; Owner: ieducar; Tablespace: 
@@ -10092,7 +10381,7 @@ CREATE TABLE usuario_grupo (
 );
 
 
-ALTER TABLE acesso.usuario_grupo OWNER TO ieducar;
+ALTER TABLE usuario_grupo OWNER TO ieducar;
 
 SET search_path = alimentos, pg_catalog;
 
@@ -10108,7 +10397,7 @@ CREATE SEQUENCE baixa_guia_produto_idbap_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.baixa_guia_produto_idbap_seq OWNER TO ieducar;
+ALTER TABLE baixa_guia_produto_idbap_seq OWNER TO ieducar;
 
 --
 -- Name: baixa_guia_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10125,7 +10414,7 @@ CREATE TABLE baixa_guia_produto (
 );
 
 
-ALTER TABLE alimentos.baixa_guia_produto OWNER TO ieducar;
+ALTER TABLE baixa_guia_produto OWNER TO ieducar;
 
 --
 -- Name: baixa_guia_remessa_idbai_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10139,7 +10428,7 @@ CREATE SEQUENCE baixa_guia_remessa_idbai_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.baixa_guia_remessa_idbai_seq OWNER TO ieducar;
+ALTER TABLE baixa_guia_remessa_idbai_seq OWNER TO ieducar;
 
 --
 -- Name: baixa_guia_remessa; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10156,7 +10445,7 @@ CREATE TABLE baixa_guia_remessa (
 );
 
 
-ALTER TABLE alimentos.baixa_guia_remessa OWNER TO ieducar;
+ALTER TABLE baixa_guia_remessa OWNER TO ieducar;
 
 --
 -- Name: calendario_idcad_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10170,7 +10459,7 @@ CREATE SEQUENCE calendario_idcad_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.calendario_idcad_seq OWNER TO ieducar;
+ALTER TABLE calendario_idcad_seq OWNER TO ieducar;
 
 --
 -- Name: calendario; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10184,7 +10473,7 @@ CREATE TABLE calendario (
 );
 
 
-ALTER TABLE alimentos.calendario OWNER TO ieducar;
+ALTER TABLE calendario OWNER TO ieducar;
 
 --
 -- Name: cardapio_idcar_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10198,7 +10487,7 @@ CREATE SEQUENCE cardapio_idcar_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.cardapio_idcar_seq OWNER TO ieducar;
+ALTER TABLE cardapio_idcar_seq OWNER TO ieducar;
 
 --
 -- Name: cardapio; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10219,7 +10508,7 @@ CREATE TABLE cardapio (
 );
 
 
-ALTER TABLE alimentos.cardapio OWNER TO ieducar;
+ALTER TABLE cardapio OWNER TO ieducar;
 
 --
 -- Name: cardapio_faixa_unidade; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10231,7 +10520,7 @@ CREATE TABLE cardapio_faixa_unidade (
 );
 
 
-ALTER TABLE alimentos.cardapio_faixa_unidade OWNER TO ieducar;
+ALTER TABLE cardapio_faixa_unidade OWNER TO ieducar;
 
 --
 -- Name: cardapio_produto_idcpr_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10245,7 +10534,7 @@ CREATE SEQUENCE cardapio_produto_idcpr_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.cardapio_produto_idcpr_seq OWNER TO ieducar;
+ALTER TABLE cardapio_produto_idcpr_seq OWNER TO ieducar;
 
 --
 -- Name: cardapio_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10260,7 +10549,7 @@ CREATE TABLE cardapio_produto (
 );
 
 
-ALTER TABLE alimentos.cardapio_produto OWNER TO ieducar;
+ALTER TABLE cardapio_produto OWNER TO ieducar;
 
 --
 -- Name: cardapio_receita; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10272,7 +10561,7 @@ CREATE TABLE cardapio_receita (
 );
 
 
-ALTER TABLE alimentos.cardapio_receita OWNER TO ieducar;
+ALTER TABLE cardapio_receita OWNER TO ieducar;
 
 --
 -- Name: cliente; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10302,7 +10591,7 @@ CREATE TABLE cliente (
 );
 
 
-ALTER TABLE alimentos.cliente OWNER TO ieducar;
+ALTER TABLE cliente OWNER TO ieducar;
 
 --
 -- Name: composto_quimico_idcom_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10316,7 +10605,7 @@ CREATE SEQUENCE composto_quimico_idcom_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.composto_quimico_idcom_seq OWNER TO ieducar;
+ALTER TABLE composto_quimico_idcom_seq OWNER TO ieducar;
 
 --
 -- Name: composto_quimico; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10331,7 +10620,7 @@ CREATE TABLE composto_quimico (
 );
 
 
-ALTER TABLE alimentos.composto_quimico OWNER TO ieducar;
+ALTER TABLE composto_quimico OWNER TO ieducar;
 
 --
 -- Name: contrato_idcon_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10345,7 +10634,7 @@ CREATE SEQUENCE contrato_idcon_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.contrato_idcon_seq OWNER TO ieducar;
+ALTER TABLE contrato_idcon_seq OWNER TO ieducar;
 
 --
 -- Name: contrato; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10374,7 +10663,7 @@ CREATE TABLE contrato (
 );
 
 
-ALTER TABLE alimentos.contrato OWNER TO ieducar;
+ALTER TABLE contrato OWNER TO ieducar;
 
 --
 -- Name: contrato_produto_idcop_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10388,7 +10677,7 @@ CREATE SEQUENCE contrato_produto_idcop_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.contrato_produto_idcop_seq OWNER TO ieducar;
+ALTER TABLE contrato_produto_idcop_seq OWNER TO ieducar;
 
 --
 -- Name: contrato_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10410,7 +10699,7 @@ CREATE TABLE contrato_produto (
 );
 
 
-ALTER TABLE alimentos.contrato_produto OWNER TO ieducar;
+ALTER TABLE contrato_produto OWNER TO ieducar;
 
 --
 -- Name: evento_ideve_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10424,7 +10713,7 @@ CREATE SEQUENCE evento_ideve_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.evento_ideve_seq OWNER TO ieducar;
+ALTER TABLE evento_ideve_seq OWNER TO ieducar;
 
 --
 -- Name: evento; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10441,7 +10730,7 @@ CREATE TABLE evento (
 );
 
 
-ALTER TABLE alimentos.evento OWNER TO ieducar;
+ALTER TABLE evento OWNER TO ieducar;
 
 --
 -- Name: faixa_composto_quimico_idfcp_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10455,7 +10744,7 @@ CREATE SEQUENCE faixa_composto_quimico_idfcp_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.faixa_composto_quimico_idfcp_seq OWNER TO ieducar;
+ALTER TABLE faixa_composto_quimico_idfcp_seq OWNER TO ieducar;
 
 --
 -- Name: faixa_composto_quimico; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10471,7 +10760,7 @@ CREATE TABLE faixa_composto_quimico (
 );
 
 
-ALTER TABLE alimentos.faixa_composto_quimico OWNER TO ieducar;
+ALTER TABLE faixa_composto_quimico OWNER TO ieducar;
 
 --
 -- Name: faixa_etaria_idfae_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10485,7 +10774,7 @@ CREATE SEQUENCE faixa_etaria_idfae_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.faixa_etaria_idfae_seq OWNER TO ieducar;
+ALTER TABLE faixa_etaria_idfae_seq OWNER TO ieducar;
 
 --
 -- Name: faixa_etaria; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10499,7 +10788,7 @@ CREATE TABLE faixa_etaria (
 );
 
 
-ALTER TABLE alimentos.faixa_etaria OWNER TO ieducar;
+ALTER TABLE faixa_etaria OWNER TO ieducar;
 
 --
 -- Name: fornecedor_idfor_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10513,7 +10802,7 @@ CREATE SEQUENCE fornecedor_idfor_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.fornecedor_idfor_seq OWNER TO ieducar;
+ALTER TABLE fornecedor_idfor_seq OWNER TO ieducar;
 
 --
 -- Name: fornecedor; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10543,7 +10832,7 @@ CREATE TABLE fornecedor (
 );
 
 
-ALTER TABLE alimentos.fornecedor OWNER TO ieducar;
+ALTER TABLE fornecedor OWNER TO ieducar;
 
 --
 -- Name: fornecedor_unidade_atendida; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10555,7 +10844,7 @@ CREATE TABLE fornecedor_unidade_atendida (
 );
 
 
-ALTER TABLE alimentos.fornecedor_unidade_atendida OWNER TO ieducar;
+ALTER TABLE fornecedor_unidade_atendida OWNER TO ieducar;
 
 --
 -- Name: grupo_quimico_idgrpq_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10569,7 +10858,7 @@ CREATE SEQUENCE grupo_quimico_idgrpq_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.grupo_quimico_idgrpq_seq OWNER TO ieducar;
+ALTER TABLE grupo_quimico_idgrpq_seq OWNER TO ieducar;
 
 --
 -- Name: grupo_quimico; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10582,7 +10871,7 @@ CREATE TABLE grupo_quimico (
 );
 
 
-ALTER TABLE alimentos.grupo_quimico OWNER TO ieducar;
+ALTER TABLE grupo_quimico OWNER TO ieducar;
 
 --
 -- Name: guia_produto_diario_idguiaprodiario_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10596,7 +10885,7 @@ CREATE SEQUENCE guia_produto_diario_idguiaprodiario_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.guia_produto_diario_idguiaprodiario_seq OWNER TO ieducar;
+ALTER TABLE guia_produto_diario_idguiaprodiario_seq OWNER TO ieducar;
 
 --
 -- Name: guia_produto_diario; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10612,7 +10901,7 @@ CREATE TABLE guia_produto_diario (
 );
 
 
-ALTER TABLE alimentos.guia_produto_diario OWNER TO ieducar;
+ALTER TABLE guia_produto_diario OWNER TO ieducar;
 
 --
 -- Name: guia_remessa_idgui_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10626,7 +10915,7 @@ CREATE SEQUENCE guia_remessa_idgui_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.guia_remessa_idgui_seq OWNER TO ieducar;
+ALTER TABLE guia_remessa_idgui_seq OWNER TO ieducar;
 
 --
 -- Name: guia_remessa; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10656,7 +10945,7 @@ CREATE TABLE guia_remessa (
 );
 
 
-ALTER TABLE alimentos.guia_remessa OWNER TO ieducar;
+ALTER TABLE guia_remessa OWNER TO ieducar;
 
 --
 -- Name: guia_remessa_produto_idgup_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10670,7 +10959,7 @@ CREATE SEQUENCE guia_remessa_produto_idgup_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.guia_remessa_produto_idgup_seq OWNER TO ieducar;
+ALTER TABLE guia_remessa_produto_idgup_seq OWNER TO ieducar;
 
 --
 -- Name: guia_remessa_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10688,7 +10977,7 @@ CREATE TABLE guia_remessa_produto (
 );
 
 
-ALTER TABLE alimentos.guia_remessa_produto OWNER TO ieducar;
+ALTER TABLE guia_remessa_produto OWNER TO ieducar;
 
 --
 -- Name: log_guia_remessa_idlogguia_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10702,7 +10991,7 @@ CREATE SEQUENCE log_guia_remessa_idlogguia_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.log_guia_remessa_idlogguia_seq OWNER TO ieducar;
+ALTER TABLE log_guia_remessa_idlogguia_seq OWNER TO ieducar;
 
 --
 -- Name: log_guia_remessa; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10722,7 +11011,7 @@ CREATE TABLE log_guia_remessa (
 );
 
 
-ALTER TABLE alimentos.log_guia_remessa OWNER TO ieducar;
+ALTER TABLE log_guia_remessa OWNER TO ieducar;
 
 --
 -- Name: medidas_caseiras; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10735,7 +11024,7 @@ CREATE TABLE medidas_caseiras (
 );
 
 
-ALTER TABLE alimentos.medidas_caseiras OWNER TO ieducar;
+ALTER TABLE medidas_caseiras OWNER TO ieducar;
 
 --
 -- Name: pessoa_idpes_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10749,7 +11038,7 @@ CREATE SEQUENCE pessoa_idpes_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.pessoa_idpes_seq OWNER TO ieducar;
+ALTER TABLE pessoa_idpes_seq OWNER TO ieducar;
 
 --
 -- Name: pessoa; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10762,7 +11051,7 @@ CREATE TABLE pessoa (
 );
 
 
-ALTER TABLE alimentos.pessoa OWNER TO ieducar;
+ALTER TABLE pessoa OWNER TO ieducar;
 
 --
 -- Name: produto_idpro_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10776,7 +11065,7 @@ CREATE SEQUENCE produto_idpro_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.produto_idpro_seq OWNER TO ieducar;
+ALTER TABLE produto_idpro_seq OWNER TO ieducar;
 
 --
 -- Name: produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10806,7 +11095,7 @@ CREATE TABLE produto (
 );
 
 
-ALTER TABLE alimentos.produto OWNER TO ieducar;
+ALTER TABLE produto OWNER TO ieducar;
 
 --
 -- Name: produto_composto_quimico_idpcq_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10820,7 +11109,7 @@ CREATE SEQUENCE produto_composto_quimico_idpcq_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.produto_composto_quimico_idpcq_seq OWNER TO ieducar;
+ALTER TABLE produto_composto_quimico_idpcq_seq OWNER TO ieducar;
 
 --
 -- Name: produto_composto_quimico; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10834,7 +11123,7 @@ CREATE TABLE produto_composto_quimico (
 );
 
 
-ALTER TABLE alimentos.produto_composto_quimico OWNER TO ieducar;
+ALTER TABLE produto_composto_quimico OWNER TO ieducar;
 
 --
 -- Name: produto_fornecedor_idprf_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10848,7 +11137,7 @@ CREATE SEQUENCE produto_fornecedor_idprf_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.produto_fornecedor_idprf_seq OWNER TO ieducar;
+ALTER TABLE produto_fornecedor_idprf_seq OWNER TO ieducar;
 
 --
 -- Name: produto_fornecedor; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10862,7 +11151,7 @@ CREATE TABLE produto_fornecedor (
 );
 
 
-ALTER TABLE alimentos.produto_fornecedor OWNER TO ieducar;
+ALTER TABLE produto_fornecedor OWNER TO ieducar;
 
 --
 -- Name: produto_medida_caseira_idpmc_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10876,7 +11165,7 @@ CREATE SEQUENCE produto_medida_caseira_idpmc_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.produto_medida_caseira_idpmc_seq OWNER TO ieducar;
+ALTER TABLE produto_medida_caseira_idpmc_seq OWNER TO ieducar;
 
 --
 -- Name: produto_medida_caseira; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10891,7 +11180,7 @@ CREATE TABLE produto_medida_caseira (
 );
 
 
-ALTER TABLE alimentos.produto_medida_caseira OWNER TO ieducar;
+ALTER TABLE produto_medida_caseira OWNER TO ieducar;
 
 --
 -- Name: receita_idrec_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10905,7 +11194,7 @@ CREATE SEQUENCE receita_idrec_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.receita_idrec_seq OWNER TO ieducar;
+ALTER TABLE receita_idrec_seq OWNER TO ieducar;
 
 --
 -- Name: receita; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10922,7 +11211,7 @@ CREATE TABLE receita (
 );
 
 
-ALTER TABLE alimentos.receita OWNER TO ieducar;
+ALTER TABLE receita OWNER TO ieducar;
 
 --
 -- Name: receita_composto_quimico_idrcq_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10936,7 +11225,7 @@ CREATE SEQUENCE receita_composto_quimico_idrcq_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.receita_composto_quimico_idrcq_seq OWNER TO ieducar;
+ALTER TABLE receita_composto_quimico_idrcq_seq OWNER TO ieducar;
 
 --
 -- Name: receita_composto_quimico; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10950,7 +11239,7 @@ CREATE TABLE receita_composto_quimico (
 );
 
 
-ALTER TABLE alimentos.receita_composto_quimico OWNER TO ieducar;
+ALTER TABLE receita_composto_quimico OWNER TO ieducar;
 
 --
 -- Name: receita_produto_idrpr_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10964,7 +11253,7 @@ CREATE SEQUENCE receita_produto_idrpr_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.receita_produto_idrpr_seq OWNER TO ieducar;
+ALTER TABLE receita_produto_idrpr_seq OWNER TO ieducar;
 
 --
 -- Name: receita_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -10982,7 +11271,7 @@ CREATE TABLE receita_produto (
 );
 
 
-ALTER TABLE alimentos.receita_produto OWNER TO ieducar;
+ALTER TABLE receita_produto OWNER TO ieducar;
 
 --
 -- Name: tipo_produto_idtip_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -10996,7 +11285,7 @@ CREATE SEQUENCE tipo_produto_idtip_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.tipo_produto_idtip_seq OWNER TO ieducar;
+ALTER TABLE tipo_produto_idtip_seq OWNER TO ieducar;
 
 --
 -- Name: tipo_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -11009,7 +11298,7 @@ CREATE TABLE tipo_produto (
 );
 
 
-ALTER TABLE alimentos.tipo_produto OWNER TO ieducar;
+ALTER TABLE tipo_produto OWNER TO ieducar;
 
 --
 -- Name: tipo_refeicao_idtre_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -11023,7 +11312,7 @@ CREATE SEQUENCE tipo_refeicao_idtre_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.tipo_refeicao_idtre_seq OWNER TO ieducar;
+ALTER TABLE tipo_refeicao_idtre_seq OWNER TO ieducar;
 
 --
 -- Name: tipo_refeicao; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -11036,7 +11325,7 @@ CREATE TABLE tipo_refeicao (
 );
 
 
-ALTER TABLE alimentos.tipo_refeicao OWNER TO ieducar;
+ALTER TABLE tipo_refeicao OWNER TO ieducar;
 
 --
 -- Name: tipo_unidade_idtip_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -11050,7 +11339,7 @@ CREATE SEQUENCE tipo_unidade_idtip_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.tipo_unidade_idtip_seq OWNER TO ieducar;
+ALTER TABLE tipo_unidade_idtip_seq OWNER TO ieducar;
 
 --
 -- Name: tipo_unidade; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -11063,7 +11352,7 @@ CREATE TABLE tipo_unidade (
 );
 
 
-ALTER TABLE alimentos.tipo_unidade OWNER TO ieducar;
+ALTER TABLE tipo_unidade OWNER TO ieducar;
 
 --
 -- Name: unidade_atendida_iduni_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -11077,7 +11366,7 @@ CREATE SEQUENCE unidade_atendida_iduni_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.unidade_atendida_iduni_seq OWNER TO ieducar;
+ALTER TABLE unidade_atendida_iduni_seq OWNER TO ieducar;
 
 --
 -- Name: unidade_atendida; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -11102,7 +11391,7 @@ CREATE TABLE unidade_atendida (
 );
 
 
-ALTER TABLE alimentos.unidade_atendida OWNER TO ieducar;
+ALTER TABLE unidade_atendida OWNER TO ieducar;
 
 --
 -- Name: unidade_faixa_etaria_idfeu_seq; Type: SEQUENCE; Schema: alimentos; Owner: ieducar
@@ -11116,7 +11405,7 @@ CREATE SEQUENCE unidade_faixa_etaria_idfeu_seq
     CACHE 1;
 
 
-ALTER TABLE alimentos.unidade_faixa_etaria_idfeu_seq OWNER TO ieducar;
+ALTER TABLE unidade_faixa_etaria_idfeu_seq OWNER TO ieducar;
 
 --
 -- Name: unidade_faixa_etaria; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -11131,7 +11420,7 @@ CREATE TABLE unidade_faixa_etaria (
 );
 
 
-ALTER TABLE alimentos.unidade_faixa_etaria OWNER TO ieducar;
+ALTER TABLE unidade_faixa_etaria OWNER TO ieducar;
 
 --
 -- Name: unidade_produto; Type: TABLE; Schema: alimentos; Owner: ieducar; Tablespace: 
@@ -11145,7 +11434,7 @@ CREATE TABLE unidade_produto (
 );
 
 
-ALTER TABLE alimentos.unidade_produto OWNER TO ieducar;
+ALTER TABLE unidade_produto OWNER TO ieducar;
 
 SET search_path = cadastro, pg_catalog;
 
@@ -11160,7 +11449,7 @@ CREATE TABLE aviso_nome (
 );
 
 
-ALTER TABLE cadastro.aviso_nome OWNER TO ieducar;
+ALTER TABLE aviso_nome OWNER TO ieducar;
 
 --
 -- Name: deficiencia_cod_deficiencia_seq; Type: SEQUENCE; Schema: cadastro; Owner: ieducar
@@ -11174,7 +11463,7 @@ CREATE SEQUENCE deficiencia_cod_deficiencia_seq
     CACHE 1;
 
 
-ALTER TABLE cadastro.deficiencia_cod_deficiencia_seq OWNER TO ieducar;
+ALTER TABLE deficiencia_cod_deficiencia_seq OWNER TO ieducar;
 
 --
 -- Name: deficiencia; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11186,7 +11475,7 @@ CREATE TABLE deficiencia (
 );
 
 
-ALTER TABLE cadastro.deficiencia OWNER TO ieducar;
+ALTER TABLE deficiencia OWNER TO ieducar;
 
 --
 -- Name: documento; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11227,7 +11516,7 @@ CREATE TABLE documento (
 );
 
 
-ALTER TABLE cadastro.documento OWNER TO ieducar;
+ALTER TABLE documento OWNER TO ieducar;
 
 --
 -- Name: endereco_externo; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11264,7 +11553,7 @@ CREATE TABLE endereco_externo (
 );
 
 
-ALTER TABLE cadastro.endereco_externo OWNER TO ieducar;
+ALTER TABLE endereco_externo OWNER TO ieducar;
 
 --
 -- Name: endereco_pessoa; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11297,7 +11586,7 @@ CREATE TABLE endereco_pessoa (
 );
 
 
-ALTER TABLE cadastro.endereco_pessoa OWNER TO ieducar;
+ALTER TABLE endereco_pessoa OWNER TO ieducar;
 
 --
 -- Name: escolaridade; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11309,7 +11598,7 @@ CREATE TABLE escolaridade (
 );
 
 
-ALTER TABLE cadastro.escolaridade OWNER TO ieducar;
+ALTER TABLE escolaridade OWNER TO ieducar;
 
 --
 -- Name: estado_civil; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11321,7 +11610,7 @@ CREATE TABLE estado_civil (
 );
 
 
-ALTER TABLE cadastro.estado_civil OWNER TO ieducar;
+ALTER TABLE estado_civil OWNER TO ieducar;
 
 --
 -- Name: fisica; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11369,7 +11658,7 @@ CREATE TABLE fisica (
 );
 
 
-ALTER TABLE cadastro.fisica OWNER TO ieducar;
+ALTER TABLE fisica OWNER TO ieducar;
 
 --
 -- Name: fisica_cpf; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11391,7 +11680,7 @@ CREATE TABLE fisica_cpf (
 );
 
 
-ALTER TABLE cadastro.fisica_cpf OWNER TO ieducar;
+ALTER TABLE fisica_cpf OWNER TO ieducar;
 
 --
 -- Name: fisica_deficiencia; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11403,7 +11692,7 @@ CREATE TABLE fisica_deficiencia (
 );
 
 
-ALTER TABLE cadastro.fisica_deficiencia OWNER TO ieducar;
+ALTER TABLE fisica_deficiencia OWNER TO ieducar;
 
 --
 -- Name: fisica_foto; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11415,7 +11704,7 @@ CREATE TABLE fisica_foto (
 );
 
 
-ALTER TABLE cadastro.fisica_foto OWNER TO ieducar;
+ALTER TABLE fisica_foto OWNER TO ieducar;
 
 --
 -- Name: fisica_raca; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11427,7 +11716,7 @@ CREATE TABLE fisica_raca (
 );
 
 
-ALTER TABLE cadastro.fisica_raca OWNER TO ieducar;
+ALTER TABLE fisica_raca OWNER TO ieducar;
 
 --
 -- Name: fisica_sangue; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11440,7 +11729,7 @@ CREATE TABLE fisica_sangue (
 );
 
 
-ALTER TABLE cadastro.fisica_sangue OWNER TO ieducar;
+ALTER TABLE fisica_sangue OWNER TO ieducar;
 
 --
 -- Name: fone_pessoa; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11465,7 +11754,7 @@ CREATE TABLE fone_pessoa (
 );
 
 
-ALTER TABLE cadastro.fone_pessoa OWNER TO ieducar;
+ALTER TABLE fone_pessoa OWNER TO ieducar;
 
 --
 -- Name: funcionario; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11491,7 +11780,7 @@ CREATE TABLE funcionario (
 );
 
 
-ALTER TABLE cadastro.funcionario OWNER TO ieducar;
+ALTER TABLE funcionario OWNER TO ieducar;
 
 --
 -- Name: historico_cartao; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11506,7 +11795,7 @@ CREATE TABLE historico_cartao (
 );
 
 
-ALTER TABLE cadastro.historico_cartao OWNER TO ieducar;
+ALTER TABLE historico_cartao OWNER TO ieducar;
 
 --
 -- Name: juridica; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11531,7 +11820,7 @@ CREATE TABLE juridica (
 );
 
 
-ALTER TABLE cadastro.juridica OWNER TO ieducar;
+ALTER TABLE juridica OWNER TO ieducar;
 
 --
 -- Name: ocupacao; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11543,7 +11832,7 @@ CREATE TABLE ocupacao (
 );
 
 
-ALTER TABLE cadastro.ocupacao OWNER TO ieducar;
+ALTER TABLE ocupacao OWNER TO ieducar;
 
 --
 -- Name: orgao_emissor_rg_idorg_rg_seq; Type: SEQUENCE; Schema: cadastro; Owner: ieducar
@@ -11557,7 +11846,7 @@ CREATE SEQUENCE orgao_emissor_rg_idorg_rg_seq
     CACHE 1;
 
 
-ALTER TABLE cadastro.orgao_emissor_rg_idorg_rg_seq OWNER TO ieducar;
+ALTER TABLE orgao_emissor_rg_idorg_rg_seq OWNER TO ieducar;
 
 --
 -- Name: orgao_emissor_rg; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11572,7 +11861,7 @@ CREATE TABLE orgao_emissor_rg (
 );
 
 
-ALTER TABLE cadastro.orgao_emissor_rg OWNER TO ieducar;
+ALTER TABLE orgao_emissor_rg OWNER TO ieducar;
 
 --
 -- Name: pessoa; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11600,7 +11889,7 @@ CREATE TABLE pessoa (
 );
 
 
-ALTER TABLE cadastro.pessoa OWNER TO ieducar;
+ALTER TABLE pessoa OWNER TO ieducar;
 
 --
 -- Name: pessoa_fonetico; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11612,7 +11901,7 @@ CREATE TABLE pessoa_fonetico (
 );
 
 
-ALTER TABLE cadastro.pessoa_fonetico OWNER TO ieducar;
+ALTER TABLE pessoa_fonetico OWNER TO ieducar;
 
 --
 -- Name: raca_cod_raca_seq; Type: SEQUENCE; Schema: cadastro; Owner: ieducar
@@ -11626,7 +11915,7 @@ CREATE SEQUENCE raca_cod_raca_seq
     CACHE 1;
 
 
-ALTER TABLE cadastro.raca_cod_raca_seq OWNER TO ieducar;
+ALTER TABLE raca_cod_raca_seq OWNER TO ieducar;
 
 --
 -- Name: raca; Type: TABLE; Schema: cadastro; Owner: ieducar; Tablespace: 
@@ -11643,7 +11932,7 @@ CREATE TABLE raca (
 );
 
 
-ALTER TABLE cadastro.raca OWNER TO ieducar;
+ALTER TABLE raca OWNER TO ieducar;
 
 --
 -- Name: religiao_cod_religiao_seq; Type: SEQUENCE; Schema: cadastro; Owner: ieducar
@@ -11657,7 +11946,7 @@ CREATE SEQUENCE religiao_cod_religiao_seq
     CACHE 1;
 
 
-ALTER TABLE cadastro.religiao_cod_religiao_seq OWNER TO ieducar;
+ALTER TABLE religiao_cod_religiao_seq OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -11676,7 +11965,7 @@ CREATE TABLE religiao (
 );
 
 
-ALTER TABLE cadastro.religiao OWNER TO ieducar;
+ALTER TABLE religiao OWNER TO ieducar;
 
 --
 -- Name: seq_pessoa; Type: SEQUENCE; Schema: cadastro; Owner: ieducar
@@ -11690,7 +11979,7 @@ CREATE SEQUENCE seq_pessoa
     CACHE 1;
 
 
-ALTER TABLE cadastro.seq_pessoa OWNER TO ieducar;
+ALTER TABLE seq_pessoa OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -11714,7 +12003,7 @@ CREATE TABLE socio (
 );
 
 
-ALTER TABLE cadastro.socio OWNER TO ieducar;
+ALTER TABLE socio OWNER TO ieducar;
 
 SET search_path = public, pg_catalog;
 
@@ -11741,7 +12030,7 @@ CREATE TABLE bairro (
 );
 
 
-ALTER TABLE public.bairro OWNER TO ieducar;
+ALTER TABLE bairro OWNER TO ieducar;
 
 --
 -- Name: logradouro; Type: TABLE; Schema: public; Owner: ieducar; Tablespace: 
@@ -11768,7 +12057,7 @@ CREATE TABLE logradouro (
 );
 
 
-ALTER TABLE public.logradouro OWNER TO ieducar;
+ALTER TABLE logradouro OWNER TO ieducar;
 
 --
 -- Name: municipio; Type: TABLE; Schema: public; Owner: ieducar; Tablespace: 
@@ -11799,7 +12088,7 @@ CREATE TABLE municipio (
 );
 
 
-ALTER TABLE public.municipio OWNER TO ieducar;
+ALTER TABLE municipio OWNER TO ieducar;
 
 SET search_path = cadastro, pg_catalog;
 
@@ -11808,70 +12097,199 @@ SET search_path = cadastro, pg_catalog;
 --
 
 CREATE VIEW v_endereco AS
-    SELECT e.idpes, e.cep, e.idlog, e.numero, e.letra, e.complemento, e.idbai, e.bloco, e.andar, e.apartamento, l.nome AS logradouro, l.idtlog, b.nome AS bairro, m.nome AS cidade, m.sigla_uf, b.zona_localizacao FROM endereco_pessoa e, public.logradouro l, public.bairro b, public.municipio m WHERE ((((e.idlog = l.idlog) AND (e.idbai = b.idbai)) AND (b.idmun = m.idmun)) AND (e.tipo = (1)::numeric)) UNION SELECT e.idpes, e.cep, NULL::numeric AS idlog, e.numero, e.letra, e.complemento, NULL::numeric AS idbai, e.bloco, e.andar, e.apartamento, e.logradouro, e.idtlog, e.bairro, e.cidade, e.sigla_uf, e.zona_localizacao FROM endereco_externo e WHERE (e.tipo = (1)::numeric);
+ SELECT e.idpes,
+    e.cep,
+    e.idlog,
+    e.numero,
+    e.letra,
+    e.complemento,
+    e.idbai,
+    e.bloco,
+    e.andar,
+    e.apartamento,
+    l.nome AS logradouro,
+    l.idtlog,
+    b.nome AS bairro,
+    m.nome AS cidade,
+    m.sigla_uf,
+    b.zona_localizacao
+   FROM endereco_pessoa e,
+    public.logradouro l,
+    public.bairro b,
+    public.municipio m
+  WHERE ((((e.idlog = l.idlog) AND (e.idbai = b.idbai)) AND (b.idmun = m.idmun)) AND (e.tipo = (1)::numeric))
+UNION
+ SELECT e.idpes,
+    e.cep,
+    NULL::numeric AS idlog,
+    e.numero,
+    e.letra,
+    e.complemento,
+    NULL::numeric AS idbai,
+    e.bloco,
+    e.andar,
+    e.apartamento,
+    e.logradouro,
+    e.idtlog,
+    e.bairro,
+    e.cidade,
+    e.sigla_uf,
+    e.zona_localizacao
+   FROM endereco_externo e
+  WHERE (e.tipo = (1)::numeric);
 
 
-ALTER TABLE cadastro.v_endereco OWNER TO ieducar;
+ALTER TABLE v_endereco OWNER TO ieducar;
 
 --
 -- Name: v_fone_pessoa; Type: VIEW; Schema: cadastro; Owner: ieducar
 --
 
 CREATE VIEW v_fone_pessoa AS
-    SELECT DISTINCT t.idpes, (SELECT t1.ddd FROM fone_pessoa t1 WHERE ((t1.tipo = (1)::numeric) AND (t.idpes = t1.idpes))) AS ddd_1, (SELECT t1.fone FROM fone_pessoa t1 WHERE ((t1.tipo = (1)::numeric) AND (t.idpes = t1.idpes))) AS fone_1, (SELECT t1.ddd FROM fone_pessoa t1 WHERE ((t1.tipo = (2)::numeric) AND (t.idpes = t1.idpes))) AS ddd_2, (SELECT t1.fone FROM fone_pessoa t1 WHERE ((t1.tipo = (2)::numeric) AND (t.idpes = t1.idpes))) AS fone_2, (SELECT t1.ddd FROM fone_pessoa t1 WHERE ((t1.tipo = (3)::numeric) AND (t.idpes = t1.idpes))) AS ddd_mov, (SELECT t1.fone FROM fone_pessoa t1 WHERE ((t1.tipo = (3)::numeric) AND (t.idpes = t1.idpes))) AS fone_mov, (SELECT t1.ddd FROM fone_pessoa t1 WHERE ((t1.tipo = (4)::numeric) AND (t.idpes = t1.idpes))) AS ddd_fax, (SELECT t1.fone FROM fone_pessoa t1 WHERE ((t1.tipo = (4)::numeric) AND (t.idpes = t1.idpes))) AS fone_fax FROM fone_pessoa t ORDER BY t.idpes, (SELECT t1.ddd FROM fone_pessoa t1 WHERE ((t1.tipo = (1)::numeric) AND (t.idpes = t1.idpes))), (SELECT t1.fone FROM fone_pessoa t1 WHERE ((t1.tipo = (1)::numeric) AND (t.idpes = t1.idpes))), (SELECT t1.ddd FROM fone_pessoa t1 WHERE ((t1.tipo = (2)::numeric) AND (t.idpes = t1.idpes))), (SELECT t1.fone FROM fone_pessoa t1 WHERE ((t1.tipo = (2)::numeric) AND (t.idpes = t1.idpes))), (SELECT t1.ddd FROM fone_pessoa t1 WHERE ((t1.tipo = (3)::numeric) AND (t.idpes = t1.idpes))), (SELECT t1.fone FROM fone_pessoa t1 WHERE ((t1.tipo = (3)::numeric) AND (t.idpes = t1.idpes))), (SELECT t1.ddd FROM fone_pessoa t1 WHERE ((t1.tipo = (4)::numeric) AND (t.idpes = t1.idpes))), (SELECT t1.fone FROM fone_pessoa t1 WHERE ((t1.tipo = (4)::numeric) AND (t.idpes = t1.idpes)));
+ SELECT DISTINCT t.idpes,
+    ( SELECT t1.ddd
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (1)::numeric) AND (t.idpes = t1.idpes))) AS ddd_1,
+    ( SELECT t1.fone
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (1)::numeric) AND (t.idpes = t1.idpes))) AS fone_1,
+    ( SELECT t1.ddd
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (2)::numeric) AND (t.idpes = t1.idpes))) AS ddd_2,
+    ( SELECT t1.fone
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (2)::numeric) AND (t.idpes = t1.idpes))) AS fone_2,
+    ( SELECT t1.ddd
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (3)::numeric) AND (t.idpes = t1.idpes))) AS ddd_mov,
+    ( SELECT t1.fone
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (3)::numeric) AND (t.idpes = t1.idpes))) AS fone_mov,
+    ( SELECT t1.ddd
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (4)::numeric) AND (t.idpes = t1.idpes))) AS ddd_fax,
+    ( SELECT t1.fone
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (4)::numeric) AND (t.idpes = t1.idpes))) AS fone_fax
+   FROM fone_pessoa t
+  ORDER BY t.idpes, ( SELECT t1.ddd
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (1)::numeric) AND (t.idpes = t1.idpes))), ( SELECT t1.fone
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (1)::numeric) AND (t.idpes = t1.idpes))), ( SELECT t1.ddd
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (2)::numeric) AND (t.idpes = t1.idpes))), ( SELECT t1.fone
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (2)::numeric) AND (t.idpes = t1.idpes))), ( SELECT t1.ddd
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (3)::numeric) AND (t.idpes = t1.idpes))), ( SELECT t1.fone
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (3)::numeric) AND (t.idpes = t1.idpes))), ( SELECT t1.ddd
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (4)::numeric) AND (t.idpes = t1.idpes))), ( SELECT t1.fone
+           FROM fone_pessoa t1
+          WHERE ((t1.tipo = (4)::numeric) AND (t.idpes = t1.idpes)));
 
 
-ALTER TABLE cadastro.v_fone_pessoa OWNER TO ieducar;
+ALTER TABLE v_fone_pessoa OWNER TO ieducar;
 
 --
 -- Name: v_pessoa_fisica; Type: VIEW; Schema: cadastro; Owner: ieducar
 --
 
 CREATE VIEW v_pessoa_fisica AS
-    SELECT p.idpes, p.nome, p.url, p.email, p.situacao, f.data_nasc, f.sexo, f.cpf, f.ref_cod_sistema, f.idesco FROM pessoa p, fisica f WHERE (p.idpes = f.idpes);
+ SELECT p.idpes,
+    p.nome,
+    p.url,
+    p.email,
+    p.situacao,
+    f.data_nasc,
+    f.sexo,
+    f.cpf,
+    f.ref_cod_sistema,
+    f.idesco
+   FROM pessoa p,
+    fisica f
+  WHERE (p.idpes = f.idpes);
 
 
-ALTER TABLE cadastro.v_pessoa_fisica OWNER TO ieducar;
+ALTER TABLE v_pessoa_fisica OWNER TO ieducar;
 
 --
 -- Name: v_pessoa_fisica_simples; Type: VIEW; Schema: cadastro; Owner: ieducar
 --
 
 CREATE VIEW v_pessoa_fisica_simples AS
-    SELECT p.idpes, (SELECT fisica_cpf.cpf FROM fisica_cpf WHERE (fisica_cpf.idpes = p.idpes)) AS cpf, f.ref_cod_sistema, f.idesco FROM pessoa p, fisica f WHERE (p.idpes = f.idpes);
+ SELECT p.idpes,
+    ( SELECT fisica_cpf.cpf
+           FROM fisica_cpf
+          WHERE (fisica_cpf.idpes = p.idpes)) AS cpf,
+    f.ref_cod_sistema,
+    f.idesco
+   FROM pessoa p,
+    fisica f
+  WHERE (p.idpes = f.idpes);
 
 
-ALTER TABLE cadastro.v_pessoa_fisica_simples OWNER TO ieducar;
+ALTER TABLE v_pessoa_fisica_simples OWNER TO ieducar;
 
 --
 -- Name: v_pessoa_fj; Type: VIEW; Schema: cadastro; Owner: ieducar
 --
 
 CREATE VIEW v_pessoa_fj AS
-    SELECT p.idpes, p.nome, (SELECT fisica.ref_cod_sistema FROM fisica WHERE (fisica.idpes = p.idpes)) AS ref_cod_sistema, (SELECT juridica.fantasia FROM juridica WHERE (juridica.idpes = p.idpes)) AS fantasia, p.tipo, COALESCE((SELECT fisica.cpf FROM fisica WHERE (fisica.idpes = p.idpes)), (SELECT juridica.cnpj FROM juridica WHERE (juridica.idpes = p.idpes))) AS id_federal FROM pessoa p;
+ SELECT p.idpes,
+    p.nome,
+    ( SELECT fisica.ref_cod_sistema
+           FROM fisica
+          WHERE (fisica.idpes = p.idpes)) AS ref_cod_sistema,
+    ( SELECT juridica.fantasia
+           FROM juridica
+          WHERE (juridica.idpes = p.idpes)) AS fantasia,
+    p.tipo,
+    COALESCE(( SELECT fisica.cpf
+           FROM fisica
+          WHERE (fisica.idpes = p.idpes)), ( SELECT juridica.cnpj
+           FROM juridica
+          WHERE (juridica.idpes = p.idpes))) AS id_federal
+   FROM pessoa p;
 
 
-ALTER TABLE cadastro.v_pessoa_fj OWNER TO ieducar;
+ALTER TABLE v_pessoa_fj OWNER TO ieducar;
 
 --
 -- Name: v_pessoa_juridica; Type: VIEW; Schema: cadastro; Owner: ieducar
 --
 
 CREATE VIEW v_pessoa_juridica AS
-    SELECT j.idpes, j.fantasia, j.cnpj, j.insc_estadual, j.capital_social, (SELECT pessoa.nome FROM pessoa WHERE (pessoa.idpes = j.idpes)) AS nome FROM juridica j;
+ SELECT j.idpes,
+    j.fantasia,
+    j.cnpj,
+    j.insc_estadual,
+    j.capital_social,
+    ( SELECT pessoa.nome
+           FROM pessoa
+          WHERE (pessoa.idpes = j.idpes)) AS nome
+   FROM juridica j;
 
 
-ALTER TABLE cadastro.v_pessoa_juridica OWNER TO ieducar;
+ALTER TABLE v_pessoa_juridica OWNER TO ieducar;
 
 --
 -- Name: v_pessoafj_count; Type: VIEW; Schema: cadastro; Owner: ieducar
 --
 
 CREATE VIEW v_pessoafj_count AS
-    SELECT fisica.ref_cod_sistema, fisica.cpf AS id_federal FROM fisica UNION ALL SELECT NULL::integer AS ref_cod_sistema, juridica.cnpj AS id_federal FROM juridica;
+ SELECT fisica.ref_cod_sistema,
+    fisica.cpf AS id_federal
+   FROM fisica
+UNION ALL
+ SELECT NULL::integer AS ref_cod_sistema,
+    juridica.cnpj AS id_federal
+   FROM juridica;
 
 
-ALTER TABLE cadastro.v_pessoafj_count OWNER TO ieducar;
+ALTER TABLE v_pessoafj_count OWNER TO ieducar;
 
 SET search_path = consistenciacao, pg_catalog;
 
@@ -11888,7 +12306,7 @@ CREATE TABLE campo_consistenciacao (
 );
 
 
-ALTER TABLE consistenciacao.campo_consistenciacao OWNER TO ieducar;
+ALTER TABLE campo_consistenciacao OWNER TO ieducar;
 
 --
 -- Name: campo_metadado_id_campo_met_seq; Type: SEQUENCE; Schema: consistenciacao; Owner: ieducar
@@ -11902,7 +12320,7 @@ CREATE SEQUENCE campo_metadado_id_campo_met_seq
     CACHE 1;
 
 
-ALTER TABLE consistenciacao.campo_metadado_id_campo_met_seq OWNER TO ieducar;
+ALTER TABLE campo_metadado_id_campo_met_seq OWNER TO ieducar;
 
 --
 -- Name: campo_metadado; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -11923,7 +12341,7 @@ CREATE TABLE campo_metadado (
 );
 
 
-ALTER TABLE consistenciacao.campo_metadado OWNER TO ieducar;
+ALTER TABLE campo_metadado OWNER TO ieducar;
 
 --
 -- Name: confrontacao_idcon_seq; Type: SEQUENCE; Schema: consistenciacao; Owner: ieducar
@@ -11937,7 +12355,7 @@ CREATE SEQUENCE confrontacao_idcon_seq
     CACHE 1;
 
 
-ALTER TABLE consistenciacao.confrontacao_idcon_seq OWNER TO ieducar;
+ALTER TABLE confrontacao_idcon_seq OWNER TO ieducar;
 
 --
 -- Name: confrontacao; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -11955,7 +12373,7 @@ CREATE TABLE confrontacao (
 );
 
 
-ALTER TABLE consistenciacao.confrontacao OWNER TO ieducar;
+ALTER TABLE confrontacao OWNER TO ieducar;
 
 --
 -- Name: fonte_idfon_seq; Type: SEQUENCE; Schema: consistenciacao; Owner: ieducar
@@ -11969,7 +12387,7 @@ CREATE SEQUENCE fonte_idfon_seq
     CACHE 1;
 
 
-ALTER TABLE consistenciacao.fonte_idfon_seq OWNER TO ieducar;
+ALTER TABLE fonte_idfon_seq OWNER TO ieducar;
 
 --
 -- Name: fonte; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -11983,7 +12401,7 @@ CREATE TABLE fonte (
 );
 
 
-ALTER TABLE consistenciacao.fonte OWNER TO ieducar;
+ALTER TABLE fonte OWNER TO ieducar;
 
 --
 -- Name: historico_campo; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -11998,7 +12416,7 @@ CREATE TABLE historico_campo (
 );
 
 
-ALTER TABLE consistenciacao.historico_campo OWNER TO ieducar;
+ALTER TABLE historico_campo OWNER TO ieducar;
 
 --
 -- Name: incoerencia_idinc_seq; Type: SEQUENCE; Schema: consistenciacao; Owner: ieducar
@@ -12012,7 +12430,7 @@ CREATE SEQUENCE incoerencia_idinc_seq
     CACHE 1;
 
 
-ALTER TABLE consistenciacao.incoerencia_idinc_seq OWNER TO ieducar;
+ALTER TABLE incoerencia_idinc_seq OWNER TO ieducar;
 
 --
 -- Name: incoerencia; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12046,7 +12464,7 @@ CREATE TABLE incoerencia (
 );
 
 
-ALTER TABLE consistenciacao.incoerencia OWNER TO ieducar;
+ALTER TABLE incoerencia OWNER TO ieducar;
 
 --
 -- Name: incoerencia_documento_id_inc_doc_seq; Type: SEQUENCE; Schema: consistenciacao; Owner: ieducar
@@ -12060,7 +12478,7 @@ CREATE SEQUENCE incoerencia_documento_id_inc_doc_seq
     CACHE 1;
 
 
-ALTER TABLE consistenciacao.incoerencia_documento_id_inc_doc_seq OWNER TO ieducar;
+ALTER TABLE incoerencia_documento_id_inc_doc_seq OWNER TO ieducar;
 
 --
 -- Name: incoerencia_documento; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12090,7 +12508,7 @@ CREATE TABLE incoerencia_documento (
 );
 
 
-ALTER TABLE consistenciacao.incoerencia_documento OWNER TO ieducar;
+ALTER TABLE incoerencia_documento OWNER TO ieducar;
 
 --
 -- Name: incoerencia_endereco_id_inc_end_seq; Type: SEQUENCE; Schema: consistenciacao; Owner: ieducar
@@ -12104,7 +12522,7 @@ CREATE SEQUENCE incoerencia_endereco_id_inc_end_seq
     CACHE 1;
 
 
-ALTER TABLE consistenciacao.incoerencia_endereco_id_inc_end_seq OWNER TO ieducar;
+ALTER TABLE incoerencia_endereco_id_inc_end_seq OWNER TO ieducar;
 
 --
 -- Name: incoerencia_endereco; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12127,7 +12545,7 @@ CREATE TABLE incoerencia_endereco (
 );
 
 
-ALTER TABLE consistenciacao.incoerencia_endereco OWNER TO ieducar;
+ALTER TABLE incoerencia_endereco OWNER TO ieducar;
 
 --
 -- Name: incoerencia_fone_id_inc_fone_seq; Type: SEQUENCE; Schema: consistenciacao; Owner: ieducar
@@ -12141,7 +12559,7 @@ CREATE SEQUENCE incoerencia_fone_id_inc_fone_seq
     CACHE 1;
 
 
-ALTER TABLE consistenciacao.incoerencia_fone_id_inc_fone_seq OWNER TO ieducar;
+ALTER TABLE incoerencia_fone_id_inc_fone_seq OWNER TO ieducar;
 
 --
 -- Name: incoerencia_fone; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12157,7 +12575,7 @@ CREATE TABLE incoerencia_fone (
 );
 
 
-ALTER TABLE consistenciacao.incoerencia_fone OWNER TO ieducar;
+ALTER TABLE incoerencia_fone OWNER TO ieducar;
 
 --
 -- Name: incoerencia_pessoa_possivel; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12169,7 +12587,7 @@ CREATE TABLE incoerencia_pessoa_possivel (
 );
 
 
-ALTER TABLE consistenciacao.incoerencia_pessoa_possivel OWNER TO ieducar;
+ALTER TABLE incoerencia_pessoa_possivel OWNER TO ieducar;
 
 --
 -- Name: incoerencia_tipo_incoerencia; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12181,7 +12599,7 @@ CREATE TABLE incoerencia_tipo_incoerencia (
 );
 
 
-ALTER TABLE consistenciacao.incoerencia_tipo_incoerencia OWNER TO ieducar;
+ALTER TABLE incoerencia_tipo_incoerencia OWNER TO ieducar;
 
 --
 -- Name: metadado_idmet_seq; Type: SEQUENCE; Schema: consistenciacao; Owner: ieducar
@@ -12195,7 +12613,7 @@ CREATE SEQUENCE metadado_idmet_seq
     CACHE 1;
 
 
-ALTER TABLE consistenciacao.metadado_idmet_seq OWNER TO ieducar;
+ALTER TABLE metadado_idmet_seq OWNER TO ieducar;
 
 --
 -- Name: metadado; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12211,7 +12629,7 @@ CREATE TABLE metadado (
 );
 
 
-ALTER TABLE consistenciacao.metadado OWNER TO ieducar;
+ALTER TABLE metadado OWNER TO ieducar;
 
 --
 -- Name: ocorrencia_regra_campo; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12224,7 +12642,7 @@ CREATE TABLE ocorrencia_regra_campo (
 );
 
 
-ALTER TABLE consistenciacao.ocorrencia_regra_campo OWNER TO ieducar;
+ALTER TABLE ocorrencia_regra_campo OWNER TO ieducar;
 
 --
 -- Name: regra_campo_idreg_seq; Type: SEQUENCE; Schema: consistenciacao; Owner: ieducar
@@ -12238,7 +12656,7 @@ CREATE SEQUENCE regra_campo_idreg_seq
     CACHE 1;
 
 
-ALTER TABLE consistenciacao.regra_campo_idreg_seq OWNER TO ieducar;
+ALTER TABLE regra_campo_idreg_seq OWNER TO ieducar;
 
 --
 -- Name: regra_campo; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12252,7 +12670,7 @@ CREATE TABLE regra_campo (
 );
 
 
-ALTER TABLE consistenciacao.regra_campo OWNER TO ieducar;
+ALTER TABLE regra_campo OWNER TO ieducar;
 
 --
 -- Name: temp_cadastro_unificacao_cmf; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12284,7 +12702,7 @@ CREATE TABLE temp_cadastro_unificacao_cmf (
 );
 
 
-ALTER TABLE consistenciacao.temp_cadastro_unificacao_cmf OWNER TO ieducar;
+ALTER TABLE temp_cadastro_unificacao_cmf OWNER TO ieducar;
 
 --
 -- Name: temp_cadastro_unificacao_siam; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12305,7 +12723,7 @@ CREATE TABLE temp_cadastro_unificacao_siam (
 );
 
 
-ALTER TABLE consistenciacao.temp_cadastro_unificacao_siam OWNER TO ieducar;
+ALTER TABLE temp_cadastro_unificacao_siam OWNER TO ieducar;
 
 --
 -- Name: tipo_incoerencia; Type: TABLE; Schema: consistenciacao; Owner: ieducar; Tablespace: 
@@ -12318,7 +12736,7 @@ CREATE TABLE tipo_incoerencia (
 );
 
 
-ALTER TABLE consistenciacao.tipo_incoerencia OWNER TO ieducar;
+ALTER TABLE tipo_incoerencia OWNER TO ieducar;
 
 SET search_path = historico, pg_catalog;
 
@@ -12344,7 +12762,7 @@ CREATE TABLE bairro (
 );
 
 
-ALTER TABLE historico.bairro OWNER TO ieducar;
+ALTER TABLE bairro OWNER TO ieducar;
 
 --
 -- Name: cep_logradouro; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12368,7 +12786,7 @@ CREATE TABLE cep_logradouro (
 );
 
 
-ALTER TABLE historico.cep_logradouro OWNER TO ieducar;
+ALTER TABLE cep_logradouro OWNER TO ieducar;
 
 --
 -- Name: cep_logradouro_bairro; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12391,7 +12809,7 @@ CREATE TABLE cep_logradouro_bairro (
 );
 
 
-ALTER TABLE historico.cep_logradouro_bairro OWNER TO ieducar;
+ALTER TABLE cep_logradouro_bairro OWNER TO ieducar;
 
 --
 -- Name: documento; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12431,7 +12849,7 @@ CREATE TABLE documento (
 );
 
 
-ALTER TABLE historico.documento OWNER TO ieducar;
+ALTER TABLE documento OWNER TO ieducar;
 
 --
 -- Name: endereco_externo; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12464,7 +12882,7 @@ CREATE TABLE endereco_externo (
 );
 
 
-ALTER TABLE historico.endereco_externo OWNER TO ieducar;
+ALTER TABLE endereco_externo OWNER TO ieducar;
 
 --
 -- Name: endereco_pessoa; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12494,7 +12912,7 @@ CREATE TABLE endereco_pessoa (
 );
 
 
-ALTER TABLE historico.endereco_pessoa OWNER TO ieducar;
+ALTER TABLE endereco_pessoa OWNER TO ieducar;
 
 --
 -- Name: fisica; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12538,7 +12956,7 @@ CREATE TABLE fisica (
 );
 
 
-ALTER TABLE historico.fisica OWNER TO ieducar;
+ALTER TABLE fisica OWNER TO ieducar;
 
 --
 -- Name: fisica_cpf; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12560,7 +12978,7 @@ CREATE TABLE fisica_cpf (
 );
 
 
-ALTER TABLE historico.fisica_cpf OWNER TO ieducar;
+ALTER TABLE fisica_cpf OWNER TO ieducar;
 
 --
 -- Name: fone_pessoa; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12585,7 +13003,7 @@ CREATE TABLE fone_pessoa (
 );
 
 
-ALTER TABLE historico.fone_pessoa OWNER TO ieducar;
+ALTER TABLE fone_pessoa OWNER TO ieducar;
 
 --
 -- Name: funcionario; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12611,7 +13029,7 @@ CREATE TABLE funcionario (
 );
 
 
-ALTER TABLE historico.funcionario OWNER TO ieducar;
+ALTER TABLE funcionario OWNER TO ieducar;
 
 --
 -- Name: juridica; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12635,7 +13053,7 @@ CREATE TABLE juridica (
 );
 
 
-ALTER TABLE historico.juridica OWNER TO ieducar;
+ALTER TABLE juridica OWNER TO ieducar;
 
 --
 -- Name: logradouro; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12662,7 +13080,7 @@ CREATE TABLE logradouro (
 );
 
 
-ALTER TABLE historico.logradouro OWNER TO ieducar;
+ALTER TABLE logradouro OWNER TO ieducar;
 
 --
 -- Name: municipio; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12693,7 +13111,7 @@ CREATE TABLE municipio (
 );
 
 
-ALTER TABLE historico.municipio OWNER TO ieducar;
+ALTER TABLE municipio OWNER TO ieducar;
 
 --
 -- Name: pessoa; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12721,7 +13139,7 @@ CREATE TABLE pessoa (
 );
 
 
-ALTER TABLE historico.pessoa OWNER TO ieducar;
+ALTER TABLE pessoa OWNER TO ieducar;
 
 --
 -- Name: socio; Type: TABLE; Schema: historico; Owner: ieducar; Tablespace: 
@@ -12743,7 +13161,7 @@ CREATE TABLE socio (
 );
 
 
-ALTER TABLE historico.socio OWNER TO ieducar;
+ALTER TABLE socio OWNER TO ieducar;
 
 SET search_path = modules, pg_catalog;
 
@@ -12761,7 +13179,7 @@ CREATE TABLE area_conhecimento (
 );
 
 
-ALTER TABLE modules.area_conhecimento OWNER TO ieducar;
+ALTER TABLE area_conhecimento OWNER TO ieducar;
 
 --
 -- Name: area_conhecimento_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -12775,7 +13193,7 @@ CREATE SEQUENCE area_conhecimento_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.area_conhecimento_id_seq OWNER TO ieducar;
+ALTER TABLE area_conhecimento_id_seq OWNER TO ieducar;
 
 --
 -- Name: area_conhecimento_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -12797,7 +13215,7 @@ CREATE TABLE calendario_turma (
 );
 
 
-ALTER TABLE modules.calendario_turma OWNER TO ieducar;
+ALTER TABLE calendario_turma OWNER TO ieducar;
 
 --
 -- Name: componente_curricular; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -12813,7 +13231,7 @@ CREATE TABLE componente_curricular (
 );
 
 
-ALTER TABLE modules.componente_curricular OWNER TO ieducar;
+ALTER TABLE componente_curricular OWNER TO ieducar;
 
 --
 -- Name: componente_curricular_ano_escolar; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -12826,7 +13244,7 @@ CREATE TABLE componente_curricular_ano_escolar (
 );
 
 
-ALTER TABLE modules.componente_curricular_ano_escolar OWNER TO ieducar;
+ALTER TABLE componente_curricular_ano_escolar OWNER TO ieducar;
 
 --
 -- Name: componente_curricular_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -12840,7 +13258,7 @@ CREATE SEQUENCE componente_curricular_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.componente_curricular_id_seq OWNER TO ieducar;
+ALTER TABLE componente_curricular_id_seq OWNER TO ieducar;
 
 --
 -- Name: componente_curricular_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -12862,7 +13280,7 @@ CREATE TABLE componente_curricular_turma (
 );
 
 
-ALTER TABLE modules.componente_curricular_turma OWNER TO ieducar;
+ALTER TABLE componente_curricular_turma OWNER TO ieducar;
 
 --
 -- Name: docente_licenciatura; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -12881,7 +13299,7 @@ CREATE TABLE docente_licenciatura (
 );
 
 
-ALTER TABLE modules.docente_licenciatura OWNER TO ieducar;
+ALTER TABLE docente_licenciatura OWNER TO ieducar;
 
 --
 -- Name: docente_licenciatura_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -12895,7 +13313,7 @@ CREATE SEQUENCE docente_licenciatura_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.docente_licenciatura_id_seq OWNER TO ieducar;
+ALTER TABLE docente_licenciatura_id_seq OWNER TO ieducar;
 
 --
 -- Name: docente_licenciatura_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -12918,7 +13336,7 @@ CREATE TABLE educacenso_cod_aluno (
 );
 
 
-ALTER TABLE modules.educacenso_cod_aluno OWNER TO ieducar;
+ALTER TABLE educacenso_cod_aluno OWNER TO ieducar;
 
 --
 -- Name: educacenso_cod_docente; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -12934,7 +13352,7 @@ CREATE TABLE educacenso_cod_docente (
 );
 
 
-ALTER TABLE modules.educacenso_cod_docente OWNER TO ieducar;
+ALTER TABLE educacenso_cod_docente OWNER TO ieducar;
 
 --
 -- Name: educacenso_cod_escola; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -12950,7 +13368,7 @@ CREATE TABLE educacenso_cod_escola (
 );
 
 
-ALTER TABLE modules.educacenso_cod_escola OWNER TO ieducar;
+ALTER TABLE educacenso_cod_escola OWNER TO ieducar;
 
 --
 -- Name: educacenso_cod_turma; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -12966,7 +13384,7 @@ CREATE TABLE educacenso_cod_turma (
 );
 
 
-ALTER TABLE modules.educacenso_cod_turma OWNER TO ieducar;
+ALTER TABLE educacenso_cod_turma OWNER TO ieducar;
 
 --
 -- Name: educacenso_curso_superior; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -12983,7 +13401,7 @@ CREATE TABLE educacenso_curso_superior (
 );
 
 
-ALTER TABLE modules.educacenso_curso_superior OWNER TO ieducar;
+ALTER TABLE educacenso_curso_superior OWNER TO ieducar;
 
 --
 -- Name: educacenso_curso_superior_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -12997,7 +13415,7 @@ CREATE SEQUENCE educacenso_curso_superior_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.educacenso_curso_superior_id_seq OWNER TO ieducar;
+ALTER TABLE educacenso_curso_superior_id_seq OWNER TO ieducar;
 
 --
 -- Name: educacenso_curso_superior_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13023,7 +13441,7 @@ CREATE TABLE educacenso_ies (
 );
 
 
-ALTER TABLE modules.educacenso_ies OWNER TO ieducar;
+ALTER TABLE educacenso_ies OWNER TO ieducar;
 
 --
 -- Name: educacenso_ies_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13037,7 +13455,7 @@ CREATE SEQUENCE educacenso_ies_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.educacenso_ies_id_seq OWNER TO ieducar;
+ALTER TABLE educacenso_ies_id_seq OWNER TO ieducar;
 
 --
 -- Name: educacenso_ies_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13058,7 +13476,7 @@ CREATE SEQUENCE empresa_transporte_escolar_seq
     CACHE 1;
 
 
-ALTER TABLE modules.empresa_transporte_escolar_seq OWNER TO ieducar;
+ALTER TABLE empresa_transporte_escolar_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -13074,7 +13492,7 @@ CREATE TABLE empresa_transporte_escolar (
 );
 
 
-ALTER TABLE modules.empresa_transporte_escolar OWNER TO ieducar;
+ALTER TABLE empresa_transporte_escolar OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -13089,7 +13507,7 @@ CREATE TABLE falta_aluno (
 );
 
 
-ALTER TABLE modules.falta_aluno OWNER TO ieducar;
+ALTER TABLE falta_aluno OWNER TO ieducar;
 
 --
 -- Name: falta_aluno_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13103,7 +13521,7 @@ CREATE SEQUENCE falta_aluno_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.falta_aluno_id_seq OWNER TO ieducar;
+ALTER TABLE falta_aluno_id_seq OWNER TO ieducar;
 
 --
 -- Name: falta_aluno_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13125,7 +13543,7 @@ CREATE TABLE falta_componente_curricular (
 );
 
 
-ALTER TABLE modules.falta_componente_curricular OWNER TO ieducar;
+ALTER TABLE falta_componente_curricular OWNER TO ieducar;
 
 --
 -- Name: falta_componente_curricular_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13139,7 +13557,7 @@ CREATE SEQUENCE falta_componente_curricular_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.falta_componente_curricular_id_seq OWNER TO ieducar;
+ALTER TABLE falta_componente_curricular_id_seq OWNER TO ieducar;
 
 --
 -- Name: falta_componente_curricular_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13160,7 +13578,7 @@ CREATE TABLE falta_geral (
 );
 
 
-ALTER TABLE modules.falta_geral OWNER TO ieducar;
+ALTER TABLE falta_geral OWNER TO ieducar;
 
 --
 -- Name: falta_geral_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13174,7 +13592,7 @@ CREATE SEQUENCE falta_geral_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.falta_geral_id_seq OWNER TO ieducar;
+ALTER TABLE falta_geral_id_seq OWNER TO ieducar;
 
 --
 -- Name: falta_geral_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13182,6 +13600,66 @@ ALTER TABLE modules.falta_geral_id_seq OWNER TO ieducar;
 
 ALTER SEQUENCE falta_geral_id_seq OWNED BY falta_geral.id;
 
+
+SET default_with_oids = true;
+
+--
+-- Name: ficha_medica_aluno; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE ficha_medica_aluno (
+    ref_cod_aluno integer NOT NULL,
+    altura character(4),
+    peso character(7),
+    grupo_sanguineo character(2),
+    fator_rh character(1),
+    alergia_medicamento character(1),
+    desc_alergia_medicamento character varying(100),
+    alergia_alimento character(1),
+    desc_alergia_alimento character varying(100),
+    doenca_congenita character(1),
+    desc_doenca_congenita character varying(100),
+    fumante character(1),
+    doenca_caxumba character(1),
+    doenca_sarampo character(1),
+    doenca_rubeola character(1),
+    doenca_catapora character(1),
+    doenca_escarlatina character(1),
+    doenca_coqueluche character(1),
+    doenca_outras character varying(100),
+    epiletico character(1),
+    epiletico_tratamento character(1),
+    hemofilico character(1),
+    hipertenso character(1),
+    asmatico character(1),
+    diabetico character(1),
+    insulina character(1),
+    tratamento_medico character(1),
+    desc_tratamento_medico character varying(100),
+    medicacao_especifica character(1),
+    desc_medicacao_especifica character varying(100),
+    acomp_medico_psicologico character(1),
+    desc_acomp_medico_psicologico character varying(100),
+    restricao_atividade_fisica character(1),
+    desc_restricao_atividade_fisica character varying(100),
+    fratura_trauma character(1),
+    desc_fratura_trauma character varying(100),
+    plano_saude character(1),
+    desc_plano_saude character varying(50),
+    hospital_clinica character varying(100),
+    hospital_clinica_endereco character varying(50),
+    hospital_clinica_telefone character varying(20),
+    responsavel character varying(50),
+    responsavel_parentesco character varying(20),
+    responsavel_parentesco_telefone character varying(20),
+    responsavel_parentesco_celular character varying(20),
+    observacao character varying(255)
+);
+
+
+ALTER TABLE ficha_medica_aluno OWNER TO ieducar;
+
+SET default_with_oids = false;
 
 --
 -- Name: formula_media; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -13196,7 +13674,7 @@ CREATE TABLE formula_media (
 );
 
 
-ALTER TABLE modules.formula_media OWNER TO ieducar;
+ALTER TABLE formula_media OWNER TO ieducar;
 
 --
 -- Name: formula_media_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13210,7 +13688,7 @@ CREATE SEQUENCE formula_media_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.formula_media_id_seq OWNER TO ieducar;
+ALTER TABLE formula_media_id_seq OWNER TO ieducar;
 
 --
 -- Name: formula_media_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13231,7 +13709,7 @@ CREATE SEQUENCE itinerario_transporte_escolar_seq
     CACHE 1;
 
 
-ALTER TABLE modules.itinerario_transporte_escolar_seq OWNER TO ieducar;
+ALTER TABLE itinerario_transporte_escolar_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -13250,7 +13728,47 @@ CREATE TABLE itinerario_transporte_escolar (
 );
 
 
-ALTER TABLE modules.itinerario_transporte_escolar OWNER TO ieducar;
+ALTER TABLE itinerario_transporte_escolar OWNER TO ieducar;
+
+--
+-- Name: moradia_aluno; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE moradia_aluno (
+    ref_cod_aluno integer NOT NULL,
+    moradia character(1),
+    material character(1) DEFAULT 'A'::bpchar,
+    casa_outra character varying(20),
+    moradia_situacao integer,
+    quartos integer,
+    sala integer,
+    copa integer,
+    banheiro integer,
+    garagem integer,
+    empregada_domestica character(1),
+    automovel character(1),
+    motocicleta character(1),
+    computador character(1),
+    geladeira character(1),
+    fogao character(1),
+    maquina_lavar character(1),
+    microondas character(1),
+    video_dvd character(1),
+    televisao character(1),
+    celular character(1),
+    telefone character(1),
+    quant_pessoas integer,
+    renda double precision,
+    agua_encanada character(1),
+    poco character(1),
+    energia character(1),
+    esgoto character(1),
+    fossa character(1),
+    lixo character(1)
+);
+
+
+ALTER TABLE moradia_aluno OWNER TO ieducar;
 
 --
 -- Name: motorista_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13264,7 +13782,7 @@ CREATE SEQUENCE motorista_seq
     CACHE 1;
 
 
-ALTER TABLE modules.motorista_seq OWNER TO ieducar;
+ALTER TABLE motorista_seq OWNER TO ieducar;
 
 --
 -- Name: motorista; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -13282,7 +13800,7 @@ CREATE TABLE motorista (
 );
 
 
-ALTER TABLE modules.motorista OWNER TO ieducar;
+ALTER TABLE motorista OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -13296,7 +13814,7 @@ CREATE TABLE nota_aluno (
 );
 
 
-ALTER TABLE modules.nota_aluno OWNER TO ieducar;
+ALTER TABLE nota_aluno OWNER TO ieducar;
 
 --
 -- Name: nota_aluno_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13310,7 +13828,7 @@ CREATE SEQUENCE nota_aluno_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.nota_aluno_id_seq OWNER TO ieducar;
+ALTER TABLE nota_aluno_id_seq OWNER TO ieducar;
 
 --
 -- Name: nota_aluno_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13333,7 +13851,7 @@ CREATE TABLE nota_componente_curricular (
 );
 
 
-ALTER TABLE modules.nota_componente_curricular OWNER TO ieducar;
+ALTER TABLE nota_componente_curricular OWNER TO ieducar;
 
 --
 -- Name: nota_componente_curricular_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13347,7 +13865,7 @@ CREATE SEQUENCE nota_componente_curricular_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.nota_componente_curricular_id_seq OWNER TO ieducar;
+ALTER TABLE nota_componente_curricular_id_seq OWNER TO ieducar;
 
 --
 -- Name: nota_componente_curricular_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13369,7 +13887,24 @@ CREATE TABLE nota_componente_curricular_media (
 );
 
 
-ALTER TABLE modules.nota_componente_curricular_media OWNER TO ieducar;
+ALTER TABLE nota_componente_curricular_media OWNER TO ieducar;
+
+SET default_with_oids = true;
+
+--
+-- Name: nota_exame; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE nota_exame (
+    ref_cod_matricula integer NOT NULL,
+    ref_cod_componente_curricular integer NOT NULL,
+    nota_exame numeric(5,3)
+);
+
+
+ALTER TABLE nota_exame OWNER TO ieducar;
+
+SET default_with_oids = false;
 
 --
 -- Name: parecer_aluno; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -13382,7 +13917,7 @@ CREATE TABLE parecer_aluno (
 );
 
 
-ALTER TABLE modules.parecer_aluno OWNER TO ieducar;
+ALTER TABLE parecer_aluno OWNER TO ieducar;
 
 --
 -- Name: parecer_aluno_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13396,7 +13931,7 @@ CREATE SEQUENCE parecer_aluno_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.parecer_aluno_id_seq OWNER TO ieducar;
+ALTER TABLE parecer_aluno_id_seq OWNER TO ieducar;
 
 --
 -- Name: parecer_aluno_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13418,7 +13953,7 @@ CREATE TABLE parecer_componente_curricular (
 );
 
 
-ALTER TABLE modules.parecer_componente_curricular OWNER TO ieducar;
+ALTER TABLE parecer_componente_curricular OWNER TO ieducar;
 
 --
 -- Name: parecer_componente_curricular_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13432,7 +13967,7 @@ CREATE SEQUENCE parecer_componente_curricular_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.parecer_componente_curricular_id_seq OWNER TO ieducar;
+ALTER TABLE parecer_componente_curricular_id_seq OWNER TO ieducar;
 
 --
 -- Name: parecer_componente_curricular_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13453,7 +13988,7 @@ CREATE TABLE parecer_geral (
 );
 
 
-ALTER TABLE modules.parecer_geral OWNER TO ieducar;
+ALTER TABLE parecer_geral OWNER TO ieducar;
 
 --
 -- Name: parecer_geral_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13467,7 +14002,7 @@ CREATE SEQUENCE parecer_geral_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.parecer_geral_id_seq OWNER TO ieducar;
+ALTER TABLE parecer_geral_id_seq OWNER TO ieducar;
 
 --
 -- Name: parecer_geral_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13488,7 +14023,7 @@ CREATE SEQUENCE pessoa_transporte_seq
     CACHE 1;
 
 
-ALTER TABLE modules.pessoa_transporte_seq OWNER TO ieducar;
+ALTER TABLE pessoa_transporte_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -13506,7 +14041,7 @@ CREATE TABLE pessoa_transporte (
 );
 
 
-ALTER TABLE modules.pessoa_transporte OWNER TO ieducar;
+ALTER TABLE pessoa_transporte OWNER TO ieducar;
 
 --
 -- Name: ponto_transporte_escolar_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13520,7 +14055,7 @@ CREATE SEQUENCE ponto_transporte_escolar_seq
     CACHE 1;
 
 
-ALTER TABLE modules.ponto_transporte_escolar_seq OWNER TO ieducar;
+ALTER TABLE ponto_transporte_escolar_seq OWNER TO ieducar;
 
 --
 -- Name: ponto_transporte_escolar; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -13532,7 +14067,7 @@ CREATE TABLE ponto_transporte_escolar (
 );
 
 
-ALTER TABLE modules.ponto_transporte_escolar OWNER TO ieducar;
+ALTER TABLE ponto_transporte_escolar OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -13557,7 +14092,7 @@ CREATE TABLE regra_avaliacao (
 );
 
 
-ALTER TABLE modules.regra_avaliacao OWNER TO ieducar;
+ALTER TABLE regra_avaliacao OWNER TO ieducar;
 
 --
 -- Name: regra_avaliacao_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13571,7 +14106,7 @@ CREATE SEQUENCE regra_avaliacao_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.regra_avaliacao_id_seq OWNER TO ieducar;
+ALTER TABLE regra_avaliacao_id_seq OWNER TO ieducar;
 
 --
 -- Name: regra_avaliacao_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13592,7 +14127,7 @@ CREATE SEQUENCE rota_transporte_escolar_seq
     CACHE 1;
 
 
-ALTER TABLE modules.rota_transporte_escolar_seq OWNER TO ieducar;
+ALTER TABLE rota_transporte_escolar_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -13613,7 +14148,7 @@ CREATE TABLE rota_transporte_escolar (
 );
 
 
-ALTER TABLE modules.rota_transporte_escolar OWNER TO ieducar;
+ALTER TABLE rota_transporte_escolar OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -13629,7 +14164,7 @@ CREATE TABLE tabela_arredondamento (
 );
 
 
-ALTER TABLE modules.tabela_arredondamento OWNER TO ieducar;
+ALTER TABLE tabela_arredondamento OWNER TO ieducar;
 
 --
 -- Name: tabela_arredondamento_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13643,7 +14178,7 @@ CREATE SEQUENCE tabela_arredondamento_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.tabela_arredondamento_id_seq OWNER TO ieducar;
+ALTER TABLE tabela_arredondamento_id_seq OWNER TO ieducar;
 
 --
 -- Name: tabela_arredondamento_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13666,7 +14201,7 @@ CREATE TABLE tabela_arredondamento_valor (
 );
 
 
-ALTER TABLE modules.tabela_arredondamento_valor OWNER TO ieducar;
+ALTER TABLE tabela_arredondamento_valor OWNER TO ieducar;
 
 --
 -- Name: tabela_arredondamento_valor_id_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13680,7 +14215,7 @@ CREATE SEQUENCE tabela_arredondamento_valor_id_seq
     CACHE 1;
 
 
-ALTER TABLE modules.tabela_arredondamento_valor_id_seq OWNER TO ieducar;
+ALTER TABLE tabela_arredondamento_valor_id_seq OWNER TO ieducar;
 
 --
 -- Name: tabela_arredondamento_valor_id_seq; Type: SEQUENCE OWNED BY; Schema: modules; Owner: ieducar
@@ -13701,7 +14236,7 @@ CREATE SEQUENCE tipo_veiculo_seq
     CACHE 1;
 
 
-ALTER TABLE modules.tipo_veiculo_seq OWNER TO ieducar;
+ALTER TABLE tipo_veiculo_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -13715,7 +14250,7 @@ CREATE TABLE tipo_veiculo (
 );
 
 
-ALTER TABLE modules.tipo_veiculo OWNER TO ieducar;
+ALTER TABLE tipo_veiculo OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -13732,7 +14267,35 @@ CREATE TABLE transporte_aluno (
 );
 
 
-ALTER TABLE modules.transporte_aluno OWNER TO ieducar;
+ALTER TABLE transporte_aluno OWNER TO ieducar;
+
+SET default_with_oids = true;
+
+--
+-- Name: uniforme_aluno; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+CREATE TABLE uniforme_aluno (
+    ref_cod_aluno integer NOT NULL,
+    recebeu_uniforme character(1),
+    quantidade_camiseta integer,
+    tamanho_camiseta character(2),
+    quantidade_blusa_jaqueta integer,
+    tamanho_blusa_jaqueta character(2),
+    quantidade_bermuda integer,
+    tamanho_bermuda character(2),
+    quantidade_calca integer,
+    tamanho_calca character(2),
+    quantidade_saia integer,
+    tamanho_saia character(2),
+    quantidade_calcado integer,
+    tamanho_calcado character(2),
+    quantidade_meia integer,
+    tamanho_meia character(2)
+);
+
+
+ALTER TABLE uniforme_aluno OWNER TO ieducar;
 
 --
 -- Name: veiculo_seq; Type: SEQUENCE; Schema: modules; Owner: ieducar
@@ -13746,9 +14309,7 @@ CREATE SEQUENCE veiculo_seq
     CACHE 1;
 
 
-ALTER TABLE modules.veiculo_seq OWNER TO ieducar;
-
-SET default_with_oids = true;
+ALTER TABLE veiculo_seq OWNER TO ieducar;
 
 --
 -- Name: veiculo; Type: TABLE; Schema: modules; Owner: ieducar; Tablespace: 
@@ -13776,7 +14337,7 @@ CREATE TABLE veiculo (
 );
 
 
-ALTER TABLE modules.veiculo OWNER TO ieducar;
+ALTER TABLE veiculo OWNER TO ieducar;
 
 SET search_path = pmiacoes, pg_catalog;
 
@@ -13792,7 +14353,7 @@ CREATE SEQUENCE acao_governo_cod_acao_governo_seq
     CACHE 1;
 
 
-ALTER TABLE pmiacoes.acao_governo_cod_acao_governo_seq OWNER TO ieducar;
+ALTER TABLE acao_governo_cod_acao_governo_seq OWNER TO ieducar;
 
 --
 -- Name: acao_governo; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -13815,7 +14376,7 @@ CREATE TABLE acao_governo (
 );
 
 
-ALTER TABLE pmiacoes.acao_governo OWNER TO ieducar;
+ALTER TABLE acao_governo OWNER TO ieducar;
 
 --
 -- Name: acao_governo_arquivo_cod_acao_governo_arquivo_seq; Type: SEQUENCE; Schema: pmiacoes; Owner: ieducar
@@ -13829,7 +14390,7 @@ CREATE SEQUENCE acao_governo_arquivo_cod_acao_governo_arquivo_seq
     CACHE 1;
 
 
-ALTER TABLE pmiacoes.acao_governo_arquivo_cod_acao_governo_arquivo_seq OWNER TO ieducar;
+ALTER TABLE acao_governo_arquivo_cod_acao_governo_arquivo_seq OWNER TO ieducar;
 
 --
 -- Name: acao_governo_arquivo; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -13845,7 +14406,7 @@ CREATE TABLE acao_governo_arquivo (
 );
 
 
-ALTER TABLE pmiacoes.acao_governo_arquivo OWNER TO ieducar;
+ALTER TABLE acao_governo_arquivo OWNER TO ieducar;
 
 --
 -- Name: acao_governo_categoria; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -13857,7 +14418,7 @@ CREATE TABLE acao_governo_categoria (
 );
 
 
-ALTER TABLE pmiacoes.acao_governo_categoria OWNER TO ieducar;
+ALTER TABLE acao_governo_categoria OWNER TO ieducar;
 
 --
 -- Name: acao_governo_foto_cod_acao_governo_foto_seq; Type: SEQUENCE; Schema: pmiacoes; Owner: ieducar
@@ -13871,7 +14432,7 @@ CREATE SEQUENCE acao_governo_foto_cod_acao_governo_foto_seq
     CACHE 1;
 
 
-ALTER TABLE pmiacoes.acao_governo_foto_cod_acao_governo_foto_seq OWNER TO ieducar;
+ALTER TABLE acao_governo_foto_cod_acao_governo_foto_seq OWNER TO ieducar;
 
 --
 -- Name: acao_governo_foto; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -13888,7 +14449,7 @@ CREATE TABLE acao_governo_foto (
 );
 
 
-ALTER TABLE pmiacoes.acao_governo_foto OWNER TO ieducar;
+ALTER TABLE acao_governo_foto OWNER TO ieducar;
 
 --
 -- Name: acao_governo_foto_portal; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -13902,7 +14463,7 @@ CREATE TABLE acao_governo_foto_portal (
 );
 
 
-ALTER TABLE pmiacoes.acao_governo_foto_portal OWNER TO ieducar;
+ALTER TABLE acao_governo_foto_portal OWNER TO ieducar;
 
 --
 -- Name: acao_governo_noticia; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -13916,7 +14477,7 @@ CREATE TABLE acao_governo_noticia (
 );
 
 
-ALTER TABLE pmiacoes.acao_governo_noticia OWNER TO ieducar;
+ALTER TABLE acao_governo_noticia OWNER TO ieducar;
 
 --
 -- Name: acao_governo_setor; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -13930,7 +14491,7 @@ CREATE TABLE acao_governo_setor (
 );
 
 
-ALTER TABLE pmiacoes.acao_governo_setor OWNER TO ieducar;
+ALTER TABLE acao_governo_setor OWNER TO ieducar;
 
 --
 -- Name: categoria_cod_categoria_seq; Type: SEQUENCE; Schema: pmiacoes; Owner: ieducar
@@ -13944,7 +14505,7 @@ CREATE SEQUENCE categoria_cod_categoria_seq
     CACHE 1;
 
 
-ALTER TABLE pmiacoes.categoria_cod_categoria_seq OWNER TO ieducar;
+ALTER TABLE categoria_cod_categoria_seq OWNER TO ieducar;
 
 --
 -- Name: categoria; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -13961,7 +14522,7 @@ CREATE TABLE categoria (
 );
 
 
-ALTER TABLE pmiacoes.categoria OWNER TO ieducar;
+ALTER TABLE categoria OWNER TO ieducar;
 
 --
 -- Name: secretaria_responsavel; Type: TABLE; Schema: pmiacoes; Owner: ieducar; Tablespace: 
@@ -13974,7 +14535,7 @@ CREATE TABLE secretaria_responsavel (
 );
 
 
-ALTER TABLE pmiacoes.secretaria_responsavel OWNER TO ieducar;
+ALTER TABLE secretaria_responsavel OWNER TO ieducar;
 
 SET search_path = pmicontrolesis, pg_catalog;
 
@@ -13990,7 +14551,7 @@ CREATE SEQUENCE acontecimento_cod_acontecimento_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.acontecimento_cod_acontecimento_seq OWNER TO ieducar;
+ALTER TABLE acontecimento_cod_acontecimento_seq OWNER TO ieducar;
 
 --
 -- Name: acontecimento; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14016,7 +14577,7 @@ CREATE TABLE acontecimento (
 );
 
 
-ALTER TABLE pmicontrolesis.acontecimento OWNER TO ieducar;
+ALTER TABLE acontecimento OWNER TO ieducar;
 
 --
 -- Name: artigo_cod_artigo_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14030,7 +14591,7 @@ CREATE SEQUENCE artigo_cod_artigo_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.artigo_cod_artigo_seq OWNER TO ieducar;
+ALTER TABLE artigo_cod_artigo_seq OWNER TO ieducar;
 
 --
 -- Name: artigo; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14045,7 +14606,7 @@ CREATE TABLE artigo (
 );
 
 
-ALTER TABLE pmicontrolesis.artigo OWNER TO ieducar;
+ALTER TABLE artigo OWNER TO ieducar;
 
 --
 -- Name: foto_evento_cod_foto_evento_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14059,7 +14620,7 @@ CREATE SEQUENCE foto_evento_cod_foto_evento_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.foto_evento_cod_foto_evento_seq OWNER TO ieducar;
+ALTER TABLE foto_evento_cod_foto_evento_seq OWNER TO ieducar;
 
 --
 -- Name: foto_evento; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14078,7 +14639,7 @@ CREATE TABLE foto_evento (
 );
 
 
-ALTER TABLE pmicontrolesis.foto_evento OWNER TO ieducar;
+ALTER TABLE foto_evento OWNER TO ieducar;
 
 --
 -- Name: foto_vinc_cod_foto_vinc_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14092,7 +14653,7 @@ CREATE SEQUENCE foto_vinc_cod_foto_vinc_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.foto_vinc_cod_foto_vinc_seq OWNER TO ieducar;
+ALTER TABLE foto_vinc_cod_foto_vinc_seq OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -14107,7 +14668,7 @@ CREATE TABLE foto_vinc (
 );
 
 
-ALTER TABLE pmicontrolesis.foto_vinc OWNER TO ieducar;
+ALTER TABLE foto_vinc OWNER TO ieducar;
 
 --
 -- Name: itinerario_cod_itinerario_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14121,7 +14682,7 @@ CREATE SEQUENCE itinerario_cod_itinerario_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.itinerario_cod_itinerario_seq OWNER TO ieducar;
+ALTER TABLE itinerario_cod_itinerario_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -14145,7 +14706,7 @@ CREATE TABLE itinerario (
 );
 
 
-ALTER TABLE pmicontrolesis.itinerario OWNER TO ieducar;
+ALTER TABLE itinerario OWNER TO ieducar;
 
 --
 -- Name: menu_cod_menu_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14159,7 +14720,7 @@ CREATE SEQUENCE menu_cod_menu_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.menu_cod_menu_seq OWNER TO ieducar;
+ALTER TABLE menu_cod_menu_seq OWNER TO ieducar;
 
 --
 -- Name: menu; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14179,7 +14740,7 @@ CREATE TABLE menu (
 );
 
 
-ALTER TABLE pmicontrolesis.menu OWNER TO ieducar;
+ALTER TABLE menu OWNER TO ieducar;
 
 --
 -- Name: menu_portal_cod_menu_portal_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14193,7 +14754,7 @@ CREATE SEQUENCE menu_portal_cod_menu_portal_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.menu_portal_cod_menu_portal_seq OWNER TO ieducar;
+ALTER TABLE menu_portal_cod_menu_portal_seq OWNER TO ieducar;
 
 --
 -- Name: menu_portal; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14216,7 +14777,7 @@ CREATE TABLE menu_portal (
 );
 
 
-ALTER TABLE pmicontrolesis.menu_portal OWNER TO ieducar;
+ALTER TABLE menu_portal OWNER TO ieducar;
 
 --
 -- Name: portais_cod_portais_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14230,7 +14791,7 @@ CREATE SEQUENCE portais_cod_portais_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.portais_cod_portais_seq OWNER TO ieducar;
+ALTER TABLE portais_cod_portais_seq OWNER TO ieducar;
 
 --
 -- Name: portais; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14250,7 +14811,7 @@ CREATE TABLE portais (
 );
 
 
-ALTER TABLE pmicontrolesis.portais OWNER TO ieducar;
+ALTER TABLE portais OWNER TO ieducar;
 
 --
 -- Name: servicos_cod_servicos_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14264,7 +14825,7 @@ CREATE SEQUENCE servicos_cod_servicos_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.servicos_cod_servicos_seq OWNER TO ieducar;
+ALTER TABLE servicos_cod_servicos_seq OWNER TO ieducar;
 
 --
 -- Name: servicos; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14284,7 +14845,7 @@ CREATE TABLE servicos (
 );
 
 
-ALTER TABLE pmicontrolesis.servicos OWNER TO ieducar;
+ALTER TABLE servicos OWNER TO ieducar;
 
 --
 -- Name: sistema_cod_sistema_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14298,7 +14859,7 @@ CREATE SEQUENCE sistema_cod_sistema_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.sistema_cod_sistema_seq OWNER TO ieducar;
+ALTER TABLE sistema_cod_sistema_seq OWNER TO ieducar;
 
 --
 -- Name: sistema; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14315,7 +14876,7 @@ CREATE TABLE sistema (
 );
 
 
-ALTER TABLE pmicontrolesis.sistema OWNER TO ieducar;
+ALTER TABLE sistema OWNER TO ieducar;
 
 --
 -- Name: submenu_portal_cod_submenu_portal_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14329,7 +14890,7 @@ CREATE SEQUENCE submenu_portal_cod_submenu_portal_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.submenu_portal_cod_submenu_portal_seq OWNER TO ieducar;
+ALTER TABLE submenu_portal_cod_submenu_portal_seq OWNER TO ieducar;
 
 --
 -- Name: submenu_portal; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14351,7 +14912,7 @@ CREATE TABLE submenu_portal (
 );
 
 
-ALTER TABLE pmicontrolesis.submenu_portal OWNER TO ieducar;
+ALTER TABLE submenu_portal OWNER TO ieducar;
 
 --
 -- Name: telefones_cod_telefones_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14365,7 +14926,7 @@ CREATE SEQUENCE telefones_cod_telefones_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.telefones_cod_telefones_seq OWNER TO ieducar;
+ALTER TABLE telefones_cod_telefones_seq OWNER TO ieducar;
 
 --
 -- Name: telefones; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14383,7 +14944,7 @@ CREATE TABLE telefones (
 );
 
 
-ALTER TABLE pmicontrolesis.telefones OWNER TO ieducar;
+ALTER TABLE telefones OWNER TO ieducar;
 
 --
 -- Name: tipo_acontecimento_cod_tipo_acontecimento_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14397,7 +14958,7 @@ CREATE SEQUENCE tipo_acontecimento_cod_tipo_acontecimento_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.tipo_acontecimento_cod_tipo_acontecimento_seq OWNER TO ieducar;
+ALTER TABLE tipo_acontecimento_cod_tipo_acontecimento_seq OWNER TO ieducar;
 
 --
 -- Name: tipo_acontecimento; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14415,7 +14976,7 @@ CREATE TABLE tipo_acontecimento (
 );
 
 
-ALTER TABLE pmicontrolesis.tipo_acontecimento OWNER TO ieducar;
+ALTER TABLE tipo_acontecimento OWNER TO ieducar;
 
 --
 -- Name: topo_portal_cod_topo_portal_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14429,7 +14990,7 @@ CREATE SEQUENCE topo_portal_cod_topo_portal_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.topo_portal_cod_topo_portal_seq OWNER TO ieducar;
+ALTER TABLE topo_portal_cod_topo_portal_seq OWNER TO ieducar;
 
 --
 -- Name: topo_portal; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14449,7 +15010,7 @@ CREATE TABLE topo_portal (
 );
 
 
-ALTER TABLE pmicontrolesis.topo_portal OWNER TO ieducar;
+ALTER TABLE topo_portal OWNER TO ieducar;
 
 --
 -- Name: tutormenu_cod_tutormenu_seq; Type: SEQUENCE; Schema: pmicontrolesis; Owner: ieducar
@@ -14463,7 +15024,7 @@ CREATE SEQUENCE tutormenu_cod_tutormenu_seq
     CACHE 1;
 
 
-ALTER TABLE pmicontrolesis.tutormenu_cod_tutormenu_seq OWNER TO ieducar;
+ALTER TABLE tutormenu_cod_tutormenu_seq OWNER TO ieducar;
 
 --
 -- Name: tutormenu; Type: TABLE; Schema: pmicontrolesis; Owner: ieducar; Tablespace: 
@@ -14475,7 +15036,7 @@ CREATE TABLE tutormenu (
 );
 
 
-ALTER TABLE pmicontrolesis.tutormenu OWNER TO ieducar;
+ALTER TABLE tutormenu OWNER TO ieducar;
 
 SET search_path = pmidrh, pg_catalog;
 
@@ -14491,7 +15052,7 @@ CREATE SEQUENCE diaria_cod_diaria_seq
     CACHE 1;
 
 
-ALTER TABLE pmidrh.diaria_cod_diaria_seq OWNER TO ieducar;
+ALTER TABLE diaria_cod_diaria_seq OWNER TO ieducar;
 
 --
 -- Name: diaria; Type: TABLE; Schema: pmidrh; Owner: ieducar; Tablespace: 
@@ -14523,7 +15084,7 @@ CREATE TABLE diaria (
 );
 
 
-ALTER TABLE pmidrh.diaria OWNER TO ieducar;
+ALTER TABLE diaria OWNER TO ieducar;
 
 --
 -- Name: diaria_grupo_cod_diaria_grupo_seq; Type: SEQUENCE; Schema: pmidrh; Owner: ieducar
@@ -14537,7 +15098,7 @@ CREATE SEQUENCE diaria_grupo_cod_diaria_grupo_seq
     CACHE 1;
 
 
-ALTER TABLE pmidrh.diaria_grupo_cod_diaria_grupo_seq OWNER TO ieducar;
+ALTER TABLE diaria_grupo_cod_diaria_grupo_seq OWNER TO ieducar;
 
 --
 -- Name: diaria_grupo; Type: TABLE; Schema: pmidrh; Owner: ieducar; Tablespace: 
@@ -14549,7 +15110,7 @@ CREATE TABLE diaria_grupo (
 );
 
 
-ALTER TABLE pmidrh.diaria_grupo OWNER TO ieducar;
+ALTER TABLE diaria_grupo OWNER TO ieducar;
 
 --
 -- Name: diaria_valores_cod_diaria_valores_seq; Type: SEQUENCE; Schema: pmidrh; Owner: ieducar
@@ -14563,7 +15124,7 @@ CREATE SEQUENCE diaria_valores_cod_diaria_valores_seq
     CACHE 1;
 
 
-ALTER TABLE pmidrh.diaria_valores_cod_diaria_valores_seq OWNER TO ieducar;
+ALTER TABLE diaria_valores_cod_diaria_valores_seq OWNER TO ieducar;
 
 --
 -- Name: diaria_valores; Type: TABLE; Schema: pmidrh; Owner: ieducar; Tablespace: 
@@ -14582,7 +15143,7 @@ CREATE TABLE diaria_valores (
 );
 
 
-ALTER TABLE pmidrh.diaria_valores OWNER TO ieducar;
+ALTER TABLE diaria_valores OWNER TO ieducar;
 
 --
 -- Name: setor_cod_setor_seq; Type: SEQUENCE; Schema: pmidrh; Owner: ieducar
@@ -14596,7 +15157,7 @@ CREATE SEQUENCE setor_cod_setor_seq
     CACHE 1;
 
 
-ALTER TABLE pmidrh.setor_cod_setor_seq OWNER TO ieducar;
+ALTER TABLE setor_cod_setor_seq OWNER TO ieducar;
 
 --
 -- Name: setor; Type: TABLE; Schema: pmidrh; Owner: ieducar; Tablespace: 
@@ -14620,7 +15181,7 @@ CREATE TABLE setor (
 );
 
 
-ALTER TABLE pmidrh.setor OWNER TO ieducar;
+ALTER TABLE setor OWNER TO ieducar;
 
 SET search_path = pmieducar, pg_catalog;
 
@@ -14636,7 +15197,7 @@ CREATE SEQUENCE acervo_cod_acervo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.acervo_cod_acervo_seq OWNER TO ieducar;
+ALTER TABLE acervo_cod_acervo_seq OWNER TO ieducar;
 
 --
 -- Name: acervo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14669,7 +15230,7 @@ CREATE TABLE acervo (
 );
 
 
-ALTER TABLE pmieducar.acervo OWNER TO ieducar;
+ALTER TABLE acervo OWNER TO ieducar;
 
 --
 -- Name: acervo_acervo_assunto; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14681,7 +15242,7 @@ CREATE TABLE acervo_acervo_assunto (
 );
 
 
-ALTER TABLE pmieducar.acervo_acervo_assunto OWNER TO ieducar;
+ALTER TABLE acervo_acervo_assunto OWNER TO ieducar;
 
 --
 -- Name: acervo_acervo_autor; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14694,7 +15255,7 @@ CREATE TABLE acervo_acervo_autor (
 );
 
 
-ALTER TABLE pmieducar.acervo_acervo_autor OWNER TO ieducar;
+ALTER TABLE acervo_acervo_autor OWNER TO ieducar;
 
 --
 -- Name: acervo_assunto_cod_acervo_assunto_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -14708,7 +15269,7 @@ CREATE SEQUENCE acervo_assunto_cod_acervo_assunto_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.acervo_assunto_cod_acervo_assunto_seq OWNER TO ieducar;
+ALTER TABLE acervo_assunto_cod_acervo_assunto_seq OWNER TO ieducar;
 
 --
 -- Name: acervo_assunto; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14727,7 +15288,7 @@ CREATE TABLE acervo_assunto (
 );
 
 
-ALTER TABLE pmieducar.acervo_assunto OWNER TO ieducar;
+ALTER TABLE acervo_assunto OWNER TO ieducar;
 
 --
 -- Name: acervo_autor_cod_acervo_autor_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -14741,7 +15302,7 @@ CREATE SEQUENCE acervo_autor_cod_acervo_autor_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.acervo_autor_cod_acervo_autor_seq OWNER TO ieducar;
+ALTER TABLE acervo_autor_cod_acervo_autor_seq OWNER TO ieducar;
 
 --
 -- Name: acervo_autor; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14760,7 +15321,7 @@ CREATE TABLE acervo_autor (
 );
 
 
-ALTER TABLE pmieducar.acervo_autor OWNER TO ieducar;
+ALTER TABLE acervo_autor OWNER TO ieducar;
 
 --
 -- Name: acervo_colecao_cod_acervo_colecao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -14774,7 +15335,7 @@ CREATE SEQUENCE acervo_colecao_cod_acervo_colecao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.acervo_colecao_cod_acervo_colecao_seq OWNER TO ieducar;
+ALTER TABLE acervo_colecao_cod_acervo_colecao_seq OWNER TO ieducar;
 
 --
 -- Name: acervo_colecao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14793,7 +15354,7 @@ CREATE TABLE acervo_colecao (
 );
 
 
-ALTER TABLE pmieducar.acervo_colecao OWNER TO ieducar;
+ALTER TABLE acervo_colecao OWNER TO ieducar;
 
 --
 -- Name: acervo_editora_cod_acervo_editora_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -14807,7 +15368,7 @@ CREATE SEQUENCE acervo_editora_cod_acervo_editora_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.acervo_editora_cod_acervo_editora_seq OWNER TO ieducar;
+ALTER TABLE acervo_editora_cod_acervo_editora_seq OWNER TO ieducar;
 
 --
 -- Name: acervo_editora; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14834,7 +15395,7 @@ CREATE TABLE acervo_editora (
 );
 
 
-ALTER TABLE pmieducar.acervo_editora OWNER TO ieducar;
+ALTER TABLE acervo_editora OWNER TO ieducar;
 
 --
 -- Name: acervo_idioma_cod_acervo_idioma_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -14848,7 +15409,7 @@ CREATE SEQUENCE acervo_idioma_cod_acervo_idioma_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.acervo_idioma_cod_acervo_idioma_seq OWNER TO ieducar;
+ALTER TABLE acervo_idioma_cod_acervo_idioma_seq OWNER TO ieducar;
 
 --
 -- Name: acervo_idioma; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14866,7 +15427,7 @@ CREATE TABLE acervo_idioma (
 );
 
 
-ALTER TABLE pmieducar.acervo_idioma OWNER TO ieducar;
+ALTER TABLE acervo_idioma OWNER TO ieducar;
 
 --
 -- Name: aluno_cod_aluno_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -14880,7 +15441,7 @@ CREATE SEQUENCE aluno_cod_aluno_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.aluno_cod_aluno_seq OWNER TO ieducar;
+ALTER TABLE aluno_cod_aluno_seq OWNER TO ieducar;
 
 --
 -- Name: aluno; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14905,7 +15466,7 @@ CREATE TABLE aluno (
 );
 
 
-ALTER TABLE pmieducar.aluno OWNER TO ieducar;
+ALTER TABLE aluno OWNER TO ieducar;
 
 --
 -- Name: aluno_beneficio_cod_aluno_beneficio_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -14919,7 +15480,7 @@ CREATE SEQUENCE aluno_beneficio_cod_aluno_beneficio_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.aluno_beneficio_cod_aluno_beneficio_seq OWNER TO ieducar;
+ALTER TABLE aluno_beneficio_cod_aluno_beneficio_seq OWNER TO ieducar;
 
 --
 -- Name: aluno_beneficio; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14937,7 +15498,7 @@ CREATE TABLE aluno_beneficio (
 );
 
 
-ALTER TABLE pmieducar.aluno_beneficio OWNER TO ieducar;
+ALTER TABLE aluno_beneficio OWNER TO ieducar;
 
 --
 -- Name: ano_letivo_modulo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14953,7 +15514,7 @@ CREATE TABLE ano_letivo_modulo (
 );
 
 
-ALTER TABLE pmieducar.ano_letivo_modulo OWNER TO ieducar;
+ALTER TABLE ano_letivo_modulo OWNER TO ieducar;
 
 --
 -- Name: avaliacao_desempenho; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -14973,7 +15534,7 @@ CREATE TABLE avaliacao_desempenho (
 );
 
 
-ALTER TABLE pmieducar.avaliacao_desempenho OWNER TO ieducar;
+ALTER TABLE avaliacao_desempenho OWNER TO ieducar;
 
 --
 -- Name: biblioteca_cod_biblioteca_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -14987,7 +15548,7 @@ CREATE SEQUENCE biblioteca_cod_biblioteca_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.biblioteca_cod_biblioteca_seq OWNER TO ieducar;
+ALTER TABLE biblioteca_cod_biblioteca_seq OWNER TO ieducar;
 
 --
 -- Name: biblioteca; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15010,7 +15571,7 @@ CREATE TABLE biblioteca (
 );
 
 
-ALTER TABLE pmieducar.biblioteca OWNER TO ieducar;
+ALTER TABLE biblioteca OWNER TO ieducar;
 
 --
 -- Name: biblioteca_dia; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15022,7 +15583,7 @@ CREATE TABLE biblioteca_dia (
 );
 
 
-ALTER TABLE pmieducar.biblioteca_dia OWNER TO ieducar;
+ALTER TABLE biblioteca_dia OWNER TO ieducar;
 
 --
 -- Name: biblioteca_feriados_cod_feriado_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15036,7 +15597,7 @@ CREATE SEQUENCE biblioteca_feriados_cod_feriado_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.biblioteca_feriados_cod_feriado_seq OWNER TO ieducar;
+ALTER TABLE biblioteca_feriados_cod_feriado_seq OWNER TO ieducar;
 
 --
 -- Name: biblioteca_feriados; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15054,7 +15615,7 @@ CREATE TABLE biblioteca_feriados (
 );
 
 
-ALTER TABLE pmieducar.biblioteca_feriados OWNER TO ieducar;
+ALTER TABLE biblioteca_feriados OWNER TO ieducar;
 
 --
 -- Name: biblioteca_usuario; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15066,7 +15627,7 @@ CREATE TABLE biblioteca_usuario (
 );
 
 
-ALTER TABLE pmieducar.biblioteca_usuario OWNER TO ieducar;
+ALTER TABLE biblioteca_usuario OWNER TO ieducar;
 
 --
 -- Name: calendario_ano_letivo_cod_calendario_ano_letivo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15080,7 +15641,7 @@ CREATE SEQUENCE calendario_ano_letivo_cod_calendario_ano_letivo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.calendario_ano_letivo_cod_calendario_ano_letivo_seq OWNER TO ieducar;
+ALTER TABLE calendario_ano_letivo_cod_calendario_ano_letivo_seq OWNER TO ieducar;
 
 --
 -- Name: calendario_ano_letivo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15098,7 +15659,7 @@ CREATE TABLE calendario_ano_letivo (
 );
 
 
-ALTER TABLE pmieducar.calendario_ano_letivo OWNER TO ieducar;
+ALTER TABLE calendario_ano_letivo OWNER TO ieducar;
 
 --
 -- Name: calendario_anotacao_cod_calendario_anotacao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15112,7 +15673,7 @@ CREATE SEQUENCE calendario_anotacao_cod_calendario_anotacao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.calendario_anotacao_cod_calendario_anotacao_seq OWNER TO ieducar;
+ALTER TABLE calendario_anotacao_cod_calendario_anotacao_seq OWNER TO ieducar;
 
 --
 -- Name: calendario_anotacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15130,7 +15691,7 @@ CREATE TABLE calendario_anotacao (
 );
 
 
-ALTER TABLE pmieducar.calendario_anotacao OWNER TO ieducar;
+ALTER TABLE calendario_anotacao OWNER TO ieducar;
 
 --
 -- Name: calendario_dia; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15150,7 +15711,7 @@ CREATE TABLE calendario_dia (
 );
 
 
-ALTER TABLE pmieducar.calendario_dia OWNER TO ieducar;
+ALTER TABLE calendario_dia OWNER TO ieducar;
 
 --
 -- Name: calendario_dia_anotacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15164,7 +15725,7 @@ CREATE TABLE calendario_dia_anotacao (
 );
 
 
-ALTER TABLE pmieducar.calendario_dia_anotacao OWNER TO ieducar;
+ALTER TABLE calendario_dia_anotacao OWNER TO ieducar;
 
 --
 -- Name: calendario_dia_motivo_cod_calendario_dia_motivo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15178,7 +15739,7 @@ CREATE SEQUENCE calendario_dia_motivo_cod_calendario_dia_motivo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.calendario_dia_motivo_cod_calendario_dia_motivo_seq OWNER TO ieducar;
+ALTER TABLE calendario_dia_motivo_cod_calendario_dia_motivo_seq OWNER TO ieducar;
 
 --
 -- Name: calendario_dia_motivo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15199,7 +15760,7 @@ CREATE TABLE calendario_dia_motivo (
 );
 
 
-ALTER TABLE pmieducar.calendario_dia_motivo OWNER TO ieducar;
+ALTER TABLE calendario_dia_motivo OWNER TO ieducar;
 
 --
 -- Name: categoria_nivel_cod_categoria_nivel_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15213,7 +15774,7 @@ CREATE SEQUENCE categoria_nivel_cod_categoria_nivel_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.categoria_nivel_cod_categoria_nivel_seq OWNER TO ieducar;
+ALTER TABLE categoria_nivel_cod_categoria_nivel_seq OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -15232,7 +15793,7 @@ CREATE TABLE categoria_nivel (
 );
 
 
-ALTER TABLE pmieducar.categoria_nivel OWNER TO ieducar;
+ALTER TABLE categoria_nivel OWNER TO ieducar;
 
 --
 -- Name: cliente_cod_cliente_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15246,7 +15807,7 @@ CREATE SEQUENCE cliente_cod_cliente_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.cliente_cod_cliente_seq OWNER TO ieducar;
+ALTER TABLE cliente_cod_cliente_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -15267,7 +15828,7 @@ CREATE TABLE cliente (
 );
 
 
-ALTER TABLE pmieducar.cliente OWNER TO ieducar;
+ALTER TABLE cliente OWNER TO ieducar;
 
 --
 -- Name: cliente_suspensao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15285,7 +15846,7 @@ CREATE TABLE cliente_suspensao (
 );
 
 
-ALTER TABLE pmieducar.cliente_suspensao OWNER TO ieducar;
+ALTER TABLE cliente_suspensao OWNER TO ieducar;
 
 --
 -- Name: cliente_tipo_cod_cliente_tipo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15299,7 +15860,7 @@ CREATE SEQUENCE cliente_tipo_cod_cliente_tipo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.cliente_tipo_cod_cliente_tipo_seq OWNER TO ieducar;
+ALTER TABLE cliente_tipo_cod_cliente_tipo_seq OWNER TO ieducar;
 
 --
 -- Name: cliente_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15318,7 +15879,7 @@ CREATE TABLE cliente_tipo (
 );
 
 
-ALTER TABLE pmieducar.cliente_tipo OWNER TO ieducar;
+ALTER TABLE cliente_tipo OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -15338,7 +15899,7 @@ CREATE TABLE cliente_tipo_cliente (
 );
 
 
-ALTER TABLE pmieducar.cliente_tipo_cliente OWNER TO ieducar;
+ALTER TABLE cliente_tipo_cliente OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -15353,7 +15914,7 @@ CREATE TABLE cliente_tipo_exemplar_tipo (
 );
 
 
-ALTER TABLE pmieducar.cliente_tipo_exemplar_tipo OWNER TO ieducar;
+ALTER TABLE cliente_tipo_exemplar_tipo OWNER TO ieducar;
 
 --
 -- Name: coffebreak_tipo_cod_coffebreak_tipo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15367,7 +15928,7 @@ CREATE SEQUENCE coffebreak_tipo_cod_coffebreak_tipo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.coffebreak_tipo_cod_coffebreak_tipo_seq OWNER TO ieducar;
+ALTER TABLE coffebreak_tipo_cod_coffebreak_tipo_seq OWNER TO ieducar;
 
 --
 -- Name: coffebreak_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15386,7 +15947,7 @@ CREATE TABLE coffebreak_tipo (
 );
 
 
-ALTER TABLE pmieducar.coffebreak_tipo OWNER TO ieducar;
+ALTER TABLE coffebreak_tipo OWNER TO ieducar;
 
 --
 -- Name: curso_cod_curso_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15400,7 +15961,7 @@ CREATE SEQUENCE curso_cod_curso_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.curso_cod_curso_seq OWNER TO ieducar;
+ALTER TABLE curso_cod_curso_seq OWNER TO ieducar;
 
 --
 -- Name: curso; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15430,7 +15991,7 @@ CREATE TABLE curso (
 );
 
 
-ALTER TABLE pmieducar.curso OWNER TO ieducar;
+ALTER TABLE curso OWNER TO ieducar;
 
 --
 -- Name: disciplina_cod_disciplina_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15444,7 +16005,7 @@ CREATE SEQUENCE disciplina_cod_disciplina_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.disciplina_cod_disciplina_seq OWNER TO ieducar;
+ALTER TABLE disciplina_cod_disciplina_seq OWNER TO ieducar;
 
 --
 -- Name: disciplina; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15467,7 +16028,7 @@ CREATE TABLE disciplina (
 );
 
 
-ALTER TABLE pmieducar.disciplina OWNER TO ieducar;
+ALTER TABLE disciplina OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -15482,7 +16043,7 @@ CREATE TABLE disciplina_serie (
 );
 
 
-ALTER TABLE pmieducar.disciplina_serie OWNER TO ieducar;
+ALTER TABLE disciplina_serie OWNER TO ieducar;
 
 --
 -- Name: disciplina_topico_cod_disciplina_topico_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15496,7 +16057,7 @@ CREATE SEQUENCE disciplina_topico_cod_disciplina_topico_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.disciplina_topico_cod_disciplina_topico_seq OWNER TO ieducar;
+ALTER TABLE disciplina_topico_cod_disciplina_topico_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -15516,7 +16077,7 @@ CREATE TABLE disciplina_topico (
 );
 
 
-ALTER TABLE pmieducar.disciplina_topico OWNER TO ieducar;
+ALTER TABLE disciplina_topico OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -15540,7 +16101,7 @@ CREATE TABLE dispensa_disciplina (
 );
 
 
-ALTER TABLE pmieducar.dispensa_disciplina OWNER TO ieducar;
+ALTER TABLE dispensa_disciplina OWNER TO ieducar;
 
 --
 -- Name: escola_cod_escola_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15554,7 +16115,7 @@ CREATE SEQUENCE escola_cod_escola_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.escola_cod_escola_seq OWNER TO ieducar;
+ALTER TABLE escola_cod_escola_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -15578,7 +16139,7 @@ CREATE TABLE escola (
 );
 
 
-ALTER TABLE pmieducar.escola OWNER TO ieducar;
+ALTER TABLE escola OWNER TO ieducar;
 
 --
 -- Name: escola_ano_letivo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15597,7 +16158,7 @@ CREATE TABLE escola_ano_letivo (
 );
 
 
-ALTER TABLE pmieducar.escola_ano_letivo OWNER TO ieducar;
+ALTER TABLE escola_ano_letivo OWNER TO ieducar;
 
 --
 -- Name: escola_complemento; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15625,7 +16186,7 @@ CREATE TABLE escola_complemento (
 );
 
 
-ALTER TABLE pmieducar.escola_complemento OWNER TO ieducar;
+ALTER TABLE escola_complemento OWNER TO ieducar;
 
 --
 -- Name: escola_curso; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15642,7 +16203,7 @@ CREATE TABLE escola_curso (
 );
 
 
-ALTER TABLE pmieducar.escola_curso OWNER TO ieducar;
+ALTER TABLE escola_curso OWNER TO ieducar;
 
 --
 -- Name: escola_localizacao_cod_escola_localizacao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15656,7 +16217,7 @@ CREATE SEQUENCE escola_localizacao_cod_escola_localizacao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.escola_localizacao_cod_escola_localizacao_seq OWNER TO ieducar;
+ALTER TABLE escola_localizacao_cod_escola_localizacao_seq OWNER TO ieducar;
 
 --
 -- Name: escola_localizacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15674,7 +16235,7 @@ CREATE TABLE escola_localizacao (
 );
 
 
-ALTER TABLE pmieducar.escola_localizacao OWNER TO ieducar;
+ALTER TABLE escola_localizacao OWNER TO ieducar;
 
 --
 -- Name: escola_rede_ensino_cod_escola_rede_ensino_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15688,7 +16249,7 @@ CREATE SEQUENCE escola_rede_ensino_cod_escola_rede_ensino_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.escola_rede_ensino_cod_escola_rede_ensino_seq OWNER TO ieducar;
+ALTER TABLE escola_rede_ensino_cod_escola_rede_ensino_seq OWNER TO ieducar;
 
 --
 -- Name: escola_rede_ensino; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15706,7 +16267,7 @@ CREATE TABLE escola_rede_ensino (
 );
 
 
-ALTER TABLE pmieducar.escola_rede_ensino OWNER TO ieducar;
+ALTER TABLE escola_rede_ensino OWNER TO ieducar;
 
 --
 -- Name: escola_serie; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15729,7 +16290,7 @@ CREATE TABLE escola_serie (
 );
 
 
-ALTER TABLE pmieducar.escola_serie OWNER TO ieducar;
+ALTER TABLE escola_serie OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -15746,7 +16307,7 @@ CREATE TABLE escola_serie_disciplina (
 );
 
 
-ALTER TABLE pmieducar.escola_serie_disciplina OWNER TO ieducar;
+ALTER TABLE escola_serie_disciplina OWNER TO ieducar;
 
 --
 -- Name: exemplar_cod_exemplar_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15760,7 +16321,7 @@ CREATE SEQUENCE exemplar_cod_exemplar_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.exemplar_cod_exemplar_seq OWNER TO ieducar;
+ALTER TABLE exemplar_cod_exemplar_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -15786,7 +16347,7 @@ CREATE TABLE exemplar (
 );
 
 
-ALTER TABLE pmieducar.exemplar OWNER TO ieducar;
+ALTER TABLE exemplar OWNER TO ieducar;
 
 --
 -- Name: exemplar_emprestimo_cod_emprestimo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15800,7 +16361,7 @@ CREATE SEQUENCE exemplar_emprestimo_cod_emprestimo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.exemplar_emprestimo_cod_emprestimo_seq OWNER TO ieducar;
+ALTER TABLE exemplar_emprestimo_cod_emprestimo_seq OWNER TO ieducar;
 
 --
 -- Name: exemplar_emprestimo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15818,7 +16379,7 @@ CREATE TABLE exemplar_emprestimo (
 );
 
 
-ALTER TABLE pmieducar.exemplar_emprestimo OWNER TO ieducar;
+ALTER TABLE exemplar_emprestimo OWNER TO ieducar;
 
 --
 -- Name: exemplar_tipo_cod_exemplar_tipo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15832,7 +16393,7 @@ CREATE SEQUENCE exemplar_tipo_cod_exemplar_tipo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.exemplar_tipo_cod_exemplar_tipo_seq OWNER TO ieducar;
+ALTER TABLE exemplar_tipo_cod_exemplar_tipo_seq OWNER TO ieducar;
 
 --
 -- Name: exemplar_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15851,7 +16412,7 @@ CREATE TABLE exemplar_tipo (
 );
 
 
-ALTER TABLE pmieducar.exemplar_tipo OWNER TO ieducar;
+ALTER TABLE exemplar_tipo OWNER TO ieducar;
 
 --
 -- Name: falta_aluno_cod_falta_aluno_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15865,7 +16426,7 @@ CREATE SEQUENCE falta_aluno_cod_falta_aluno_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.falta_aluno_cod_falta_aluno_seq OWNER TO ieducar;
+ALTER TABLE falta_aluno_cod_falta_aluno_seq OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -15890,7 +16451,7 @@ CREATE TABLE falta_aluno (
 );
 
 
-ALTER TABLE pmieducar.falta_aluno OWNER TO ieducar;
+ALTER TABLE falta_aluno OWNER TO ieducar;
 
 --
 -- Name: falta_atraso_cod_falta_atraso_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15904,7 +16465,7 @@ CREATE SEQUENCE falta_atraso_cod_falta_atraso_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.falta_atraso_cod_falta_atraso_seq OWNER TO ieducar;
+ALTER TABLE falta_atraso_cod_falta_atraso_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -15930,7 +16491,7 @@ CREATE TABLE falta_atraso (
 );
 
 
-ALTER TABLE pmieducar.falta_atraso OWNER TO ieducar;
+ALTER TABLE falta_atraso OWNER TO ieducar;
 
 --
 -- Name: falta_atraso_compensado_cod_compensado_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15944,7 +16505,7 @@ CREATE SEQUENCE falta_atraso_compensado_cod_compensado_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.falta_atraso_compensado_cod_compensado_seq OWNER TO ieducar;
+ALTER TABLE falta_atraso_compensado_cod_compensado_seq OWNER TO ieducar;
 
 --
 -- Name: falta_atraso_compensado; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -15965,7 +16526,7 @@ CREATE TABLE falta_atraso_compensado (
 );
 
 
-ALTER TABLE pmieducar.falta_atraso_compensado OWNER TO ieducar;
+ALTER TABLE falta_atraso_compensado OWNER TO ieducar;
 
 --
 -- Name: faltas_sequencial_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -15979,7 +16540,7 @@ CREATE SEQUENCE faltas_sequencial_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.faltas_sequencial_seq OWNER TO ieducar;
+ALTER TABLE faltas_sequencial_seq OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -15996,7 +16557,7 @@ CREATE TABLE faltas (
 );
 
 
-ALTER TABLE pmieducar.faltas OWNER TO ieducar;
+ALTER TABLE faltas OWNER TO ieducar;
 
 --
 -- Name: fonte_cod_fonte_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16010,7 +16571,7 @@ CREATE SEQUENCE fonte_cod_fonte_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.fonte_cod_fonte_seq OWNER TO ieducar;
+ALTER TABLE fonte_cod_fonte_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -16031,7 +16592,7 @@ CREATE TABLE fonte (
 );
 
 
-ALTER TABLE pmieducar.fonte OWNER TO ieducar;
+ALTER TABLE fonte OWNER TO ieducar;
 
 --
 -- Name: funcao_cod_funcao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16045,7 +16606,7 @@ CREATE SEQUENCE funcao_cod_funcao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.funcao_cod_funcao_seq OWNER TO ieducar;
+ALTER TABLE funcao_cod_funcao_seq OWNER TO ieducar;
 
 --
 -- Name: funcao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16065,7 +16626,7 @@ CREATE TABLE funcao (
 );
 
 
-ALTER TABLE pmieducar.funcao OWNER TO ieducar;
+ALTER TABLE funcao OWNER TO ieducar;
 
 --
 -- Name: habilitacao_cod_habilitacao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16079,7 +16640,7 @@ CREATE SEQUENCE habilitacao_cod_habilitacao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.habilitacao_cod_habilitacao_seq OWNER TO ieducar;
+ALTER TABLE habilitacao_cod_habilitacao_seq OWNER TO ieducar;
 
 --
 -- Name: habilitacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16098,7 +16659,7 @@ CREATE TABLE habilitacao (
 );
 
 
-ALTER TABLE pmieducar.habilitacao OWNER TO ieducar;
+ALTER TABLE habilitacao OWNER TO ieducar;
 
 --
 -- Name: habilitacao_curso; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16110,7 +16671,7 @@ CREATE TABLE habilitacao_curso (
 );
 
 
-ALTER TABLE pmieducar.habilitacao_curso OWNER TO ieducar;
+ALTER TABLE habilitacao_curso OWNER TO ieducar;
 
 --
 -- Name: historico_disciplinas; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16127,7 +16688,7 @@ CREATE TABLE historico_disciplinas (
 );
 
 
-ALTER TABLE pmieducar.historico_disciplinas OWNER TO ieducar;
+ALTER TABLE historico_disciplinas OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -16143,7 +16704,7 @@ CREATE TABLE historico_educar (
 );
 
 
-ALTER TABLE pmieducar.historico_educar OWNER TO ieducar;
+ALTER TABLE historico_educar OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -16184,7 +16745,7 @@ CREATE TABLE historico_escolar (
 );
 
 
-ALTER TABLE pmieducar.historico_escolar OWNER TO ieducar;
+ALTER TABLE historico_escolar OWNER TO ieducar;
 
 --
 -- Name: historico_grade_curso_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16198,7 +16759,7 @@ CREATE SEQUENCE historico_grade_curso_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.historico_grade_curso_seq OWNER TO ieducar;
+ALTER TABLE historico_grade_curso_seq OWNER TO ieducar;
 
 --
 -- Name: historico_grade_curso; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16214,7 +16775,7 @@ CREATE TABLE historico_grade_curso (
 );
 
 
-ALTER TABLE pmieducar.historico_grade_curso OWNER TO ieducar;
+ALTER TABLE historico_grade_curso OWNER TO ieducar;
 
 --
 -- Name: infra_comodo_funcao_cod_infra_comodo_funcao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16228,7 +16789,7 @@ CREATE SEQUENCE infra_comodo_funcao_cod_infra_comodo_funcao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.infra_comodo_funcao_cod_infra_comodo_funcao_seq OWNER TO ieducar;
+ALTER TABLE infra_comodo_funcao_cod_infra_comodo_funcao_seq OWNER TO ieducar;
 
 --
 -- Name: infra_comodo_funcao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16247,7 +16808,7 @@ CREATE TABLE infra_comodo_funcao (
 );
 
 
-ALTER TABLE pmieducar.infra_comodo_funcao OWNER TO ieducar;
+ALTER TABLE infra_comodo_funcao OWNER TO ieducar;
 
 --
 -- Name: infra_predio_cod_infra_predio_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16261,7 +16822,7 @@ CREATE SEQUENCE infra_predio_cod_infra_predio_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.infra_predio_cod_infra_predio_seq OWNER TO ieducar;
+ALTER TABLE infra_predio_cod_infra_predio_seq OWNER TO ieducar;
 
 --
 -- Name: infra_predio; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16281,7 +16842,7 @@ CREATE TABLE infra_predio (
 );
 
 
-ALTER TABLE pmieducar.infra_predio OWNER TO ieducar;
+ALTER TABLE infra_predio OWNER TO ieducar;
 
 --
 -- Name: infra_predio_comodo_cod_infra_predio_comodo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16295,7 +16856,7 @@ CREATE SEQUENCE infra_predio_comodo_cod_infra_predio_comodo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.infra_predio_comodo_cod_infra_predio_comodo_seq OWNER TO ieducar;
+ALTER TABLE infra_predio_comodo_cod_infra_predio_comodo_seq OWNER TO ieducar;
 
 --
 -- Name: infra_predio_comodo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16316,7 +16877,7 @@ CREATE TABLE infra_predio_comodo (
 );
 
 
-ALTER TABLE pmieducar.infra_predio_comodo OWNER TO ieducar;
+ALTER TABLE infra_predio_comodo OWNER TO ieducar;
 
 --
 -- Name: instituicao_cod_instituicao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16330,7 +16891,7 @@ CREATE SEQUENCE instituicao_cod_instituicao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.instituicao_cod_instituicao_seq OWNER TO ieducar;
+ALTER TABLE instituicao_cod_instituicao_seq OWNER TO ieducar;
 
 --
 -- Name: instituicao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16358,7 +16919,7 @@ CREATE TABLE instituicao (
 );
 
 
-ALTER TABLE pmieducar.instituicao OWNER TO ieducar;
+ALTER TABLE instituicao OWNER TO ieducar;
 
 --
 -- Name: material_didatico_cod_material_didatico_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16372,7 +16933,7 @@ CREATE SEQUENCE material_didatico_cod_material_didatico_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.material_didatico_cod_material_didatico_seq OWNER TO ieducar;
+ALTER TABLE material_didatico_cod_material_didatico_seq OWNER TO ieducar;
 
 --
 -- Name: material_didatico; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16393,7 +16954,7 @@ CREATE TABLE material_didatico (
 );
 
 
-ALTER TABLE pmieducar.material_didatico OWNER TO ieducar;
+ALTER TABLE material_didatico OWNER TO ieducar;
 
 --
 -- Name: material_tipo_cod_material_tipo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16407,7 +16968,7 @@ CREATE SEQUENCE material_tipo_cod_material_tipo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.material_tipo_cod_material_tipo_seq OWNER TO ieducar;
+ALTER TABLE material_tipo_cod_material_tipo_seq OWNER TO ieducar;
 
 --
 -- Name: material_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16426,7 +16987,7 @@ CREATE TABLE material_tipo (
 );
 
 
-ALTER TABLE pmieducar.material_tipo OWNER TO ieducar;
+ALTER TABLE material_tipo OWNER TO ieducar;
 
 --
 -- Name: matricula_cod_matricula_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16440,7 +17001,7 @@ CREATE SEQUENCE matricula_cod_matricula_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.matricula_cod_matricula_seq OWNER TO ieducar;
+ALTER TABLE matricula_cod_matricula_seq OWNER TO ieducar;
 
 --
 -- Name: matricula; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16467,11 +17028,13 @@ CREATE TABLE matricula (
     ref_cod_curso integer,
     matricula_transferencia boolean DEFAULT false NOT NULL,
     semestre smallint,
-    observacao text DEFAULT ''::text
+    observacao text DEFAULT ''::text,
+    data_matricula timestamp without time zone,
+    data_cancel timestamp without time zone
 );
 
 
-ALTER TABLE pmieducar.matricula OWNER TO ieducar;
+ALTER TABLE matricula OWNER TO ieducar;
 
 --
 -- Name: matricula_excessao_cod_aluno_excessao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16485,7 +17048,7 @@ CREATE SEQUENCE matricula_excessao_cod_aluno_excessao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.matricula_excessao_cod_aluno_excessao_seq OWNER TO ieducar;
+ALTER TABLE matricula_excessao_cod_aluno_excessao_seq OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -16507,7 +17070,7 @@ CREATE TABLE matricula_excessao (
 );
 
 
-ALTER TABLE pmieducar.matricula_excessao OWNER TO ieducar;
+ALTER TABLE matricula_excessao OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -16529,7 +17092,7 @@ CREATE TABLE matricula_ocorrencia_disciplinar (
 );
 
 
-ALTER TABLE pmieducar.matricula_ocorrencia_disciplinar OWNER TO ieducar;
+ALTER TABLE matricula_ocorrencia_disciplinar OWNER TO ieducar;
 
 --
 -- Name: matricula_turma; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16543,11 +17106,13 @@ CREATE TABLE matricula_turma (
     ref_usuario_cad integer NOT NULL,
     data_cadastro timestamp without time zone NOT NULL,
     data_exclusao timestamp without time zone,
-    ativo smallint DEFAULT (1)::smallint NOT NULL
+    ativo smallint DEFAULT (1)::smallint NOT NULL,
+    data_enturmacao date NOT NULL,
+    sequencial_fechamento integer DEFAULT 0 NOT NULL
 );
 
 
-ALTER TABLE pmieducar.matricula_turma OWNER TO ieducar;
+ALTER TABLE matricula_turma OWNER TO ieducar;
 
 --
 -- Name: menu_tipo_usuario; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16562,7 +17127,7 @@ CREATE TABLE menu_tipo_usuario (
 );
 
 
-ALTER TABLE pmieducar.menu_tipo_usuario OWNER TO ieducar;
+ALTER TABLE menu_tipo_usuario OWNER TO ieducar;
 
 --
 -- Name: modulo_cod_modulo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16576,7 +17141,7 @@ CREATE SEQUENCE modulo_cod_modulo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.modulo_cod_modulo_seq OWNER TO ieducar;
+ALTER TABLE modulo_cod_modulo_seq OWNER TO ieducar;
 
 --
 -- Name: modulo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16597,7 +17162,7 @@ CREATE TABLE modulo (
 );
 
 
-ALTER TABLE pmieducar.modulo OWNER TO ieducar;
+ALTER TABLE modulo OWNER TO ieducar;
 
 --
 -- Name: motivo_afastamento_cod_motivo_afastamento_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16611,7 +17176,7 @@ CREATE SEQUENCE motivo_afastamento_cod_motivo_afastamento_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.motivo_afastamento_cod_motivo_afastamento_seq OWNER TO ieducar;
+ALTER TABLE motivo_afastamento_cod_motivo_afastamento_seq OWNER TO ieducar;
 
 --
 -- Name: motivo_afastamento; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16630,7 +17195,7 @@ CREATE TABLE motivo_afastamento (
 );
 
 
-ALTER TABLE pmieducar.motivo_afastamento OWNER TO ieducar;
+ALTER TABLE motivo_afastamento OWNER TO ieducar;
 
 --
 -- Name: motivo_baixa_cod_motivo_baixa_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16644,7 +17209,7 @@ CREATE SEQUENCE motivo_baixa_cod_motivo_baixa_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.motivo_baixa_cod_motivo_baixa_seq OWNER TO ieducar;
+ALTER TABLE motivo_baixa_cod_motivo_baixa_seq OWNER TO ieducar;
 
 --
 -- Name: motivo_baixa; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16663,7 +17228,7 @@ CREATE TABLE motivo_baixa (
 );
 
 
-ALTER TABLE pmieducar.motivo_baixa OWNER TO ieducar;
+ALTER TABLE motivo_baixa OWNER TO ieducar;
 
 --
 -- Name: motivo_suspensao_cod_motivo_suspensao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16677,7 +17242,7 @@ CREATE SEQUENCE motivo_suspensao_cod_motivo_suspensao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.motivo_suspensao_cod_motivo_suspensao_seq OWNER TO ieducar;
+ALTER TABLE motivo_suspensao_cod_motivo_suspensao_seq OWNER TO ieducar;
 
 --
 -- Name: motivo_suspensao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16696,7 +17261,7 @@ CREATE TABLE motivo_suspensao (
 );
 
 
-ALTER TABLE pmieducar.motivo_suspensao OWNER TO ieducar;
+ALTER TABLE motivo_suspensao OWNER TO ieducar;
 
 --
 -- Name: nivel_cod_nivel_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16710,7 +17275,7 @@ CREATE SEQUENCE nivel_cod_nivel_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.nivel_cod_nivel_seq OWNER TO ieducar;
+ALTER TABLE nivel_cod_nivel_seq OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -16732,7 +17297,7 @@ CREATE TABLE nivel (
 );
 
 
-ALTER TABLE pmieducar.nivel OWNER TO ieducar;
+ALTER TABLE nivel OWNER TO ieducar;
 
 --
 -- Name: nivel_ensino_cod_nivel_ensino_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16746,7 +17311,7 @@ CREATE SEQUENCE nivel_ensino_cod_nivel_ensino_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.nivel_ensino_cod_nivel_ensino_seq OWNER TO ieducar;
+ALTER TABLE nivel_ensino_cod_nivel_ensino_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -16767,7 +17332,7 @@ CREATE TABLE nivel_ensino (
 );
 
 
-ALTER TABLE pmieducar.nivel_ensino OWNER TO ieducar;
+ALTER TABLE nivel_ensino OWNER TO ieducar;
 
 --
 -- Name: nota_aluno_cod_nota_aluno_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16781,7 +17346,7 @@ CREATE SEQUENCE nota_aluno_cod_nota_aluno_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.nota_aluno_cod_nota_aluno_seq OWNER TO ieducar;
+ALTER TABLE nota_aluno_cod_nota_aluno_seq OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -16808,7 +17373,7 @@ CREATE TABLE nota_aluno (
 );
 
 
-ALTER TABLE pmieducar.nota_aluno OWNER TO ieducar;
+ALTER TABLE nota_aluno OWNER TO ieducar;
 
 --
 -- Name: operador_cod_operador_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16822,7 +17387,7 @@ CREATE SEQUENCE operador_cod_operador_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.operador_cod_operador_seq OWNER TO ieducar;
+ALTER TABLE operador_cod_operador_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -16843,7 +17408,7 @@ CREATE TABLE operador (
 );
 
 
-ALTER TABLE pmieducar.operador OWNER TO ieducar;
+ALTER TABLE operador OWNER TO ieducar;
 
 --
 -- Name: pagamento_multa_cod_pagamento_multa_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16857,7 +17422,7 @@ CREATE SEQUENCE pagamento_multa_cod_pagamento_multa_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.pagamento_multa_cod_pagamento_multa_seq OWNER TO ieducar;
+ALTER TABLE pagamento_multa_cod_pagamento_multa_seq OWNER TO ieducar;
 
 --
 -- Name: pagamento_multa; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16873,7 +17438,7 @@ CREATE TABLE pagamento_multa (
 );
 
 
-ALTER TABLE pmieducar.pagamento_multa OWNER TO ieducar;
+ALTER TABLE pagamento_multa OWNER TO ieducar;
 
 --
 -- Name: pre_requisito_cod_pre_requisito_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16887,7 +17452,7 @@ CREATE SEQUENCE pre_requisito_cod_pre_requisito_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.pre_requisito_cod_pre_requisito_seq OWNER TO ieducar;
+ALTER TABLE pre_requisito_cod_pre_requisito_seq OWNER TO ieducar;
 
 --
 -- Name: pre_requisito; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16907,7 +17472,7 @@ CREATE TABLE pre_requisito (
 );
 
 
-ALTER TABLE pmieducar.pre_requisito OWNER TO ieducar;
+ALTER TABLE pre_requisito OWNER TO ieducar;
 
 --
 -- Name: quadro_horario_cod_quadro_horario_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -16921,7 +17486,7 @@ CREATE SEQUENCE quadro_horario_cod_quadro_horario_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.quadro_horario_cod_quadro_horario_seq OWNER TO ieducar;
+ALTER TABLE quadro_horario_cod_quadro_horario_seq OWNER TO ieducar;
 
 --
 -- Name: quadro_horario; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16938,7 +17503,7 @@ CREATE TABLE quadro_horario (
 );
 
 
-ALTER TABLE pmieducar.quadro_horario OWNER TO ieducar;
+ALTER TABLE quadro_horario OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -16965,7 +17530,7 @@ CREATE TABLE quadro_horario_horarios (
 );
 
 
-ALTER TABLE pmieducar.quadro_horario_horarios OWNER TO ieducar;
+ALTER TABLE quadro_horario_horarios OWNER TO ieducar;
 
 --
 -- Name: quadro_horario_horarios_aux; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -16987,7 +17552,7 @@ CREATE TABLE quadro_horario_horarios_aux (
 );
 
 
-ALTER TABLE pmieducar.quadro_horario_horarios_aux OWNER TO ieducar;
+ALTER TABLE quadro_horario_horarios_aux OWNER TO ieducar;
 
 --
 -- Name: religiao_cod_religiao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17001,7 +17566,7 @@ CREATE SEQUENCE religiao_cod_religiao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.religiao_cod_religiao_seq OWNER TO ieducar;
+ALTER TABLE religiao_cod_religiao_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -17020,7 +17585,7 @@ CREATE TABLE religiao (
 );
 
 
-ALTER TABLE pmieducar.religiao OWNER TO ieducar;
+ALTER TABLE religiao OWNER TO ieducar;
 
 --
 -- Name: reserva_vaga_cod_reserva_vaga_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17034,7 +17599,7 @@ CREATE SEQUENCE reserva_vaga_cod_reserva_vaga_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.reserva_vaga_cod_reserva_vaga_seq OWNER TO ieducar;
+ALTER TABLE reserva_vaga_cod_reserva_vaga_seq OWNER TO ieducar;
 
 --
 -- Name: reserva_vaga; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17055,7 +17620,7 @@ CREATE TABLE reserva_vaga (
 );
 
 
-ALTER TABLE pmieducar.reserva_vaga OWNER TO ieducar;
+ALTER TABLE reserva_vaga OWNER TO ieducar;
 
 --
 -- Name: reservas_cod_reserva_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17069,7 +17634,7 @@ CREATE SEQUENCE reservas_cod_reserva_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.reservas_cod_reserva_seq OWNER TO ieducar;
+ALTER TABLE reservas_cod_reserva_seq OWNER TO ieducar;
 
 --
 -- Name: reservas; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17088,7 +17653,7 @@ CREATE TABLE reservas (
 );
 
 
-ALTER TABLE pmieducar.reservas OWNER TO ieducar;
+ALTER TABLE reservas OWNER TO ieducar;
 
 --
 -- Name: sequencia_serie; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17105,7 +17670,7 @@ CREATE TABLE sequencia_serie (
 );
 
 
-ALTER TABLE pmieducar.sequencia_serie OWNER TO ieducar;
+ALTER TABLE sequencia_serie OWNER TO ieducar;
 
 --
 -- Name: serie_cod_serie_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17119,7 +17684,7 @@ CREATE SEQUENCE serie_cod_serie_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.serie_cod_serie_seq OWNER TO ieducar;
+ALTER TABLE serie_cod_serie_seq OWNER TO ieducar;
 
 --
 -- Name: serie; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17146,7 +17711,7 @@ CREATE TABLE serie (
 );
 
 
-ALTER TABLE pmieducar.serie OWNER TO ieducar;
+ALTER TABLE serie OWNER TO ieducar;
 
 --
 -- Name: serie_pre_requisito; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17160,7 +17725,7 @@ CREATE TABLE serie_pre_requisito (
 );
 
 
-ALTER TABLE pmieducar.serie_pre_requisito OWNER TO ieducar;
+ALTER TABLE serie_pre_requisito OWNER TO ieducar;
 
 --
 -- Name: servidor; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17179,7 +17744,7 @@ CREATE TABLE servidor (
 );
 
 
-ALTER TABLE pmieducar.servidor OWNER TO ieducar;
+ALTER TABLE servidor OWNER TO ieducar;
 
 --
 -- Name: servidor_afastamento; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17200,7 +17765,7 @@ CREATE TABLE servidor_afastamento (
 );
 
 
-ALTER TABLE pmieducar.servidor_afastamento OWNER TO ieducar;
+ALTER TABLE servidor_afastamento OWNER TO ieducar;
 
 --
 -- Name: servidor_alocacao_cod_servidor_alocacao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17214,7 +17779,7 @@ CREATE SEQUENCE servidor_alocacao_cod_servidor_alocacao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.servidor_alocacao_cod_servidor_alocacao_seq OWNER TO ieducar;
+ALTER TABLE servidor_alocacao_cod_servidor_alocacao_seq OWNER TO ieducar;
 
 --
 -- Name: servidor_alocacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17238,7 +17803,7 @@ CREATE TABLE servidor_alocacao (
 );
 
 
-ALTER TABLE pmieducar.servidor_alocacao OWNER TO ieducar;
+ALTER TABLE servidor_alocacao OWNER TO ieducar;
 
 --
 -- Name: servidor_curso_cod_servidor_curso_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17252,7 +17817,7 @@ CREATE SEQUENCE servidor_curso_cod_servidor_curso_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.servidor_curso_cod_servidor_curso_seq OWNER TO ieducar;
+ALTER TABLE servidor_curso_cod_servidor_curso_seq OWNER TO ieducar;
 
 --
 -- Name: servidor_curso; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17267,7 +17832,7 @@ CREATE TABLE servidor_curso (
 );
 
 
-ALTER TABLE pmieducar.servidor_curso OWNER TO ieducar;
+ALTER TABLE servidor_curso OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -17282,7 +17847,7 @@ CREATE TABLE servidor_curso_ministra (
 );
 
 
-ALTER TABLE pmieducar.servidor_curso_ministra OWNER TO ieducar;
+ALTER TABLE servidor_curso_ministra OWNER TO ieducar;
 
 --
 -- Name: servidor_disciplina; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17296,7 +17861,7 @@ CREATE TABLE servidor_disciplina (
 );
 
 
-ALTER TABLE pmieducar.servidor_disciplina OWNER TO ieducar;
+ALTER TABLE servidor_disciplina OWNER TO ieducar;
 
 --
 -- Name: servidor_formacao_cod_formacao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17310,7 +17875,7 @@ CREATE SEQUENCE servidor_formacao_cod_formacao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.servidor_formacao_cod_formacao_seq OWNER TO ieducar;
+ALTER TABLE servidor_formacao_cod_formacao_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -17333,7 +17898,7 @@ CREATE TABLE servidor_formacao (
 );
 
 
-ALTER TABLE pmieducar.servidor_formacao OWNER TO ieducar;
+ALTER TABLE servidor_formacao OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -17348,7 +17913,7 @@ CREATE TABLE servidor_funcao (
 );
 
 
-ALTER TABLE pmieducar.servidor_funcao OWNER TO ieducar;
+ALTER TABLE servidor_funcao OWNER TO ieducar;
 
 --
 -- Name: servidor_titulo_concurso_cod_servidor_titulo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17362,7 +17927,7 @@ CREATE SEQUENCE servidor_titulo_concurso_cod_servidor_titulo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.servidor_titulo_concurso_cod_servidor_titulo_seq OWNER TO ieducar;
+ALTER TABLE servidor_titulo_concurso_cod_servidor_titulo_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -17378,7 +17943,7 @@ CREATE TABLE servidor_titulo_concurso (
 );
 
 
-ALTER TABLE pmieducar.servidor_titulo_concurso OWNER TO ieducar;
+ALTER TABLE servidor_titulo_concurso OWNER TO ieducar;
 
 --
 -- Name: situacao_cod_situacao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17392,7 +17957,7 @@ CREATE SEQUENCE situacao_cod_situacao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.situacao_cod_situacao_seq OWNER TO ieducar;
+ALTER TABLE situacao_cod_situacao_seq OWNER TO ieducar;
 
 --
 -- Name: situacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17414,7 +17979,7 @@ CREATE TABLE situacao (
 );
 
 
-ALTER TABLE pmieducar.situacao OWNER TO ieducar;
+ALTER TABLE situacao OWNER TO ieducar;
 
 --
 -- Name: subnivel_cod_subnivel_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17428,7 +17993,7 @@ CREATE SEQUENCE subnivel_cod_subnivel_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.subnivel_cod_subnivel_seq OWNER TO ieducar;
+ALTER TABLE subnivel_cod_subnivel_seq OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -17450,7 +18015,7 @@ CREATE TABLE subnivel (
 );
 
 
-ALTER TABLE pmieducar.subnivel OWNER TO ieducar;
+ALTER TABLE subnivel OWNER TO ieducar;
 
 --
 -- Name: tipo_avaliacao_cod_tipo_avaliacao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17464,7 +18029,7 @@ CREATE SEQUENCE tipo_avaliacao_cod_tipo_avaliacao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.tipo_avaliacao_cod_tipo_avaliacao_seq OWNER TO ieducar;
+ALTER TABLE tipo_avaliacao_cod_tipo_avaliacao_seq OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -17485,7 +18050,7 @@ CREATE TABLE tipo_avaliacao (
 );
 
 
-ALTER TABLE pmieducar.tipo_avaliacao OWNER TO ieducar;
+ALTER TABLE tipo_avaliacao OWNER TO ieducar;
 
 --
 -- Name: tipo_avaliacao_valores; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17502,7 +18067,7 @@ CREATE TABLE tipo_avaliacao_valores (
 );
 
 
-ALTER TABLE pmieducar.tipo_avaliacao_valores OWNER TO ieducar;
+ALTER TABLE tipo_avaliacao_valores OWNER TO ieducar;
 
 --
 -- Name: tipo_dispensa_cod_tipo_dispensa_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17516,7 +18081,7 @@ CREATE SEQUENCE tipo_dispensa_cod_tipo_dispensa_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.tipo_dispensa_cod_tipo_dispensa_seq OWNER TO ieducar;
+ALTER TABLE tipo_dispensa_cod_tipo_dispensa_seq OWNER TO ieducar;
 
 --
 -- Name: tipo_dispensa; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17535,7 +18100,7 @@ CREATE TABLE tipo_dispensa (
 );
 
 
-ALTER TABLE pmieducar.tipo_dispensa OWNER TO ieducar;
+ALTER TABLE tipo_dispensa OWNER TO ieducar;
 
 --
 -- Name: tipo_ensino_cod_tipo_ensino_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17549,7 +18114,7 @@ CREATE SEQUENCE tipo_ensino_cod_tipo_ensino_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.tipo_ensino_cod_tipo_ensino_seq OWNER TO ieducar;
+ALTER TABLE tipo_ensino_cod_tipo_ensino_seq OWNER TO ieducar;
 
 --
 -- Name: tipo_ensino; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17567,7 +18132,7 @@ CREATE TABLE tipo_ensino (
 );
 
 
-ALTER TABLE pmieducar.tipo_ensino OWNER TO ieducar;
+ALTER TABLE tipo_ensino OWNER TO ieducar;
 
 --
 -- Name: tipo_ocorrencia_disciplinar_cod_tipo_ocorrencia_disciplinar_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17581,7 +18146,7 @@ CREATE SEQUENCE tipo_ocorrencia_disciplinar_cod_tipo_ocorrencia_disciplinar_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.tipo_ocorrencia_disciplinar_cod_tipo_ocorrencia_disciplinar_seq OWNER TO ieducar;
+ALTER TABLE tipo_ocorrencia_disciplinar_cod_tipo_ocorrencia_disciplinar_seq OWNER TO ieducar;
 
 --
 -- Name: tipo_ocorrencia_disciplinar; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17601,7 +18166,7 @@ CREATE TABLE tipo_ocorrencia_disciplinar (
 );
 
 
-ALTER TABLE pmieducar.tipo_ocorrencia_disciplinar OWNER TO ieducar;
+ALTER TABLE tipo_ocorrencia_disciplinar OWNER TO ieducar;
 
 --
 -- Name: tipo_regime_cod_tipo_regime_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17615,7 +18180,7 @@ CREATE SEQUENCE tipo_regime_cod_tipo_regime_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.tipo_regime_cod_tipo_regime_seq OWNER TO ieducar;
+ALTER TABLE tipo_regime_cod_tipo_regime_seq OWNER TO ieducar;
 
 --
 -- Name: tipo_regime; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17633,7 +18198,7 @@ CREATE TABLE tipo_regime (
 );
 
 
-ALTER TABLE pmieducar.tipo_regime OWNER TO ieducar;
+ALTER TABLE tipo_regime OWNER TO ieducar;
 
 --
 -- Name: tipo_usuario_cod_tipo_usuario_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17647,7 +18212,7 @@ CREATE SEQUENCE tipo_usuario_cod_tipo_usuario_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.tipo_usuario_cod_tipo_usuario_seq OWNER TO ieducar;
+ALTER TABLE tipo_usuario_cod_tipo_usuario_seq OWNER TO ieducar;
 
 --
 -- Name: tipo_usuario; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17666,7 +18231,7 @@ CREATE TABLE tipo_usuario (
 );
 
 
-ALTER TABLE pmieducar.tipo_usuario OWNER TO ieducar;
+ALTER TABLE tipo_usuario OWNER TO ieducar;
 
 --
 -- Name: transferencia_solicitacao_cod_transferencia_solicitacao_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17680,7 +18245,7 @@ CREATE SEQUENCE transferencia_solicitacao_cod_transferencia_solicitacao_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.transferencia_solicitacao_cod_transferencia_solicitacao_seq OWNER TO ieducar;
+ALTER TABLE transferencia_solicitacao_cod_transferencia_solicitacao_seq OWNER TO ieducar;
 
 --
 -- Name: transferencia_solicitacao; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17701,7 +18266,7 @@ CREATE TABLE transferencia_solicitacao (
 );
 
 
-ALTER TABLE pmieducar.transferencia_solicitacao OWNER TO ieducar;
+ALTER TABLE transferencia_solicitacao OWNER TO ieducar;
 
 --
 -- Name: transferencia_tipo_cod_transferencia_tipo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17715,7 +18280,7 @@ CREATE SEQUENCE transferencia_tipo_cod_transferencia_tipo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.transferencia_tipo_cod_transferencia_tipo_seq OWNER TO ieducar;
+ALTER TABLE transferencia_tipo_cod_transferencia_tipo_seq OWNER TO ieducar;
 
 --
 -- Name: transferencia_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17734,7 +18299,7 @@ CREATE TABLE transferencia_tipo (
 );
 
 
-ALTER TABLE pmieducar.transferencia_tipo OWNER TO ieducar;
+ALTER TABLE transferencia_tipo OWNER TO ieducar;
 
 --
 -- Name: turma_cod_turma_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17748,7 +18313,7 @@ CREATE SEQUENCE turma_cod_turma_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.turma_cod_turma_seq OWNER TO ieducar;
+ALTER TABLE turma_cod_turma_seq OWNER TO ieducar;
 
 --
 -- Name: turma; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17782,11 +18347,12 @@ CREATE TABLE turma (
     visivel boolean,
     tipo_boletim integer,
     turma_turno_id integer,
-    ano integer
+    ano integer,
+    data_fechamento date
 );
 
 
-ALTER TABLE pmieducar.turma OWNER TO ieducar;
+ALTER TABLE turma OWNER TO ieducar;
 
 --
 -- Name: turma_dia_semana; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17800,7 +18366,7 @@ CREATE TABLE turma_dia_semana (
 );
 
 
-ALTER TABLE pmieducar.turma_dia_semana OWNER TO ieducar;
+ALTER TABLE turma_dia_semana OWNER TO ieducar;
 
 --
 -- Name: turma_modulo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17815,7 +18381,7 @@ CREATE TABLE turma_modulo (
 );
 
 
-ALTER TABLE pmieducar.turma_modulo OWNER TO ieducar;
+ALTER TABLE turma_modulo OWNER TO ieducar;
 
 --
 -- Name: turma_tipo_cod_turma_tipo_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17829,7 +18395,7 @@ CREATE SEQUENCE turma_tipo_cod_turma_tipo_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.turma_tipo_cod_turma_tipo_seq OWNER TO ieducar;
+ALTER TABLE turma_tipo_cod_turma_tipo_seq OWNER TO ieducar;
 
 --
 -- Name: turma_tipo; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17848,7 +18414,7 @@ CREATE TABLE turma_tipo (
 );
 
 
-ALTER TABLE pmieducar.turma_tipo OWNER TO ieducar;
+ALTER TABLE turma_tipo OWNER TO ieducar;
 
 --
 -- Name: turma_turno_id_seq; Type: SEQUENCE; Schema: pmieducar; Owner: ieducar
@@ -17862,7 +18428,7 @@ CREATE SEQUENCE turma_turno_id_seq
     CACHE 1;
 
 
-ALTER TABLE pmieducar.turma_turno_id_seq OWNER TO ieducar;
+ALTER TABLE turma_turno_id_seq OWNER TO ieducar;
 
 --
 -- Name: turma_turno; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17875,7 +18441,7 @@ CREATE TABLE turma_turno (
 );
 
 
-ALTER TABLE pmieducar.turma_turno OWNER TO ieducar;
+ALTER TABLE turma_turno OWNER TO ieducar;
 
 --
 -- Name: usuario; Type: TABLE; Schema: pmieducar; Owner: ieducar; Tablespace: 
@@ -17894,17 +18460,37 @@ CREATE TABLE usuario (
 );
 
 
-ALTER TABLE pmieducar.usuario OWNER TO ieducar;
+ALTER TABLE usuario OWNER TO ieducar;
 
 --
 -- Name: v_matricula_matricula_turma; Type: VIEW; Schema: pmieducar; Owner: ieducar
 --
 
 CREATE VIEW v_matricula_matricula_turma AS
-    SELECT ma.cod_matricula, ma.ref_ref_cod_escola AS ref_cod_escola, ma.ref_ref_cod_serie AS ref_cod_serie, ma.ref_cod_aluno, ma.ref_cod_curso, mt.ref_cod_turma, ma.ano, ma.aprovado, ma.ultima_matricula, ma.modulo, mt.sequencial, ma.ativo, (SELECT count(0) AS count FROM dispensa_disciplina dd WHERE (dd.ref_cod_matricula = ma.cod_matricula)) AS qtd_dispensa_disciplina, (SELECT COALESCE((max(n.modulo))::integer, 0) AS "coalesce" FROM nota_aluno n WHERE ((n.ref_cod_matricula = ma.cod_matricula) AND (n.ativo = 1))) AS maior_modulo_com_nota FROM matricula ma, matricula_turma mt WHERE ((mt.ref_cod_matricula = ma.cod_matricula) AND (mt.ativo = ma.ativo));
+ SELECT ma.cod_matricula,
+    ma.ref_ref_cod_escola AS ref_cod_escola,
+    ma.ref_ref_cod_serie AS ref_cod_serie,
+    ma.ref_cod_aluno,
+    ma.ref_cod_curso,
+    mt.ref_cod_turma,
+    ma.ano,
+    ma.aprovado,
+    ma.ultima_matricula,
+    ma.modulo,
+    mt.sequencial,
+    ma.ativo,
+    ( SELECT count(0) AS count
+           FROM dispensa_disciplina dd
+          WHERE (dd.ref_cod_matricula = ma.cod_matricula)) AS qtd_dispensa_disciplina,
+    ( SELECT COALESCE((max(n.modulo))::integer, 0) AS "coalesce"
+           FROM nota_aluno n
+          WHERE ((n.ref_cod_matricula = ma.cod_matricula) AND (n.ativo = 1))) AS maior_modulo_com_nota
+   FROM matricula ma,
+    matricula_turma mt
+  WHERE ((mt.ref_cod_matricula = ma.cod_matricula) AND (mt.ativo = ma.ativo));
 
 
-ALTER TABLE pmieducar.v_matricula_matricula_turma OWNER TO ieducar;
+ALTER TABLE v_matricula_matricula_turma OWNER TO ieducar;
 
 SET search_path = pmiotopic, pg_catalog;
 
@@ -17917,7 +18503,7 @@ CREATE TABLE funcionario_su (
 );
 
 
-ALTER TABLE pmiotopic.funcionario_su OWNER TO ieducar;
+ALTER TABLE funcionario_su OWNER TO ieducar;
 
 --
 -- Name: grupomoderador; Type: TABLE; Schema: pmiotopic; Owner: ieducar; Tablespace: 
@@ -17934,7 +18520,7 @@ CREATE TABLE grupomoderador (
 );
 
 
-ALTER TABLE pmiotopic.grupomoderador OWNER TO ieducar;
+ALTER TABLE grupomoderador OWNER TO ieducar;
 
 --
 -- Name: grupopessoa; Type: TABLE; Schema: pmiotopic; Owner: ieducar; Tablespace: 
@@ -17955,7 +18541,7 @@ CREATE TABLE grupopessoa (
 );
 
 
-ALTER TABLE pmiotopic.grupopessoa OWNER TO ieducar;
+ALTER TABLE grupopessoa OWNER TO ieducar;
 
 --
 -- Name: grupos_cod_grupos_seq; Type: SEQUENCE; Schema: pmiotopic; Owner: ieducar
@@ -17969,7 +18555,7 @@ CREATE SEQUENCE grupos_cod_grupos_seq
     CACHE 1;
 
 
-ALTER TABLE pmiotopic.grupos_cod_grupos_seq OWNER TO ieducar;
+ALTER TABLE grupos_cod_grupos_seq OWNER TO ieducar;
 
 --
 -- Name: grupos; Type: TABLE; Schema: pmiotopic; Owner: ieducar; Tablespace: 
@@ -17987,7 +18573,7 @@ CREATE TABLE grupos (
 );
 
 
-ALTER TABLE pmiotopic.grupos OWNER TO ieducar;
+ALTER TABLE grupos OWNER TO ieducar;
 
 --
 -- Name: notas; Type: TABLE; Schema: pmiotopic; Owner: ieducar; Tablespace: 
@@ -18005,7 +18591,7 @@ CREATE TABLE notas (
 );
 
 
-ALTER TABLE pmiotopic.notas OWNER TO ieducar;
+ALTER TABLE notas OWNER TO ieducar;
 
 --
 -- Name: participante; Type: TABLE; Schema: pmiotopic; Owner: ieducar; Tablespace: 
@@ -18021,7 +18607,7 @@ CREATE TABLE participante (
 );
 
 
-ALTER TABLE pmiotopic.participante OWNER TO ieducar;
+ALTER TABLE participante OWNER TO ieducar;
 
 --
 -- Name: reuniao_cod_reuniao_seq; Type: SEQUENCE; Schema: pmiotopic; Owner: ieducar
@@ -18035,7 +18621,7 @@ CREATE SEQUENCE reuniao_cod_reuniao_seq
     CACHE 1;
 
 
-ALTER TABLE pmiotopic.reuniao_cod_reuniao_seq OWNER TO ieducar;
+ALTER TABLE reuniao_cod_reuniao_seq OWNER TO ieducar;
 
 --
 -- Name: reuniao; Type: TABLE; Schema: pmiotopic; Owner: ieducar; Tablespace: 
@@ -18055,7 +18641,7 @@ CREATE TABLE reuniao (
 );
 
 
-ALTER TABLE pmiotopic.reuniao OWNER TO ieducar;
+ALTER TABLE reuniao OWNER TO ieducar;
 
 --
 -- Name: topico_cod_topico_seq; Type: SEQUENCE; Schema: pmiotopic; Owner: ieducar
@@ -18069,7 +18655,7 @@ CREATE SEQUENCE topico_cod_topico_seq
     CACHE 1;
 
 
-ALTER TABLE pmiotopic.topico_cod_topico_seq OWNER TO ieducar;
+ALTER TABLE topico_cod_topico_seq OWNER TO ieducar;
 
 --
 -- Name: topico; Type: TABLE; Schema: pmiotopic; Owner: ieducar; Tablespace: 
@@ -18088,7 +18674,7 @@ CREATE TABLE topico (
 );
 
 
-ALTER TABLE pmiotopic.topico OWNER TO ieducar;
+ALTER TABLE topico OWNER TO ieducar;
 
 --
 -- Name: topicoreuniao; Type: TABLE; Schema: pmiotopic; Owner: ieducar; Tablespace: 
@@ -18103,7 +18689,7 @@ CREATE TABLE topicoreuniao (
 );
 
 
-ALTER TABLE pmiotopic.topicoreuniao OWNER TO ieducar;
+ALTER TABLE topicoreuniao OWNER TO ieducar;
 
 SET search_path = portal, pg_catalog;
 
@@ -18119,7 +18705,7 @@ CREATE SEQUENCE acesso_cod_acesso_seq
     CACHE 1;
 
 
-ALTER TABLE portal.acesso_cod_acesso_seq OWNER TO ieducar;
+ALTER TABLE acesso_cod_acesso_seq OWNER TO ieducar;
 
 --
 -- Name: acesso; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18136,7 +18722,7 @@ CREATE TABLE acesso (
 );
 
 
-ALTER TABLE portal.acesso OWNER TO ieducar;
+ALTER TABLE acesso OWNER TO ieducar;
 
 --
 -- Name: agenda_cod_agenda_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18150,7 +18736,7 @@ CREATE SEQUENCE agenda_cod_agenda_seq
     CACHE 1;
 
 
-ALTER TABLE portal.agenda_cod_agenda_seq OWNER TO ieducar;
+ALTER TABLE agenda_cod_agenda_seq OWNER TO ieducar;
 
 --
 -- Name: agenda; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18169,7 +18755,7 @@ CREATE TABLE agenda (
 );
 
 
-ALTER TABLE portal.agenda OWNER TO ieducar;
+ALTER TABLE agenda OWNER TO ieducar;
 
 --
 -- Name: agenda_compromisso; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18191,7 +18777,7 @@ CREATE TABLE agenda_compromisso (
 );
 
 
-ALTER TABLE portal.agenda_compromisso OWNER TO ieducar;
+ALTER TABLE agenda_compromisso OWNER TO ieducar;
 
 --
 -- Name: agenda_pref_cod_comp_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18205,7 +18791,7 @@ CREATE SEQUENCE agenda_pref_cod_comp_seq
     CACHE 1;
 
 
-ALTER TABLE portal.agenda_pref_cod_comp_seq OWNER TO ieducar;
+ALTER TABLE agenda_pref_cod_comp_seq OWNER TO ieducar;
 
 --
 -- Name: agenda_pref; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18226,7 +18812,7 @@ CREATE TABLE agenda_pref (
 );
 
 
-ALTER TABLE portal.agenda_pref OWNER TO ieducar;
+ALTER TABLE agenda_pref OWNER TO ieducar;
 
 --
 -- Name: agenda_responsavel; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18239,7 +18825,7 @@ CREATE TABLE agenda_responsavel (
 );
 
 
-ALTER TABLE portal.agenda_responsavel OWNER TO ieducar;
+ALTER TABLE agenda_responsavel OWNER TO ieducar;
 
 --
 -- Name: compras_editais_editais_cod_compras_editais_editais_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18253,7 +18839,7 @@ CREATE SEQUENCE compras_editais_editais_cod_compras_editais_editais_seq
     CACHE 1;
 
 
-ALTER TABLE portal.compras_editais_editais_cod_compras_editais_editais_seq OWNER TO ieducar;
+ALTER TABLE compras_editais_editais_cod_compras_editais_editais_seq OWNER TO ieducar;
 
 --
 -- Name: compras_editais_editais; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18271,7 +18857,7 @@ CREATE TABLE compras_editais_editais (
 );
 
 
-ALTER TABLE portal.compras_editais_editais OWNER TO ieducar;
+ALTER TABLE compras_editais_editais OWNER TO ieducar;
 
 --
 -- Name: compras_editais_editais_empresas; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18284,7 +18870,7 @@ CREATE TABLE compras_editais_editais_empresas (
 );
 
 
-ALTER TABLE portal.compras_editais_editais_empresas OWNER TO ieducar;
+ALTER TABLE compras_editais_editais_empresas OWNER TO ieducar;
 
 --
 -- Name: compras_editais_empresa_cod_compras_editais_empresa_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18298,7 +18884,7 @@ CREATE SEQUENCE compras_editais_empresa_cod_compras_editais_empresa_seq
     CACHE 1;
 
 
-ALTER TABLE portal.compras_editais_empresa_cod_compras_editais_empresa_seq OWNER TO ieducar;
+ALTER TABLE compras_editais_empresa_cod_compras_editais_empresa_seq OWNER TO ieducar;
 
 --
 -- Name: compras_editais_empresa; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18322,7 +18908,7 @@ CREATE TABLE compras_editais_empresa (
 );
 
 
-ALTER TABLE portal.compras_editais_empresa OWNER TO ieducar;
+ALTER TABLE compras_editais_empresa OWNER TO ieducar;
 
 --
 -- Name: compras_final_pregao_cod_compras_final_pregao_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18336,7 +18922,7 @@ CREATE SEQUENCE compras_final_pregao_cod_compras_final_pregao_seq
     CACHE 1;
 
 
-ALTER TABLE portal.compras_final_pregao_cod_compras_final_pregao_seq OWNER TO ieducar;
+ALTER TABLE compras_final_pregao_cod_compras_final_pregao_seq OWNER TO ieducar;
 
 --
 -- Name: compras_final_pregao; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18348,7 +18934,7 @@ CREATE TABLE compras_final_pregao (
 );
 
 
-ALTER TABLE portal.compras_final_pregao OWNER TO ieducar;
+ALTER TABLE compras_final_pregao OWNER TO ieducar;
 
 --
 -- Name: compras_funcionarios; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18359,7 +18945,7 @@ CREATE TABLE compras_funcionarios (
 );
 
 
-ALTER TABLE portal.compras_funcionarios OWNER TO ieducar;
+ALTER TABLE compras_funcionarios OWNER TO ieducar;
 
 --
 -- Name: compras_licitacoes_cod_compras_licitacoes_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18373,7 +18959,7 @@ CREATE SEQUENCE compras_licitacoes_cod_compras_licitacoes_seq
     CACHE 1;
 
 
-ALTER TABLE portal.compras_licitacoes_cod_compras_licitacoes_seq OWNER TO ieducar;
+ALTER TABLE compras_licitacoes_cod_compras_licitacoes_seq OWNER TO ieducar;
 
 --
 -- Name: compras_licitacoes; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18391,7 +18977,7 @@ CREATE TABLE compras_licitacoes (
 );
 
 
-ALTER TABLE portal.compras_licitacoes OWNER TO ieducar;
+ALTER TABLE compras_licitacoes OWNER TO ieducar;
 
 --
 -- Name: compras_modalidade_cod_compras_modalidade_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18405,7 +18991,7 @@ CREATE SEQUENCE compras_modalidade_cod_compras_modalidade_seq
     CACHE 1;
 
 
-ALTER TABLE portal.compras_modalidade_cod_compras_modalidade_seq OWNER TO ieducar;
+ALTER TABLE compras_modalidade_cod_compras_modalidade_seq OWNER TO ieducar;
 
 --
 -- Name: compras_modalidade; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18417,7 +19003,7 @@ CREATE TABLE compras_modalidade (
 );
 
 
-ALTER TABLE portal.compras_modalidade OWNER TO ieducar;
+ALTER TABLE compras_modalidade OWNER TO ieducar;
 
 --
 -- Name: compras_pregao_execucao_cod_compras_pregao_execucao_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18431,7 +19017,7 @@ CREATE SEQUENCE compras_pregao_execucao_cod_compras_pregao_execucao_seq
     CACHE 1;
 
 
-ALTER TABLE portal.compras_pregao_execucao_cod_compras_pregao_execucao_seq OWNER TO ieducar;
+ALTER TABLE compras_pregao_execucao_cod_compras_pregao_execucao_seq OWNER TO ieducar;
 
 --
 -- Name: compras_pregao_execucao; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18455,7 +19041,7 @@ CREATE TABLE compras_pregao_execucao (
 );
 
 
-ALTER TABLE portal.compras_pregao_execucao OWNER TO ieducar;
+ALTER TABLE compras_pregao_execucao OWNER TO ieducar;
 
 --
 -- Name: compras_prestacao_contas_cod_compras_prestacao_contas_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18469,7 +19055,7 @@ CREATE SEQUENCE compras_prestacao_contas_cod_compras_prestacao_contas_seq
     CACHE 1;
 
 
-ALTER TABLE portal.compras_prestacao_contas_cod_compras_prestacao_contas_seq OWNER TO ieducar;
+ALTER TABLE compras_prestacao_contas_cod_compras_prestacao_contas_seq OWNER TO ieducar;
 
 --
 -- Name: compras_prestacao_contas; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18483,7 +19069,7 @@ CREATE TABLE compras_prestacao_contas (
 );
 
 
-ALTER TABLE portal.compras_prestacao_contas OWNER TO ieducar;
+ALTER TABLE compras_prestacao_contas OWNER TO ieducar;
 
 --
 -- Name: foto_portal_cod_foto_portal_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18497,7 +19083,7 @@ CREATE SEQUENCE foto_portal_cod_foto_portal_seq
     CACHE 1;
 
 
-ALTER TABLE portal.foto_portal_cod_foto_portal_seq OWNER TO ieducar;
+ALTER TABLE foto_portal_cod_foto_portal_seq OWNER TO ieducar;
 
 --
 -- Name: foto_portal; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18519,7 +19105,7 @@ CREATE TABLE foto_portal (
 );
 
 
-ALTER TABLE portal.foto_portal OWNER TO ieducar;
+ALTER TABLE foto_portal OWNER TO ieducar;
 
 --
 -- Name: foto_secao_cod_foto_secao_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18533,7 +19119,7 @@ CREATE SEQUENCE foto_secao_cod_foto_secao_seq
     CACHE 1;
 
 
-ALTER TABLE portal.foto_secao_cod_foto_secao_seq OWNER TO ieducar;
+ALTER TABLE foto_secao_cod_foto_secao_seq OWNER TO ieducar;
 
 --
 -- Name: foto_secao; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18545,7 +19131,7 @@ CREATE TABLE foto_secao (
 );
 
 
-ALTER TABLE portal.foto_secao OWNER TO ieducar;
+ALTER TABLE foto_secao OWNER TO ieducar;
 
 --
 -- Name: funcionario; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18579,7 +19165,7 @@ CREATE TABLE funcionario (
 );
 
 
-ALTER TABLE portal.funcionario OWNER TO ieducar;
+ALTER TABLE funcionario OWNER TO ieducar;
 
 --
 -- Name: funcionario_vinculo_cod_funcionario_vinculo_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18593,7 +19179,7 @@ CREATE SEQUENCE funcionario_vinculo_cod_funcionario_vinculo_seq
     CACHE 1;
 
 
-ALTER TABLE portal.funcionario_vinculo_cod_funcionario_vinculo_seq OWNER TO ieducar;
+ALTER TABLE funcionario_vinculo_cod_funcionario_vinculo_seq OWNER TO ieducar;
 
 --
 -- Name: funcionario_vinculo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18605,7 +19191,7 @@ CREATE TABLE funcionario_vinculo (
 );
 
 
-ALTER TABLE portal.funcionario_vinculo OWNER TO ieducar;
+ALTER TABLE funcionario_vinculo OWNER TO ieducar;
 
 --
 -- Name: imagem_cod_imagem_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18619,7 +19205,7 @@ CREATE SEQUENCE imagem_cod_imagem_seq
     CACHE 1;
 
 
-ALTER TABLE portal.imagem_cod_imagem_seq OWNER TO ieducar;
+ALTER TABLE imagem_cod_imagem_seq OWNER TO ieducar;
 
 --
 -- Name: imagem; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18640,7 +19226,7 @@ CREATE TABLE imagem (
 );
 
 
-ALTER TABLE portal.imagem OWNER TO ieducar;
+ALTER TABLE imagem OWNER TO ieducar;
 
 --
 -- Name: imagem_tipo_cod_imagem_tipo_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18654,7 +19240,7 @@ CREATE SEQUENCE imagem_tipo_cod_imagem_tipo_seq
     CACHE 1;
 
 
-ALTER TABLE portal.imagem_tipo_cod_imagem_tipo_seq OWNER TO ieducar;
+ALTER TABLE imagem_tipo_cod_imagem_tipo_seq OWNER TO ieducar;
 
 --
 -- Name: imagem_tipo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18666,7 +19252,7 @@ CREATE TABLE imagem_tipo (
 );
 
 
-ALTER TABLE portal.imagem_tipo OWNER TO ieducar;
+ALTER TABLE imagem_tipo OWNER TO ieducar;
 
 --
 -- Name: intranet_segur_permissao_nega_cod_intranet_segur_permissao__seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18680,7 +19266,7 @@ CREATE SEQUENCE intranet_segur_permissao_nega_cod_intranet_segur_permissao__seq
     CACHE 1;
 
 
-ALTER TABLE portal.intranet_segur_permissao_nega_cod_intranet_segur_permissao__seq OWNER TO ieducar;
+ALTER TABLE intranet_segur_permissao_nega_cod_intranet_segur_permissao__seq OWNER TO ieducar;
 
 --
 -- Name: intranet_segur_permissao_negada; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18697,7 +19283,7 @@ CREATE TABLE intranet_segur_permissao_negada (
 );
 
 
-ALTER TABLE portal.intranet_segur_permissao_negada OWNER TO ieducar;
+ALTER TABLE intranet_segur_permissao_negada OWNER TO ieducar;
 
 --
 -- Name: jor_arquivo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18710,7 +19296,7 @@ CREATE TABLE jor_arquivo (
 );
 
 
-ALTER TABLE portal.jor_arquivo OWNER TO ieducar;
+ALTER TABLE jor_arquivo OWNER TO ieducar;
 
 --
 -- Name: jor_edicao_cod_jor_edicao_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18724,7 +19310,7 @@ CREATE SEQUENCE jor_edicao_cod_jor_edicao_seq
     CACHE 1;
 
 
-ALTER TABLE portal.jor_edicao_cod_jor_edicao_seq OWNER TO ieducar;
+ALTER TABLE jor_edicao_cod_jor_edicao_seq OWNER TO ieducar;
 
 --
 -- Name: jor_edicao; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18741,7 +19327,7 @@ CREATE TABLE jor_edicao (
 );
 
 
-ALTER TABLE portal.jor_edicao OWNER TO ieducar;
+ALTER TABLE jor_edicao OWNER TO ieducar;
 
 --
 -- Name: mailling_email_cod_mailling_email_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18755,7 +19341,7 @@ CREATE SEQUENCE mailling_email_cod_mailling_email_seq
     CACHE 1;
 
 
-ALTER TABLE portal.mailling_email_cod_mailling_email_seq OWNER TO ieducar;
+ALTER TABLE mailling_email_cod_mailling_email_seq OWNER TO ieducar;
 
 --
 -- Name: mailling_email; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18768,7 +19354,7 @@ CREATE TABLE mailling_email (
 );
 
 
-ALTER TABLE portal.mailling_email OWNER TO ieducar;
+ALTER TABLE mailling_email OWNER TO ieducar;
 
 --
 -- Name: mailling_email_conteudo_cod_mailling_email_conteudo_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18782,7 +19368,7 @@ CREATE SEQUENCE mailling_email_conteudo_cod_mailling_email_conteudo_seq
     CACHE 1;
 
 
-ALTER TABLE portal.mailling_email_conteudo_cod_mailling_email_conteudo_seq OWNER TO ieducar;
+ALTER TABLE mailling_email_conteudo_cod_mailling_email_conteudo_seq OWNER TO ieducar;
 
 --
 -- Name: mailling_email_conteudo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18798,7 +19384,7 @@ CREATE TABLE mailling_email_conteudo (
 );
 
 
-ALTER TABLE portal.mailling_email_conteudo OWNER TO ieducar;
+ALTER TABLE mailling_email_conteudo OWNER TO ieducar;
 
 --
 -- Name: mailling_fila_envio_cod_mailling_fila_envio_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18812,7 +19398,7 @@ CREATE SEQUENCE mailling_fila_envio_cod_mailling_fila_envio_seq
     CACHE 1;
 
 
-ALTER TABLE portal.mailling_fila_envio_cod_mailling_fila_envio_seq OWNER TO ieducar;
+ALTER TABLE mailling_fila_envio_cod_mailling_fila_envio_seq OWNER TO ieducar;
 
 --
 -- Name: mailling_fila_envio; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18828,7 +19414,7 @@ CREATE TABLE mailling_fila_envio (
 );
 
 
-ALTER TABLE portal.mailling_fila_envio OWNER TO ieducar;
+ALTER TABLE mailling_fila_envio OWNER TO ieducar;
 
 --
 -- Name: mailling_grupo_cod_mailling_grupo_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18842,7 +19428,7 @@ CREATE SEQUENCE mailling_grupo_cod_mailling_grupo_seq
     CACHE 1;
 
 
-ALTER TABLE portal.mailling_grupo_cod_mailling_grupo_seq OWNER TO ieducar;
+ALTER TABLE mailling_grupo_cod_mailling_grupo_seq OWNER TO ieducar;
 
 --
 -- Name: mailling_grupo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18854,7 +19440,7 @@ CREATE TABLE mailling_grupo (
 );
 
 
-ALTER TABLE portal.mailling_grupo OWNER TO ieducar;
+ALTER TABLE mailling_grupo OWNER TO ieducar;
 
 --
 -- Name: mailling_grupo_email; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18866,7 +19452,7 @@ CREATE TABLE mailling_grupo_email (
 );
 
 
-ALTER TABLE portal.mailling_grupo_email OWNER TO ieducar;
+ALTER TABLE mailling_grupo_email OWNER TO ieducar;
 
 --
 -- Name: mailling_historico_cod_mailling_historico_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18880,7 +19466,7 @@ CREATE SEQUENCE mailling_historico_cod_mailling_historico_seq
     CACHE 1;
 
 
-ALTER TABLE portal.mailling_historico_cod_mailling_historico_seq OWNER TO ieducar;
+ALTER TABLE mailling_historico_cod_mailling_historico_seq OWNER TO ieducar;
 
 --
 -- Name: mailling_historico; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18895,7 +19481,7 @@ CREATE TABLE mailling_historico (
 );
 
 
-ALTER TABLE portal.mailling_historico OWNER TO ieducar;
+ALTER TABLE mailling_historico OWNER TO ieducar;
 
 --
 -- Name: menu_funcionario; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18909,7 +19495,7 @@ CREATE TABLE menu_funcionario (
 );
 
 
-ALTER TABLE portal.menu_funcionario OWNER TO ieducar;
+ALTER TABLE menu_funcionario OWNER TO ieducar;
 
 --
 -- Name: menu_menu_cod_menu_menu_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18923,7 +19509,7 @@ CREATE SEQUENCE menu_menu_cod_menu_menu_seq
     CACHE 1;
 
 
-ALTER TABLE portal.menu_menu_cod_menu_menu_seq OWNER TO ieducar;
+ALTER TABLE menu_menu_cod_menu_menu_seq OWNER TO ieducar;
 
 --
 -- Name: menu_menu; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18937,7 +19523,7 @@ CREATE TABLE menu_menu (
 );
 
 
-ALTER TABLE portal.menu_menu OWNER TO ieducar;
+ALTER TABLE menu_menu OWNER TO ieducar;
 
 --
 -- Name: menu_submenu_cod_menu_submenu_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18951,7 +19537,7 @@ CREATE SEQUENCE menu_submenu_cod_menu_submenu_seq
     CACHE 1;
 
 
-ALTER TABLE portal.menu_submenu_cod_menu_submenu_seq OWNER TO ieducar;
+ALTER TABLE menu_submenu_cod_menu_submenu_seq OWNER TO ieducar;
 
 --
 -- Name: menu_submenu; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18968,7 +19554,7 @@ CREATE TABLE menu_submenu (
 );
 
 
-ALTER TABLE portal.menu_submenu OWNER TO ieducar;
+ALTER TABLE menu_submenu OWNER TO ieducar;
 
 --
 -- Name: not_portal_cod_not_portal_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -18982,7 +19568,7 @@ CREATE SEQUENCE not_portal_cod_not_portal_seq
     CACHE 1;
 
 
-ALTER TABLE portal.not_portal_cod_not_portal_seq OWNER TO ieducar;
+ALTER TABLE not_portal_cod_not_portal_seq OWNER TO ieducar;
 
 --
 -- Name: not_portal; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -18997,7 +19583,7 @@ CREATE TABLE not_portal (
 );
 
 
-ALTER TABLE portal.not_portal OWNER TO ieducar;
+ALTER TABLE not_portal OWNER TO ieducar;
 
 --
 -- Name: not_portal_tipo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -19009,7 +19595,7 @@ CREATE TABLE not_portal_tipo (
 );
 
 
-ALTER TABLE portal.not_portal_tipo OWNER TO ieducar;
+ALTER TABLE not_portal_tipo OWNER TO ieducar;
 
 --
 -- Name: not_tipo_cod_not_tipo_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -19023,7 +19609,7 @@ CREATE SEQUENCE not_tipo_cod_not_tipo_seq
     CACHE 1;
 
 
-ALTER TABLE portal.not_tipo_cod_not_tipo_seq OWNER TO ieducar;
+ALTER TABLE not_tipo_cod_not_tipo_seq OWNER TO ieducar;
 
 --
 -- Name: not_tipo; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -19035,7 +19621,7 @@ CREATE TABLE not_tipo (
 );
 
 
-ALTER TABLE portal.not_tipo OWNER TO ieducar;
+ALTER TABLE not_tipo OWNER TO ieducar;
 
 --
 -- Name: not_vinc_portal; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -19051,7 +19637,7 @@ CREATE TABLE not_vinc_portal (
 );
 
 
-ALTER TABLE portal.not_vinc_portal OWNER TO ieducar;
+ALTER TABLE not_vinc_portal OWNER TO ieducar;
 
 --
 -- Name: notificacao_cod_notificacao_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -19065,7 +19651,7 @@ CREATE SEQUENCE notificacao_cod_notificacao_seq
     CACHE 1;
 
 
-ALTER TABLE portal.notificacao_cod_notificacao_seq OWNER TO ieducar;
+ALTER TABLE notificacao_cod_notificacao_seq OWNER TO ieducar;
 
 --
 -- Name: notificacao; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -19082,7 +19668,7 @@ CREATE TABLE notificacao (
 );
 
 
-ALTER TABLE portal.notificacao OWNER TO ieducar;
+ALTER TABLE notificacao OWNER TO ieducar;
 
 --
 -- Name: pessoa_atividade_cod_pessoa_atividade_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -19096,7 +19682,7 @@ CREATE SEQUENCE pessoa_atividade_cod_pessoa_atividade_seq
     CACHE 1;
 
 
-ALTER TABLE portal.pessoa_atividade_cod_pessoa_atividade_seq OWNER TO ieducar;
+ALTER TABLE pessoa_atividade_cod_pessoa_atividade_seq OWNER TO ieducar;
 
 --
 -- Name: pessoa_atividade; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -19109,7 +19695,7 @@ CREATE TABLE pessoa_atividade (
 );
 
 
-ALTER TABLE portal.pessoa_atividade OWNER TO ieducar;
+ALTER TABLE pessoa_atividade OWNER TO ieducar;
 
 --
 -- Name: pessoa_fj_cod_pessoa_fj_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -19123,7 +19709,7 @@ CREATE SEQUENCE pessoa_fj_cod_pessoa_fj_seq
     CACHE 1;
 
 
-ALTER TABLE portal.pessoa_fj_cod_pessoa_fj_seq OWNER TO ieducar;
+ALTER TABLE pessoa_fj_cod_pessoa_fj_seq OWNER TO ieducar;
 
 --
 -- Name: pessoa_fj; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -19159,7 +19745,7 @@ CREATE TABLE pessoa_fj (
 );
 
 
-ALTER TABLE portal.pessoa_fj OWNER TO ieducar;
+ALTER TABLE pessoa_fj OWNER TO ieducar;
 
 --
 -- Name: pessoa_fj_pessoa_atividade; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -19171,7 +19757,7 @@ CREATE TABLE pessoa_fj_pessoa_atividade (
 );
 
 
-ALTER TABLE portal.pessoa_fj_pessoa_atividade OWNER TO ieducar;
+ALTER TABLE pessoa_fj_pessoa_atividade OWNER TO ieducar;
 
 --
 -- Name: pessoa_ramo_atividade_cod_ramo_atividade_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -19185,7 +19771,7 @@ CREATE SEQUENCE pessoa_ramo_atividade_cod_ramo_atividade_seq
     CACHE 1;
 
 
-ALTER TABLE portal.pessoa_ramo_atividade_cod_ramo_atividade_seq OWNER TO ieducar;
+ALTER TABLE pessoa_ramo_atividade_cod_ramo_atividade_seq OWNER TO ieducar;
 
 --
 -- Name: pessoa_ramo_atividade; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -19197,7 +19783,7 @@ CREATE TABLE pessoa_ramo_atividade (
 );
 
 
-ALTER TABLE portal.pessoa_ramo_atividade OWNER TO ieducar;
+ALTER TABLE pessoa_ramo_atividade OWNER TO ieducar;
 
 --
 -- Name: portal_banner_cod_portal_banner_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -19211,7 +19797,7 @@ CREATE SEQUENCE portal_banner_cod_portal_banner_seq
     CACHE 1;
 
 
-ALTER TABLE portal.portal_banner_cod_portal_banner_seq OWNER TO ieducar;
+ALTER TABLE portal_banner_cod_portal_banner_seq OWNER TO ieducar;
 
 --
 -- Name: portal_banner; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -19228,7 +19814,7 @@ CREATE TABLE portal_banner (
 );
 
 
-ALTER TABLE portal.portal_banner OWNER TO ieducar;
+ALTER TABLE portal_banner OWNER TO ieducar;
 
 --
 -- Name: portal_concurso_cod_portal_concurso_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -19242,7 +19828,7 @@ CREATE SEQUENCE portal_concurso_cod_portal_concurso_seq
     CACHE 1;
 
 
-ALTER TABLE portal.portal_concurso_cod_portal_concurso_seq OWNER TO ieducar;
+ALTER TABLE portal_concurso_cod_portal_concurso_seq OWNER TO ieducar;
 
 --
 -- Name: portal_concurso; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -19259,7 +19845,7 @@ CREATE TABLE portal_concurso (
 );
 
 
-ALTER TABLE portal.portal_concurso OWNER TO ieducar;
+ALTER TABLE portal_concurso OWNER TO ieducar;
 
 --
 -- Name: sistema_cod_sistema_seq; Type: SEQUENCE; Schema: portal; Owner: ieducar
@@ -19273,7 +19859,7 @@ CREATE SEQUENCE sistema_cod_sistema_seq
     CACHE 1;
 
 
-ALTER TABLE portal.sistema_cod_sistema_seq OWNER TO ieducar;
+ALTER TABLE sistema_cod_sistema_seq OWNER TO ieducar;
 
 --
 -- Name: sistema; Type: TABLE; Schema: portal; Owner: ieducar; Tablespace: 
@@ -19289,17 +19875,37 @@ CREATE TABLE sistema (
 );
 
 
-ALTER TABLE portal.sistema OWNER TO ieducar;
+ALTER TABLE sistema OWNER TO ieducar;
 
 --
 -- Name: v_funcionario; Type: VIEW; Schema: portal; Owner: ieducar
 --
 
 CREATE VIEW v_funcionario AS
-    SELECT f.ref_cod_pessoa_fj, f.matricula, f.senha, f.ativo, f.ramal, f.sequencial, f.opcao_menu, f.ref_cod_setor, f.ref_cod_funcionario_vinculo, f.tempo_expira_senha, f.tempo_expira_conta, f.data_troca_senha, f.data_reativa_conta, f.ref_ref_cod_pessoa_fj, f.proibido, f.ref_cod_setor_new, f.email, (SELECT pessoa.nome FROM cadastro.pessoa WHERE (pessoa.idpes = (f.ref_cod_pessoa_fj)::numeric)) AS nome FROM funcionario f;
+ SELECT f.ref_cod_pessoa_fj,
+    f.matricula,
+    f.senha,
+    f.ativo,
+    f.ramal,
+    f.sequencial,
+    f.opcao_menu,
+    f.ref_cod_setor,
+    f.ref_cod_funcionario_vinculo,
+    f.tempo_expira_senha,
+    f.tempo_expira_conta,
+    f.data_troca_senha,
+    f.data_reativa_conta,
+    f.ref_ref_cod_pessoa_fj,
+    f.proibido,
+    f.ref_cod_setor_new,
+    f.email,
+    ( SELECT pessoa.nome
+           FROM cadastro.pessoa
+          WHERE (pessoa.idpes = (f.ref_cod_pessoa_fj)::numeric)) AS nome
+   FROM funcionario f;
 
 
-ALTER TABLE portal.v_funcionario OWNER TO ieducar;
+ALTER TABLE v_funcionario OWNER TO ieducar;
 
 SET search_path = public, pg_catalog;
 
@@ -19313,7 +19919,7 @@ CREATE TABLE bairro_regiao (
 );
 
 
-ALTER TABLE public.bairro_regiao OWNER TO ieducar;
+ALTER TABLE bairro_regiao OWNER TO ieducar;
 
 SET default_with_oids = false;
 
@@ -19331,7 +19937,7 @@ CREATE TABLE changelog (
 );
 
 
-ALTER TABLE public.changelog OWNER TO ieducar;
+ALTER TABLE changelog OWNER TO ieducar;
 
 SET default_with_oids = true;
 
@@ -19345,7 +19951,7 @@ CREATE TABLE logradouro_fonetico (
 );
 
 
-ALTER TABLE public.logradouro_fonetico OWNER TO ieducar;
+ALTER TABLE logradouro_fonetico OWNER TO ieducar;
 
 --
 -- Name: pais; Type: TABLE; Schema: public; Owner: ieducar; Tablespace: 
@@ -19358,7 +19964,7 @@ CREATE TABLE pais (
 );
 
 
-ALTER TABLE public.pais OWNER TO ieducar;
+ALTER TABLE pais OWNER TO ieducar;
 
 --
 -- Name: regiao_cod_regiao_seq; Type: SEQUENCE; Schema: public; Owner: ieducar
@@ -19372,7 +19978,7 @@ CREATE SEQUENCE regiao_cod_regiao_seq
     CACHE 1;
 
 
-ALTER TABLE public.regiao_cod_regiao_seq OWNER TO ieducar;
+ALTER TABLE regiao_cod_regiao_seq OWNER TO ieducar;
 
 --
 -- Name: regiao; Type: TABLE; Schema: public; Owner: ieducar; Tablespace: 
@@ -19384,7 +19990,7 @@ CREATE TABLE regiao (
 );
 
 
-ALTER TABLE public.regiao OWNER TO ieducar;
+ALTER TABLE regiao OWNER TO ieducar;
 
 --
 -- Name: seq_bairro; Type: SEQUENCE; Schema: public; Owner: ieducar
@@ -19398,7 +20004,7 @@ CREATE SEQUENCE seq_bairro
     CACHE 1;
 
 
-ALTER TABLE public.seq_bairro OWNER TO ieducar;
+ALTER TABLE seq_bairro OWNER TO ieducar;
 
 --
 -- Name: seq_logradouro; Type: SEQUENCE; Schema: public; Owner: ieducar
@@ -19412,7 +20018,7 @@ CREATE SEQUENCE seq_logradouro
     CACHE 1;
 
 
-ALTER TABLE public.seq_logradouro OWNER TO ieducar;
+ALTER TABLE seq_logradouro OWNER TO ieducar;
 
 --
 -- Name: seq_municipio; Type: SEQUENCE; Schema: public; Owner: ieducar
@@ -19426,7 +20032,7 @@ CREATE SEQUENCE seq_municipio
     CACHE 1;
 
 
-ALTER TABLE public.seq_municipio OWNER TO ieducar;
+ALTER TABLE seq_municipio OWNER TO ieducar;
 
 --
 -- Name: setor_idset_seq; Type: SEQUENCE; Schema: public; Owner: ieducar
@@ -19440,7 +20046,7 @@ CREATE SEQUENCE setor_idset_seq
     CACHE 1;
 
 
-ALTER TABLE public.setor_idset_seq OWNER TO ieducar;
+ALTER TABLE setor_idset_seq OWNER TO ieducar;
 
 --
 -- Name: setor; Type: TABLE; Schema: public; Owner: ieducar; Tablespace: 
@@ -19460,7 +20066,7 @@ CREATE TABLE setor (
 );
 
 
-ALTER TABLE public.setor OWNER TO ieducar;
+ALTER TABLE setor OWNER TO ieducar;
 
 --
 -- Name: uf; Type: TABLE; Schema: public; Owner: ieducar; Tablespace: 
@@ -19474,7 +20080,7 @@ CREATE TABLE uf (
 );
 
 
-ALTER TABLE public.uf OWNER TO ieducar;
+ALTER TABLE uf OWNER TO ieducar;
 
 --
 -- Name: vila; Type: TABLE; Schema: public; Owner: ieducar; Tablespace: 
@@ -19488,7 +20094,7 @@ CREATE TABLE vila (
 );
 
 
-ALTER TABLE public.vila OWNER TO ieducar;
+ALTER TABLE vila OWNER TO ieducar;
 
 SET search_path = urbano, pg_catalog;
 
@@ -19514,7 +20120,7 @@ CREATE TABLE cep_logradouro (
 );
 
 
-ALTER TABLE urbano.cep_logradouro OWNER TO ieducar;
+ALTER TABLE cep_logradouro OWNER TO ieducar;
 
 --
 -- Name: cep_logradouro_bairro; Type: TABLE; Schema: urbano; Owner: ieducar; Tablespace: 
@@ -19537,7 +20143,7 @@ CREATE TABLE cep_logradouro_bairro (
 );
 
 
-ALTER TABLE urbano.cep_logradouro_bairro OWNER TO ieducar;
+ALTER TABLE cep_logradouro_bairro OWNER TO ieducar;
 
 --
 -- Name: tipo_logradouro; Type: TABLE; Schema: urbano; Owner: ieducar; Tablespace: 
@@ -19549,7 +20155,7 @@ CREATE TABLE tipo_logradouro (
 );
 
 
-ALTER TABLE urbano.tipo_logradouro OWNER TO ieducar;
+ALTER TABLE tipo_logradouro OWNER TO ieducar;
 
 SET search_path = modules, pg_catalog;
 
@@ -20370,7 +20976,6 @@ COPY aviso_nome (idpes, aviso) FROM stdin;
 --
 
 COPY deficiencia (cod_deficiencia, nm_deficiencia) FROM stdin;
-1	Nenhuma
 2	Cegueira
 3	Baixa Visão
 4	Surdez
@@ -32218,6 +32823,14 @@ SELECT pg_catalog.setval('falta_geral_id_seq', 1, false);
 
 
 --
+-- Data for Name: ficha_medica_aluno; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY ficha_medica_aluno (ref_cod_aluno, altura, peso, grupo_sanguineo, fator_rh, alergia_medicamento, desc_alergia_medicamento, alergia_alimento, desc_alergia_alimento, doenca_congenita, desc_doenca_congenita, fumante, doenca_caxumba, doenca_sarampo, doenca_rubeola, doenca_catapora, doenca_escarlatina, doenca_coqueluche, doenca_outras, epiletico, epiletico_tratamento, hemofilico, hipertenso, asmatico, diabetico, insulina, tratamento_medico, desc_tratamento_medico, medicacao_especifica, desc_medicacao_especifica, acomp_medico_psicologico, desc_acomp_medico_psicologico, restricao_atividade_fisica, desc_restricao_atividade_fisica, fratura_trauma, desc_fratura_trauma, plano_saude, desc_plano_saude, hospital_clinica, hospital_clinica_endereco, hospital_clinica_telefone, responsavel, responsavel_parentesco, responsavel_parentesco_telefone, responsavel_parentesco_celular, observacao) FROM stdin;
+\.
+
+
+--
 -- Data for Name: formula_media; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
@@ -32247,6 +32860,14 @@ COPY itinerario_transporte_escolar (cod_itinerario_transporte_escolar, ref_cod_r
 --
 
 SELECT pg_catalog.setval('itinerario_transporte_escolar_seq', 1, false);
+
+
+--
+-- Data for Name: moradia_aluno; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY moradia_aluno (ref_cod_aluno, moradia, material, casa_outra, moradia_situacao, quartos, sala, copa, banheiro, garagem, empregada_domestica, automovel, motocicleta, computador, geladeira, fogao, maquina_lavar, microondas, video_dvd, televisao, celular, telefone, quant_pessoas, renda, agua_encanada, poco, energia, esgoto, fossa, lixo) FROM stdin;
+\.
 
 
 --
@@ -32299,6 +32920,14 @@ SELECT pg_catalog.setval('nota_componente_curricular_id_seq', 1, true);
 --
 
 COPY nota_componente_curricular_media (nota_aluno_id, componente_curricular_id, media, media_arredondada, etapa) FROM stdin;
+\.
+
+
+--
+-- Data for Name: nota_exame; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY nota_exame (ref_cod_matricula, ref_cod_componente_curricular, nota_exame) FROM stdin;
 \.
 
 
@@ -32604,6 +33233,14 @@ COPY transporte_aluno (aluno_id, responsavel, user_id, created_at, updated_at) F
 
 
 --
+-- Data for Name: uniforme_aluno; Type: TABLE DATA; Schema: modules; Owner: ieducar
+--
+
+COPY uniforme_aluno (ref_cod_aluno, recebeu_uniforme, quantidade_camiseta, tamanho_camiseta, quantidade_blusa_jaqueta, tamanho_blusa_jaqueta, quantidade_bermuda, tamanho_bermuda, quantidade_calca, tamanho_calca, quantidade_saia, tamanho_saia, quantidade_calcado, tamanho_calcado, quantidade_meia, tamanho_meia) FROM stdin;
+\.
+
+
+--
 -- Data for Name: veiculo; Type: TABLE DATA; Schema: modules; Owner: ieducar
 --
 
@@ -32879,9 +33516,6 @@ COPY menu (cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ord_menu, 
 999400	\N	21127	Atestados	1	\N	_self	1	15	17
 999450	\N	21127	Boletins	2	\N	_self	1	15	19
 999460	\N	21127	Históricos	5	\N	_self	1	15	25
-643	643	21152	Lançamento por Aluno	3	educar_falta_nota_aluno_lst.php	_self	1	15	192
-21152	642	21124	Faltas/Notas	4		_self	1	15	1
-644	644	21152	Lançamento por Turma	4	module/Avaliacao/diario	_self	1	15	192
 15880	591	15858	Biblioteca	1	educar_biblioteca_lst.php	_self	1	16	1
 15881	594	15858	Autores	2	educar_acervo_autor_lst.php	_self	1	16	141
 15882	593	15858	Coleção	3	educar_acervo_colecao_lst.php	_self	1	16	119
@@ -32913,6 +33547,7 @@ COPY menu (cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ord_menu, 
 20711	\N	\N	Movimentação	2	\N	_self	1	17	1
 20712	\N	\N	Relatórios	3	\N	_self	1	17	1
 21240	21240	20711	Usuários de Transporte	5	transporte_pessoa_lst.php	_self	1	17	192
+21152	642	21124	Faltas/Notas	4	module/Avaliacao/diario	_self	1	15	1
 \.
 
 
@@ -33974,7 +34609,7 @@ SELECT pg_catalog.setval('material_tipo_cod_material_tipo_seq', 1, false);
 -- Data for Name: matricula; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
-COPY matricula (cod_matricula, ref_cod_reserva_vaga, ref_ref_cod_escola, ref_ref_cod_serie, ref_usuario_exc, ref_usuario_cad, ref_cod_aluno, aprovado, data_cadastro, data_exclusao, ativo, ano, ultima_matricula, modulo, descricao_reclassificacao, formando, matricula_reclassificacao, ref_cod_curso, matricula_transferencia, semestre, observacao) FROM stdin;
+COPY matricula (cod_matricula, ref_cod_reserva_vaga, ref_ref_cod_escola, ref_ref_cod_serie, ref_usuario_exc, ref_usuario_cad, ref_cod_aluno, aprovado, data_cadastro, data_exclusao, ativo, ano, ultima_matricula, modulo, descricao_reclassificacao, formando, matricula_reclassificacao, ref_cod_curso, matricula_transferencia, semestre, observacao, data_matricula, data_cancel) FROM stdin;
 \.
 
 
@@ -34012,7 +34647,7 @@ COPY matricula_ocorrencia_disciplinar (ref_cod_matricula, ref_cod_tipo_ocorrenci
 -- Data for Name: matricula_turma; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
-COPY matricula_turma (ref_cod_matricula, ref_cod_turma, sequencial, ref_usuario_exc, ref_usuario_cad, data_cadastro, data_exclusao, ativo) FROM stdin;
+COPY matricula_turma (ref_cod_matricula, ref_cod_turma, sequencial, ref_usuario_exc, ref_usuario_cad, data_cadastro, data_exclusao, ativo, data_enturmacao, sequencial_fechamento) FROM stdin;
 \.
 
 
@@ -34026,8 +34661,6 @@ COPY menu_tipo_usuario (ref_cod_tipo_usuario, ref_cod_menu_submenu, cadastra, vi
 1	999202	1	0	1
 1	999203	1	0	1
 1	999200	1	0	1
-1	643	1	0	1
-1	644	1	0	1
 1	999613	1	0	1
 1	999615	1	0	1
 1	999616	1	0	1
@@ -34555,7 +35188,7 @@ SELECT pg_catalog.setval('transferencia_tipo_cod_transferencia_tipo_seq', 1, fal
 -- Data for Name: turma; Type: TABLE DATA; Schema: pmieducar; Owner: ieducar
 --
 
-COPY turma (cod_turma, ref_usuario_exc, ref_usuario_cad, ref_ref_cod_serie, ref_ref_cod_escola, ref_cod_infra_predio_comodo, nm_turma, sgl_turma, max_aluno, multiseriada, data_cadastro, data_exclusao, ativo, ref_cod_turma_tipo, hora_inicial, hora_final, hora_inicio_intervalo, hora_fim_intervalo, ref_cod_regente, ref_cod_instituicao_regente, ref_cod_instituicao, ref_cod_curso, ref_ref_cod_serie_mult, ref_ref_cod_escola_mult, visivel, tipo_boletim, turma_turno_id, ano) FROM stdin;
+COPY turma (cod_turma, ref_usuario_exc, ref_usuario_cad, ref_ref_cod_serie, ref_ref_cod_escola, ref_cod_infra_predio_comodo, nm_turma, sgl_turma, max_aluno, multiseriada, data_cadastro, data_exclusao, ativo, ref_cod_turma_tipo, hora_inicial, hora_final, hora_inicio_intervalo, hora_fim_intervalo, ref_cod_regente, ref_cod_instituicao_regente, ref_cod_instituicao, ref_cod_curso, ref_ref_cod_serie_mult, ref_ref_cod_escola_mult, visivel, tipo_boletim, turma_turno_id, ano, data_fechamento) FROM stdin;
 \.
 
 
@@ -35340,8 +35973,6 @@ COPY menu_funcionario (ref_ref_cod_pessoa_fj, cadastra, exclui, ref_cod_menu_sub
 1	0	0	343
 1	0	0	341
 1	0	0	999200
-1	0	0	643
-1	0	0	644
 1	0	0	999613
 1	0	0	999615
 1	0	0	999616
@@ -35362,7 +35993,6 @@ COPY menu_funcionario (ref_ref_cod_pessoa_fj, cadastra, exclui, ref_cod_menu_sub
 COPY menu_menu (cod_menu_menu, nm_menu, title, ref_cod_menu_pai) FROM stdin;
 1	Todos		\N
 25	DRH	Sistemas do RH	\N
-7	Pessoa F/J	Pessoas Físicas e Jurídicas	\N
 23	Principal		\N
 68	Endereçamento		\N
 38	i-Pauta		\N
@@ -35371,6 +36001,7 @@ COPY menu_menu (cod_menu_menu, nm_menu, title, ref_cod_menu_pai) FROM stdin;
 57	i-Educar - Biblioteca	\N	\N
 5	Agenda	Agendas	\N
 69	Transporte Escolar	\N	\N
+7	Pessoa FJ	Pessoas Físicas e Jurídicas	\N
 \.
 
 
@@ -35474,9 +36105,6 @@ COPY menu_submenu (cod_menu_submenu, ref_cod_menu_menu, cod_sistema, nm_submenu,
 341	5	2	Agendas	agenda_responsavel.php	\N	2
 343	5	2	Agenda Admin	agenda_admin_lst.php	\N	3
 345	5	2	Agenda Pessoal	agenda.php	Agenda pessoal	2
-643	55	2	Lançamento por Aluno	educar_falta_nota_aluno_lst.php	\N	3
-642	55	2	Faltas/Notas Aluno			3
-644	55	2	Lançamento por Turma	module/Avaliacao/diario	\N	3
 999613	55	2	Processamento Histórico Escolar	module/HistoricoEscolar/processamento	\N	3
 610	57	2	Empréstimo	module/Biblioteca/emprestimo		3
 999203	55	2	Ficha do Aluno	module/Reports/FichaAluno	\N	3
@@ -35494,6 +36122,7 @@ COPY menu_submenu (cod_menu_submenu, ref_cod_menu_menu, cod_sistema, nm_submenu,
 21238	69	2	Rotas	transporte_rota_lst.php	\N	3
 21239	69	2	Pontos	transporte_ponto_lst.php	\N	3
 21240	69	2	Usuários de Transporte	transporte_pessoa_lst.php	\N	3
+642	55	2	Faltas/Notas Aluno	module/Avaliacao/diario		3
 \.
 
 
@@ -42802,6 +43431,14 @@ ALTER TABLE ONLY falta_geral
 
 
 --
+-- Name: ficha_medica_cod_aluno_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY ficha_medica_aluno
+    ADD CONSTRAINT ficha_medica_cod_aluno_pkey PRIMARY KEY (ref_cod_aluno);
+
+
+--
 -- Name: formula_media_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
 --
 
@@ -42815,6 +43452,14 @@ ALTER TABLE ONLY formula_media
 
 ALTER TABLE ONLY itinerario_transporte_escolar
     ADD CONSTRAINT itinerario_transporte_escolar_cod_itinerario_transporte_escolar PRIMARY KEY (cod_itinerario_transporte_escolar);
+
+
+--
+-- Name: moradia_aluno_pkei; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY moradia_aluno
+    ADD CONSTRAINT moradia_aluno_pkei PRIMARY KEY (ref_cod_aluno);
 
 
 --
@@ -42935,6 +43580,14 @@ ALTER TABLE ONLY tipo_veiculo
 
 ALTER TABLE ONLY transporte_aluno
     ADD CONSTRAINT transporte_aluno_pk PRIMARY KEY (aluno_id);
+
+
+--
+-- Name: uniforme_aluno_pkey; Type: CONSTRAINT; Schema: modules; Owner: ieducar; Tablespace: 
+--
+
+ALTER TABLE ONLY uniforme_aluno
+    ADD CONSTRAINT uniforme_aluno_pkey PRIMARY KEY (ref_cod_aluno);
 
 
 --
@@ -46656,6 +47309,13 @@ CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON turma_tipo FOR EACH ROW 
 CREATE TRIGGER fcn_aft_update AFTER INSERT OR UPDATE ON usuario FOR EACH ROW EXECUTE PROCEDURE fcn_aft_update();
 
 
+--
+-- Name: retira_data_cancel_matricula_trg; Type: TRIGGER; Schema: pmieducar; Owner: ieducar
+--
+
+CREATE TRIGGER retira_data_cancel_matricula_trg AFTER UPDATE ON matricula FOR EACH ROW EXECUTE PROCEDURE public.retira_data_cancel_matricula_fun();
+
+
 SET search_path = public, pg_catalog;
 
 --
@@ -48387,11 +49047,35 @@ ALTER TABLE ONLY falta_geral
 
 
 --
+-- Name: ficha_medica_aluno_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY ficha_medica_aluno
+    ADD CONSTRAINT ficha_medica_aluno_fkey FOREIGN KEY (ref_cod_aluno) REFERENCES pmieducar.aluno(cod_aluno) ON UPDATE RESTRICT ON DELETE RESTRICT;
+
+
+--
 -- Name: itinerario_transporte_escolar_ref_cod_rota_transporte_escolar_f; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
 --
 
 ALTER TABLE ONLY itinerario_transporte_escolar
     ADD CONSTRAINT itinerario_transporte_escolar_ref_cod_rota_transporte_escolar_f FOREIGN KEY (ref_cod_rota_transporte_escolar) REFERENCES rota_transporte_escolar(cod_rota_transporte_escolar);
+
+
+--
+-- Name: moradia_aluno_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY moradia_aluno
+    ADD CONSTRAINT moradia_aluno_fkey FOREIGN KEY (ref_cod_aluno) REFERENCES pmieducar.aluno(cod_aluno) ON UPDATE RESTRICT ON DELETE RESTRICT;
+
+
+--
+-- Name: moradia_aluno_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY nota_exame
+    ADD CONSTRAINT moradia_aluno_fkey FOREIGN KEY (ref_cod_matricula) REFERENCES pmieducar.matricula(cod_matricula) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 --
@@ -48536,6 +49220,14 @@ ALTER TABLE ONLY tabela_arredondamento_valor
 
 ALTER TABLE ONLY transporte_aluno
     ADD CONSTRAINT transporte_aluno_aluno_fk FOREIGN KEY (aluno_id) REFERENCES pmieducar.aluno(cod_aluno) ON DELETE CASCADE;
+
+
+--
+-- Name: uniforme_aluno_fkey; Type: FK CONSTRAINT; Schema: modules; Owner: ieducar
+--
+
+ALTER TABLE ONLY uniforme_aluno
+    ADD CONSTRAINT uniforme_aluno_fkey FOREIGN KEY (ref_cod_aluno) REFERENCES pmieducar.aluno(cod_aluno) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 --
