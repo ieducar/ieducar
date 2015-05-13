@@ -33053,7 +33053,7 @@ COPY tabela_arredondamento (id, instituicao_id, nome, tipo_nota) FROM stdin;
 -- Name: tabela_arredondamento_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
 --
 
-SELECT pg_catalog.setval('tabela_arredondamento_id_seq', 3, true);
+SELECT pg_catalog.setval('tabela_arredondamento_id_seq', 4, true);
 
 
 --
@@ -33195,7 +33195,7 @@ COPY tabela_arredondamento_valor (id, tabela_arredondamento_id, nome, descricao,
 -- Name: tabela_arredondamento_valor_id_seq; Type: SEQUENCE SET; Schema: modules; Owner: ieducar
 --
 
-SELECT pg_catalog.setval('tabela_arredondamento_valor_id_seq', 127, true);
+SELECT pg_catalog.setval('tabela_arredondamento_valor_id_seq', 228, true);
 
 
 --
@@ -33516,6 +33516,9 @@ COPY menu (cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ord_menu, 
 999400	\N	21127	Atestados	1	\N	_self	1	15	17
 999450	\N	21127	Boletins	2	\N	_self	1	15	19
 999460	\N	21127	Históricos	5	\N	_self	1	15	25
+643	643	21152	Lançamento por Aluno	3	educar_falta_nota_aluno_lst.php	_self	1	15	192
+21152	642	21124	Faltas/Notas	4		_self	1	15	1
+644	644	21152	Lançamento por Turma	4	module/Avaliacao/diario	_self	1	15	192
 15880	591	15858	Biblioteca	1	educar_biblioteca_lst.php	_self	1	16	1
 15881	594	15858	Autores	2	educar_acervo_autor_lst.php	_self	1	16	141
 15882	593	15858	Coleção	3	educar_acervo_colecao_lst.php	_self	1	16	119
@@ -33547,7 +33550,11 @@ COPY menu (cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ord_menu, 
 20711	\N	\N	Movimentação	2	\N	_self	1	17	1
 20712	\N	\N	Relatórios	3	\N	_self	1	17	1
 21240	21240	20711	Usuários de Transporte	5	transporte_pessoa_lst.php	_self	1	17	192
-21152	642	21124	Faltas/Notas	4	module/Avaliacao/diario	_self	1	15	1
+999618	999618	999300	Alunos por Turma	2	module/Reports/AlunosTurma	_self	1	15	190
+999700	\N	21127	Diários	4	\N	_self	1	15	21
+999701	999700	999700	Diário de Classe	1	module/Reports/DiarioClasse	_self	1	15	190
+999455	\N	21127	Certificados	3	\N	_self	1	15	20
+40001	40001	999455	Certificado de Conclusão	3	module/Reports/CertificadoConclusao	_self	1	15	122
 \.
 
 
@@ -34661,6 +34668,8 @@ COPY menu_tipo_usuario (ref_cod_tipo_usuario, ref_cod_menu_submenu, cadastra, vi
 1	999202	1	0	1
 1	999203	1	0	1
 1	999200	1	0	1
+1	643	1	0	1
+1	644	1	0	1
 1	999613	1	0	1
 1	999615	1	0	1
 1	999616	1	0	1
@@ -35573,7 +35582,7 @@ SELECT pg_catalog.setval('foto_secao_cod_foto_secao_seq', 1, false);
 --
 
 COPY funcionario (ref_cod_pessoa_fj, matricula, senha, ativo, ref_sec, ramal, sequencial, opcao_menu, ref_cod_setor, ref_cod_funcionario_vinculo, tempo_expira_senha, tempo_expira_conta, data_troca_senha, data_reativa_conta, ref_ref_cod_pessoa_fj, proibido, ref_cod_setor_new, matricula_new, matricula_permanente, tipo_menu, ip_logado, data_login, email, status_token) FROM stdin;
-1	admin	16ec96b29c14a92daffed3b7d77b9006	1	\N	\N	1  	1	\N	\N	\N	\N	\N	\N	\N	0	\N	\N	0	1	10.200.118.190	2014-04-09 09:13:47.435499	\N	\N
+1	admin	16ec96b29c14a92daffed3b7d77b9006	1	\N	\N	1  	1	\N	\N	\N	\N	\N	\N	\N	0	\N	\N	0	1	10.32.161.156	2015-05-13 18:41:54.329723	\N	\N
 \.
 
 
@@ -35973,6 +35982,8 @@ COPY menu_funcionario (ref_ref_cod_pessoa_fj, cadastra, exclui, ref_cod_menu_sub
 1	0	0	343
 1	0	0	341
 1	0	0	999200
+1	0	0	643
+1	0	0	644
 1	0	0	999613
 1	0	0	999615
 1	0	0	999616
@@ -36001,7 +36012,7 @@ COPY menu_menu (cod_menu_menu, nm_menu, title, ref_cod_menu_pai) FROM stdin;
 57	i-Educar - Biblioteca	\N	\N
 5	Agenda	Agendas	\N
 69	Transporte Escolar	\N	\N
-7	Pessoa FJ	Pessoas Físicas e Jurídicas	\N
+7	Pessoa F/J	Pessoas Físicas e Jurídicas	\N
 \.
 
 
@@ -36105,6 +36116,9 @@ COPY menu_submenu (cod_menu_submenu, ref_cod_menu_menu, cod_sistema, nm_submenu,
 341	5	2	Agendas	agenda_responsavel.php	\N	2
 343	5	2	Agenda Admin	agenda_admin_lst.php	\N	3
 345	5	2	Agenda Pessoal	agenda.php	Agenda pessoal	2
+643	55	2	Lançamento por Aluno	educar_falta_nota_aluno_lst.php	\N	3
+642	55	2	Faltas/Notas Aluno			3
+644	55	2	Lançamento por Turma	module/Avaliacao/diario	\N	3
 999613	55	2	Processamento Histórico Escolar	module/HistoricoEscolar/processamento	\N	3
 610	57	2	Empréstimo	module/Biblioteca/emprestimo		3
 999203	55	2	Ficha do Aluno	module/Reports/FichaAluno	\N	3
@@ -36122,7 +36136,9 @@ COPY menu_submenu (cod_menu_submenu, ref_cod_menu_menu, cod_sistema, nm_submenu,
 21238	69	2	Rotas	transporte_rota_lst.php	\N	3
 21239	69	2	Pontos	transporte_ponto_lst.php	\N	3
 21240	69	2	Usuários de Transporte	transporte_pessoa_lst.php	\N	3
-642	55	2	Faltas/Notas Aluno	module/Avaliacao/diario		3
+999618	55	2	Alunos por Turma	module/Reports/AlunosTurma	RelatÃ³rio de Alunos por Turma	3
+999700	55	2	Diário de Classe	module/Reports/DiarioClasse	Diário de Classe	3
+40001	55	2	Certificado de Conclusão	module/Reports/CertificadoConclusao	\N	3
 \.
 
 
