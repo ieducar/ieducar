@@ -402,7 +402,9 @@ function selAction(menu_pai, tipo, acao)
   }
 
   for (var ct=0; ct < menu[menu_pai].length; ct++){
-    document.getElementsByName('permissoes[' + menu[menu_pai][ct]  + '][' + tipo + ']')[0].value = ( state ? 'on' : '');
+    var chkbox = document.getElementsByName('permissoes[' + menu[menu_pai][ct]  + '][' + tipo + ']')[0];
+    chkbox.checked = state;
+    chkbox.value = (state ? 'on' : '');
   }
 }
 </script>
