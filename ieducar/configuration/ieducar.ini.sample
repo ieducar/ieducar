@@ -161,7 +161,7 @@ app.recaptcha.options.theme  = white
 ;app.regras_negocio.desativar_rematricula_automatica = false
 
 ; Ativa obrigatoriedade de utilização de endereço normalizado no cadastro de pessoas
-app.obriga_endereco_normalizado_pf = true
+app.obriga_endereco_normalizado_pf = false
 
 ; Define que poderá ser feito matrícula para cursos diferentes (0 false, 1 true)
 app.matricula.multiplas_matriculas = 0
