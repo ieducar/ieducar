@@ -702,10 +702,6 @@
 					<pen lineWidth="0.25"/>
 				</graphicElement>
 			</rectangle>
-			<image hAlign="Center" vAlign="Middle">
-				<reportElement uuid="3a409d0f-1fbc-460e-9a20-b99f8b06a595" x="471" y="6" width="68" height="90"/>
-				<imageExpression><![CDATA[$F{foto}]]></imageExpression>
-			</image>
 			<staticText>
 				<reportElement uuid="c2713064-d203-4433-b086-70d4dcb2557e" x="471" y="6" width="68" height="90">
 					<printWhenExpression><![CDATA[$F{foto} == null]]></printWhenExpression>
