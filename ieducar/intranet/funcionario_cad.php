@@ -106,6 +106,9 @@ class indice extends clsCadastro
 		}
 		$this->url_cancelar = ($retorno == "Editar") ? "funcionario_det.php?ref_pessoa={$this->ref_pessoa}" : "funcionario_lst.php";
 		$this->nome_url_cancelar = "Cancelar";
+		
+		// Tornando a opção 'ativo' padrão.
+		$this->ativo = 1;
 
 		return $retorno;
 	}
