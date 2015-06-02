@@ -130,7 +130,8 @@ class indice extends clsCadastro
 			$obj_super_usuario = $obj_libera_menu->detalhe();
 
 			// verifica se pessoa logada é super-usuario
-			if ($obj_super_usuario) {
+			// ou se é admin
+			if ($obj_super_usuario || ($this->pessoa_logada == 1)) {
 				$lista = $objTemp->lista(null,null,null,null,null,null,null,null,1);
 			}else{
 				$lista = $objTemp->lista(null,null,null,null,null,null,null,null,1,$obj_permissao->nivel_acesso($this->pessoa_logada));
