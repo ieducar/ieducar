@@ -193,7 +193,7 @@ class indice extends clsDetalhe
     $this->addDetalhe(array('Sexo', $sexo));
 
     $obj_permissoes = new clsPermissoes();
-    if ($obj_permissoes->permissao_cadastra($this->processoAp, $this->pessoa_logada, 3)) {
+    if ($obj_permissoes->permissao_cadastra(43, $this->pessoa_logada, 3)) {
     	$this->url_novo     = 'atendidos_cad.php';
     	$this->url_editar   = 'atendidos_cad.php?cod_pessoa_fj=' . $detalhe['idpes'];
     }

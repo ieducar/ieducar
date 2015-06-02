@@ -12,8 +12,8 @@ class clsIndex extends clsBase
 	function Formular()
 	{
 		$this->SetTitulo( "Pessoas Físicas" );
-		$this->processoAp = "43";
-                $this->addEstilo( "localizacaoSistema" );
+		$this->processoAp = 43;
+        $this->addEstilo( "localizacaoSistema" );
 
 	}
 }
@@ -67,7 +67,7 @@ class indice extends clsListagem
 		}
 
 		$obj_permissoes = new clsPermissoes();
-		if( $obj_permissoes->permissao_cadastra($this->processoAp, $this->pessoa_logada, 3)) {
+		if( $obj_permissoes->permissao_cadastra(43, $this->pessoa_logada, 3)) {
 			$this->acao = "go(\"atendidos_cad.php\")";
 			$this->nome_acao = "Novo";
 		}
