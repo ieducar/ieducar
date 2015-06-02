@@ -35,7 +35,7 @@ class clsIndexBase extends clsBase
 	function Formular()
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Matrícula Turma - Alunos" );
-		$this->processoAp = "586"; //TODO verificar o que é este processoAp
+		$this->processoAp = 586; //TODO verificar o que é este processoAp
 		$this->addEstilo( "localizacaoSistema" );
 	}
 }
