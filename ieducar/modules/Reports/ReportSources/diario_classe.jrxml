@@ -12,11 +12,11 @@
   instituicao.nm_instituicao as nome_instituicao,
   turma.nm_turma as nome_turma,
   COALESCE(tipo_logradouro.descricao, '')
-    || ' ' || COALESCE(endereco_externo.logradouro, '')
-    || ' ' || COALESCE(endereco_externo.numero::text, '')
+    || ' ' || COALESCE(endereco.logradouro, '')
+    || ' ' || COALESCE(endereco.numero::text, '')
      as endereco_escola,
-  endereco_externo.cidade as cidade_escola,
-  endereco_externo.sigla_uf as uf_escola,
+  endereco.cidade as cidade_escola,
+  endereco.sigla_uf as uf_escola,
   curso.nm_curso as nome_curso,
   turma.ano as ano_referencia
 FROM
@@ -35,10 +35,10 @@ FROM
     ON escola.ref_idpes = p_escola.idpes
   JOIN pmieducar.instituicao instituicao
     ON escola.ref_cod_instituicao = instituicao.cod_instituicao
-  JOIN cadastro.endereco_externo endereco_externo
-    ON p_escola.idpes = endereco_externo.idpes
+  JOIN cadastro.v_endereco endereco
+    ON p_escola.idpes = endereco.idpes
   JOIN urbano.tipo_logradouro tipo_logradouro
-    ON endereco_externo.idtlog = tipo_logradouro.idtlog
+    ON endereco.idtlog = tipo_logradouro.idtlog
   JOIN pmieducar.serie serie
     ON turma.ref_ref_cod_serie = serie.cod_serie
   JOIN pmieducar.curso curso
