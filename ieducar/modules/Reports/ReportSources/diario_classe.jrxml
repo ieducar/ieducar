@@ -4,6 +4,7 @@
 	<property name="ireport.x" value="578"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="logo" class="java.lang.String"/>
+	<parameter name="situacao" class="java.lang.String"/>
 	<parameter name="cod_turma" class="java.lang.Integer"/>
 	<queryString>
 		<![CDATA[SELECT
@@ -44,6 +45,7 @@ FROM
   JOIN pmieducar.curso curso
     ON serie.ref_cod_curso = curso.cod_curso
   WHERE turma.cod_turma = $P{cod_turma}
+    AND matricula.aprovado = $P{situacao}
     AND matricula.ativo = 1
 ORDER BY p_aluno.nome;]]>
 	</queryString>

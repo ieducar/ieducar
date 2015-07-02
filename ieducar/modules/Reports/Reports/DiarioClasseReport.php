@@ -42,8 +42,15 @@
 
 require_once "lib/Portabilis/Report/ReportCore.php";
 require_once "App/Model/IedFinder.php";
+require_once 'App/Model/MatriculaSituacao.php';
 
 class DiarioClasseReport extends Portabilis_Report_ReportCore {
+	
+	function __construct() {
+		parent::__construct();
+		// Caso contrário, ele lista as matrículas transferidas também.
+		$this->addArg("situacao", App_Model_MatriculaSituacao::EM_ANDAMENTO);
+	}
 
 	function templateName() {
 		return "diario_classe";
