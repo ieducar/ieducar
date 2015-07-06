@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Gera um release do i-Educar próprio para se repassar
-# para a equipe de produção.
-# a partir do diretório deste arquivo, rode
-# $ release.sh [arquivo de saída]
+# Gera um arquivo com o conteúdo do código-fonte, numerando a versão
+# de acordo com a data do último commit e a short hash dele.
+# Para executar, rode:
+# $ release.sh
 
-current_commit_id=`git rev-list --all --abbrev=0 --abbrev-commit --max-count=1`
-current_date=`date '+%Y%m%d'`
-release_version="$current_date.$current_commit_id"
+last_commit_id=`git show -s --format=%h`
+last_commit_date=$(date -d "@`git show -s --format=%ct`" "+%Y%m%d")
+release_version="$last_commit_date-$last_commit_id"
 
 workdir="/tmp/ieducar-$release_version-$$"
 output_file="/tmp/ieducar-$release_version.tar.gz"
