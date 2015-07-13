@@ -21,6 +21,11 @@ git archive --format=tar origin/master | (cd "$workdir" && tar -xf -)
 # Adiciona o arquivo com o número de versão
 echo "$release_version" > "$workdir/ieducar/version.txt"
 
+# Remove diretórios que não são usados na produção
+for file in 'misc' 'phpunit.xml' 'scripts' 'tests'; do
+  rm -rf "$workdir/ieducar/$file"
+done
+
 tar -C "$workdir" -cz ieducar/ > "$output_file"
 
 rm -rf "$workdir"
