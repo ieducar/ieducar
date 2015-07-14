@@ -61,7 +61,6 @@ class MatriculaController extends ApiCoreController
   protected function sqlsForNumericSearch() {
     // seleciona por (codigo matricula ou codigo aluno), opcionalmente por codigo escola e
     // opcionalmente por ano.
-<<<<<<< HEAD
     return "select distinct ON (aluno.cod_aluno) 
                 aluno.cod_aluno as aluno_id,
                 matricula.cod_matricula as id, 
