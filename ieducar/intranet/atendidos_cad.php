@@ -249,10 +249,13 @@ class indice extends clsCadastro
     $this->inputsHelper()->date('data_nasc', $options);
 
 
-    // pai, mãe
-
-    $this->inputPai();
-    $this->inputMae();
+    // Input para os pais da pessoa física.
+    // Se o formulário foi gerado para cadastro de pai ou mãe,
+    // a partir desta input, não mostrar novamente esta opção.
+    if (!$parentType) {
+    	$this->inputPai();
+    	$this->inputMae();
+    }
 
 
     // documentos
