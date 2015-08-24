@@ -141,26 +141,6 @@ class indice extends clsDetalhe
       $this->addDetalhe(array('S&eacute;rie', $nm_serie));
     }
 
-    if ($registro['hora_inicial']) {
-      $registro['hora_inicial'] = date('H:i', strtotime($registro['hora_inicial']));
-      $this->addDetalhe(array('Hora Inicial', $registro['hora_inicial']));
-    }
-
-    if ($registro['hora_final']) {
-      $registro['hora_final'] = date('H:i', strtotime( $registro['hora_final']));
-      $this->addDetalhe(array('Hora Final', $registro['hora_final']));
-    }
-
-    if ($registro['hora_inicio_intervalo']) {
-      $registro['hora_inicio_intervalo'] = date('H:i', strtotime($registro['hora_inicio_intervalo']));
-      $this->addDetalhe(array('Hora In&iacute;cio Intervalo', $registro['hora_inicio_intervalo']));
-    }
-
-    if ($registro['hora_fim_intervalo']) {
-      $registro['hora_fim_intervalo'] = date('H:i', strtotime($registro['hora_fim_intervalo']));
-      $this->addDetalhe(array( 'Hora Fim Intervalo', $registro['hora_fim_intervalo']));
-    }
-
     // Componentes da escola-série
     $componentes = array();
     try {

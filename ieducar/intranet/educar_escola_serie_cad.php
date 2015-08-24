@@ -85,7 +85,6 @@ class indice extends clsCadastro
   var $ativo;
   var $hora_inicio_intervalo;
   var $hora_fim_intervalo;
-  var $hora_fim_intervalo_;
 
   var $ref_cod_instituicao;
   var $ref_cod_curso;
@@ -202,15 +201,10 @@ class indice extends clsCadastro
     $this->hora_inicio_intervalo = substr($this->hora_inicio_intervalo, 0, 5);
     $this->hora_fim_intervalo    = substr($this->hora_fim_intervalo, 0, 5);
 
-    // hora
-    $this->campoHora('hora_inicial', 'Hora Inicial', $this->hora_inicial, TRUE);
-    $this->campoHora('hora_final', 'Hora Final', $this->hora_final, TRUE);
-
-    $this->campoHora('hora_inicio_intervalo', 'Hora In&iacute;cio Intervalo',
-      $this->hora_inicio_intervalo, TRUE);
-
-    $this->campoHora('hora_fim_intervalo', 'Hora Fim Intervalo',
-      $this->hora_fim_intervalo, TRUE);
+    $this->campoOculto('hora_inicial', "00:00");
+    $this->campoOculto('hora_final', "23:59");
+    $this->campoOculto('hora_inicio_intervalo', "12:00");
+    $this->campooculto('hora_fim_intervalo', "12:01");
 
 		$this->campoCheck("bloquear_enturmacao_sem_vagas", "Bloquear enturmação após atingir limite de vagas", $this->bloquear_enturmacao_sem_vagas);
 
@@ -339,6 +333,13 @@ class indice extends clsCadastro
     $this->bloquear_enturmacao_sem_vagas = is_null($this->bloquear_enturmacao_sem_vagas) ? 0 : 1;
     $this->bloquear_cadastro_turma_para_serie_com_vagas = is_null($this->bloquear_cadastro_turma_para_serie_com_vagas) ? 0 : 1;
 
+    // Por alguma razão além de minha compreensão, 
+    // campos ocultos fazem urlencode de chars especiais.
+    $this->hora_inicial = urldecode($this->hora_inicial);
+    $this->hora_final = urldecode($this->hora_final);
+    $this->hora_inicio_intervalo = urldecode($this->hora_inicio_intervalo);
+    $this->hora_fim_intervalo = urldecode($this->hora_fim_intervalo);
+    
     $obj = new clsPmieducarEscolaSerie($this->ref_cod_escola, $this->ref_cod_serie,
       $this->pessoa_logada, $this->pessoa_logada, $this->hora_inicial,
       $this->hora_final, NULL, NULL, 1, $this->hora_inicio_intervalo,
