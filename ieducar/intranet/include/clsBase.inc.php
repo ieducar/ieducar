@@ -236,7 +236,14 @@ class clsBase extends clsConfig
           list($aui) = $this->db()->Tupla();
           $sempermissao = FALSE;
         }
-
+        
+        // admin pode tudo.
+        // TODO: Eu já tinha feito coisa parecida, em outro lugar.
+        // TODO: Encontrar uma forma mais higiênica de fazer isso.
+        $usuario_logado = $_SESSION['id_pessoa'];
+        if ($usuario_logado == '1')
+        	$sempermissao = FALSE;
+       
         if ($sempermissao) {
           $ip = empty($_SERVER['REMOTE_ADDR']) ? "NULL" : $_SERVER['REMOTE_ADDR'];
           $ip_de_rede = empty($_SERVER['HTTP_X_FORWARDED_FOR']) ? "NULL" : $_SERVER['HTTP_X_FORWARDED_FOR'];
