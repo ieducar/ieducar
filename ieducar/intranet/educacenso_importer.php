@@ -34,13 +34,7 @@ class indice extends clsCadastro {
         
         if (array_key_exists('ano_destino', $_POST)) {
             $ano = intval($_POST['ano_destino']);
-            $ano_atual = intval(date('Y'));
-            $ano_max = $ano_atual + 4;
-            if (($ano > $ano_max) || ($ano < $ano_atual)) {
-                $this->erros[] = "Ano de destino deve ser de $ano_atual a $ano_max, n&atilde;o $ano.";
-            } else {
-                $this->ano_destino = $ano;
-            }
+            $this->ano_destino = $ano;
         }
 
         if (array_key_exists('carga_horaria_docente', $_POST)) {
