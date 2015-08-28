@@ -264,6 +264,7 @@ class EducacensoParser {
                 $matricula_turma->ref_cod_turma = $id_turma; 
                 $matricula_turma->ref_usuario_cad = $this->usuario_cad;
                 $matricula_turma->ativo = 1;
+                $matricula_turma->data_enturmacao = sprintf('%d-01-01', $this->year);
 
                 if ($matricula_turma->cadastra()) {
                     $logs .= "Aluno $id_aluno_inep matriculado na turma $id_turma_inep da escola $id_escola_inep.\n";
