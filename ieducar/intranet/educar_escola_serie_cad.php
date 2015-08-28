@@ -138,6 +138,14 @@ class indice extends clsCadastro
       'educar_escola_serie_lst.php';
 
     $this->nome_url_cancelar = 'Cancelar';
+    
+    // Por alguma razão além de minha compreensão,
+    // campos ocultos fazem urlencode de chars especiais.
+    $this->hora_inicial = urldecode($this->hora_inicial);
+    $this->hora_final = urldecode($this->hora_final);
+    $this->hora_inicio_intervalo = urldecode($this->hora_inicio_intervalo);
+    $this->hora_fim_intervalo = urldecode($this->hora_fim_intervalo);
+    
     return $retorno;
   }
 
@@ -332,13 +340,6 @@ class indice extends clsCadastro
 
     $this->bloquear_enturmacao_sem_vagas = is_null($this->bloquear_enturmacao_sem_vagas) ? 0 : 1;
     $this->bloquear_cadastro_turma_para_serie_com_vagas = is_null($this->bloquear_cadastro_turma_para_serie_com_vagas) ? 0 : 1;
-
-    // Por alguma razão além de minha compreensão, 
-    // campos ocultos fazem urlencode de chars especiais.
-    $this->hora_inicial = urldecode($this->hora_inicial);
-    $this->hora_final = urldecode($this->hora_final);
-    $this->hora_inicio_intervalo = urldecode($this->hora_inicio_intervalo);
-    $this->hora_fim_intervalo = urldecode($this->hora_fim_intervalo);
     
     $obj = new clsPmieducarEscolaSerie($this->ref_cod_escola, $this->ref_cod_serie,
       $this->pessoa_logada, $this->pessoa_logada, $this->hora_inicial,
