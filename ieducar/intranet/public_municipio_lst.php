@@ -28,6 +28,7 @@ require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/public/geral.inc.php" );
+require_once 'include/localizacaoSistema.php';
 
 class clsIndexBase extends clsBase
 {
@@ -35,6 +36,9 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} Munic&iacute;pio" );
 		$this->processoAp = "755";
+                $this->addEstilo( "localizacaoSistema" );
+
+
 	}
 }
 
@@ -200,6 +204,9 @@ class indice extends clsListagem
 		$this->nome_acao = "Novo";
 
 		$this->largura = "100%";
+                $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos(array($_SERVER['SERVER_NAME'] . '/intranet' => 'i-Educar', '' => 'Registro de Municípios'));
+                $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 // cria uma extensao da classe base
@@ -229,7 +236,7 @@ document.getElementById('idpais').onchange = function()
 function getUf( xml_uf )
 {
 	var campoUf = document.getElementById('sigla_uf');
-	var DOM_array = xml_uf.getElementsByTagName( "uf" );
+	var DOM_array = xml_uf.getElementsByTagName( "estado" );
 
 	if(DOM_array.length)
 	{

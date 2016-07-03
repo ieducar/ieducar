@@ -28,6 +28,8 @@ require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/public/geral.inc.php" );
+require_once 'include/localizacaoSistema.php';
+
 
 class clsIndexBase extends clsBase
 {
@@ -35,6 +37,8 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} Uf" );
 		$this->processoAp = "754";
+                $this->addEstilo( "localizacaoSistema" );
+
 	}
 }
 
@@ -98,9 +102,9 @@ class indice extends clsListagem
 		{
 			$objTemp = new clsPais();
 			$lista = $objTemp->lista( false, false, false, false, false, "nome ASC" );
-			if ( is_array( $lista ) && count( $lista ) ) 
+			if ( is_array( $lista ) && count( $lista ) )
 			{
-				foreach ( $lista as $registro ) 
+				foreach ( $lista as $registro )
 				{
 					$opcoes["{$registro['idpais']}"] = "{$registro['nome']}";
 				}
@@ -129,7 +133,8 @@ class indice extends clsListagem
 		$lista = $obj_uf->lista(
 			$this->nome,
 			$this->geom,
-			$this->idpais
+			$this->idpais,
+			$this->sigla_uf
 		);
 
 		$total = $obj_uf->_total;
@@ -152,6 +157,9 @@ class indice extends clsListagem
 		$this->nome_acao = "Novo";
 
 		$this->largura = "100%";
+                $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos(array($_SERVER['SERVER_NAME'] . '/intranet' => 'i-Educar', '' => 'Busca por Estados'));
+                $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 // cria uma extensao da classe base

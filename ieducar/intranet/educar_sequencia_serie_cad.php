@@ -531,7 +531,9 @@ document.getElementById('ref_cod_instituicao').onchange = function()
 	$('img_serie_destino').style.display = 'none;';
 	
 };
-<?}?>
+<?
+  }
+?>
 
 document.getElementById('ref_curso_origem').onchange = function()
 {

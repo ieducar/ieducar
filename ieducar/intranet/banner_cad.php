@@ -62,7 +62,7 @@ class indice extends clsCadastro
 		{
 			$this->cod_portal_banner = @$_GET['cod_portal_banner'];
 			$db = new clsBanco();
-			$db->Consulta( "SELECT cod_portal_banner, ref_ref_cod_pessoa_fj, caminho, title, prioridade, link, lateral FROM portal_banner WHERE cod_portal_banner={$this->cod_portal_banner}" );
+			$db->Consulta( "SELECT cod_portal_banner, ref_ref_cod_pessoa_fj, caminho, title, prioridade, link, is_lateral FROM portal_banner WHERE cod_portal_banner={$this->cod_portal_banner}" );
 			if ($db->ProximoRegistro())
 			{
 				list($this->cod_portal_banner, $this->ref_ref_cod_pessoa_fj, $this->caminho, $this->title, $this->prioridade, $this->link, $this->lateral ) = $db->Tupla();
@@ -116,7 +116,7 @@ class indice extends clsCadastro
 		session_write_close();
 		
 		$db = new clsBanco();
-		$db->Consulta( "INSERT INTO portal_banner ( ref_ref_cod_pessoa_fj, caminho, title, prioridade, link, lateral ) VALUES ({$this->ref_ref_cod_pessoa_fj}, '{$caminho}', '{$this->title}', {$this->prioridade}, '{$this->link}', '{$this->lateral}')" );
+		$db->Consulta( "INSERT INTO portal_banner ( ref_ref_cod_pessoa_fj, caminho, title, prioridade, link, is_lateral ) VALUES ({$this->ref_ref_cod_pessoa_fj}, '{$caminho}', '{$this->title}', {$this->prioridade}, '{$this->link}', '{$this->lateral}')" );
 		echo "<script>document.location='banner_lst.php';</script>";
 		return true;
 	}
@@ -128,7 +128,7 @@ class indice extends clsCadastro
 		session_write_close();
 		
 		$db = new clsBanco();
-		$db->Consulta( "UPDATE portal_banner SET ref_ref_cod_pessoa_fj={$this->ref_ref_cod_pessoa_fj}, title='{$this->title}', prioridade={$this->prioridade}, link='{$this->link}', lateral='{$this->lateral}' WHERE cod_portal_banner={$this->cod_portal_banner}" );
+		$db->Consulta( "UPDATE portal_banner SET ref_ref_cod_pessoa_fj={$this->ref_ref_cod_pessoa_fj}, title='{$this->title}', prioridade={$this->prioridade}, link='{$this->link}', is_lateral='{$this->lateral}' WHERE cod_portal_banner={$this->cod_portal_banner}" );
 		echo "<script>document.location='banner_lst.php';</script>";
 		return true;
 	}

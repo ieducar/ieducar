@@ -1,5 +1,8 @@
 <?php
 
+#error_reporting(E_ALL);
+#ini_set("display_errors", 1);
+
 /**
  * i-Educar - Sistema de gestão escolar
  *
@@ -53,6 +56,7 @@ class clsPmieducarEscola
   var $data_cadastro;
   var $data_exclusao;
   var $ativo;
+  var $cod_inep;
 
   /**
    * Armazena o total de resultados obtidos na última chamada ao método lista().
@@ -107,17 +111,23 @@ class clsPmieducarEscola
   /**
    * Construtor.
    */
-  function clsPmieducarEscola($cod_escola = NULL, $ref_usuario_cad = NULL,
-    $ref_usuario_exc = NULL, $ref_cod_instituicao = NULL,
-    $ref_cod_escola_localizacao = NULL, $ref_cod_escola_rede_ensino = NULL,
-    $ref_idpes = NULL, $sigla = NULL, $data_cadastro = NULL, $data_exclusao = NULL,
-    $ativo = NULL
-  ) {
+  function clsPmieducarEscola($cod_escola = NULL,
+                              $ref_usuario_cad = NULL,
+                              $ref_usuario_exc = NULL,
+                              $ref_cod_instituicao = NULL,
+                              $ref_cod_escola_localizacao = NULL,
+                              $ref_cod_escola_rede_ensino = NULL,
+                              $ref_idpes = NULL,
+                              $sigla = NULL,
+                              $data_cadastro = NULL,
+                              $data_exclusao = NULL,
+                              $ativo = NULL,
+                              $bloquear_lancamento_diario_anos_letivos_encerrados = NULL) {
     $db = new clsBanco();
     $this->_schema = 'pmieducar.';
     $this->_tabela = $this->_schema . 'escola';
 
-    $this->_campos_lista = $this->_todos_campos = 'e.cod_escola, e.ref_usuario_cad, e.ref_usuario_exc, e.ref_cod_instituicao, e.ref_cod_escola_localizacao, e.ref_cod_escola_rede_ensino, e.ref_idpes, e.sigla, e.data_cadastro, e.data_exclusao, e.ativo';
+    $this->_campos_lista = $this->_todos_campos = 'e.cod_escola, e.ref_usuario_cad, e.ref_usuario_exc, e.ref_cod_instituicao, e.ref_cod_escola_localizacao, e.ref_cod_escola_rede_ensino, e.ref_idpes, e.sigla, e.data_cadastro, e.data_exclusao, e.ativo, e.bloquear_lancamento_diario_anos_letivos_encerrados';
 
     if (is_numeric($ref_usuario_cad)) {
       if (class_exists("clsPmieducarUsuario")) {
@@ -265,6 +275,8 @@ class clsPmieducarEscola
     if (is_numeric($ativo)) {
       $this->ativo = $ativo;
     }
+
+    $this->bloquear_lancamento_diario_anos_letivos_encerrados = $bloquear_lancamento_diario_anos_letivos_encerrados;
   }
 
   /**
@@ -325,6 +337,12 @@ class clsPmieducarEscola
         $gruda = ", ";
       }
 
+      if (is_numeric($this->bloquear_lancamento_diario_anos_letivos_encerrados)) {
+        $campos .= "{$gruda}bloquear_lancamento_diario_anos_letivos_encerrados";
+        $valores .= "{$gruda}'{$this->bloquear_lancamento_diario_anos_letivos_encerrados}'";
+        $gruda = ", ";
+      }
+
       $campos .= "{$gruda}data_cadastro";
       $valores .= "{$gruda}NOW()";
       $gruda = ", ";
@@ -333,7 +351,9 @@ class clsPmieducarEscola
       $valores .= "{$gruda}'1'";
 
       $db->Consulta("INSERT INTO {$this->_tabela} ($campos) VALUES ($valores)");
-      return $db->InsertId("{$this->_tabela}_cod_escola_seq");
+      $recordId = $db->InsertId("{$this->_tabela}_cod_escola_seq");
+
+      return $recordId;
     }
     else {
       echo "<br><br>is_numeric($this->ref_usuario_cad) && is_numeric($this->ref_cod_instituicao) && is_numeric($this->ref_cod_escola_localizacao) && is_numeric($this->ref_cod_escola_rede_ensino) && is_string($this->sigla )";
@@ -397,6 +417,11 @@ class clsPmieducarEscola
 
       if (is_numeric($this->ativo)) {
         $set .= "{$gruda}ativo = '{$this->ativo}'";
+        $gruda = ", ";
+      }
+
+      if (is_numeric($this->bloquear_lancamento_diario_anos_letivos_encerrados)) {
+        $set .= "{$gruda}bloquear_lancamento_diario_anos_letivos_encerrados = '{$this->bloquear_lancamento_diario_anos_letivos_encerrados}'";
         $gruda = ", ";
       }
 
@@ -498,6 +523,9 @@ class clsPmieducarEscola
 
     if (is_numeric($int_ativo)) {
       $filtros .= "{$whereAnd} ativo = '{$int_ativo}'";
+      $whereAnd = " AND ";
+    }else{
+      $filtros .= "{$whereAnd} ativo = 1 ";
       $whereAnd = " AND ";
     }
 
@@ -625,6 +653,40 @@ class clsPmieducarEscola
 
     return FALSE;
   }
+  
+  /**
+   * Se a escola estiver cadastrada pelo Educacenso, retorna o cod_escola.
+   * @param $cod_inep int 
+   * @return int se houver, null se não.
+   */
+  public static function id_escola_inep ($cod_inep) {
+      $db = new clsBanco();
+      $db->Consulta("SELECT cod_escola FROM modules.educacenso_cod_escola WHERE cod_escola_inep = {$cod_inep}");
+      $db->ProximoRegistro();
+      $row = $db->Tupla();
+      if ($row)
+          return $row['cod_escola'];
+      else
+          return null;
+      
+  }
+  
+  /**
+   * Adiciona vínculo do INEP.
+   * @param $cod_inep int
+   * @param fonte str
+   * @return true se executar, false se não
+   */
+  public function vincula_educacenso ($cod_inep, $fonte = '') {
+      if (!clsPmieducarEscola::id_escola_inep($cod_inep)) {
+          $db = new clsBanco();
+          $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_escola " . 
+                  "(cod_escola, cod_escola_inep, fonte, created_at) VALUES " .
+                  "(%d, %d, '%s', NOW());", $this->cod_escola, $cod_inep, $fonte));
+          return true;
+      } 
+      return false;
+  }
 
   /**
    * Define quais campos da tabela serão selecionados no método Lista().
@@ -645,11 +707,12 @@ class clsPmieducarEscola
   /**
    * Define limites de retorno para o método Lista().
    */
-  function setLimite($intLimiteQtd, $intLimiteOffset = NULL)
-  {
-    $this->_limite_quantidade = $intLimiteQtd;
-    $this->_limite_offset = $intLimiteOffset;
-  }
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
+	{
+		$this->_limite_quantidade = $intLimiteQtd;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
+	}
 
   /**
    * Retorna a string com o trecho da query responsável pelo limite de

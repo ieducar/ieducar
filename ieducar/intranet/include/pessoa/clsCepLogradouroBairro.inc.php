@@ -131,7 +131,7 @@ class clsCepLogradouroBairro
 		}
 		if(is_numeric($int_cep))
 		{
-			$where .= "{$whereAnd}cep LIKE '%$int_cep%'";
+			$where .= "{$whereAnd}cep = $int_cep";
 			$whereAnd = " AND ";
 		}
 		if(is_numeric($int_idbai))

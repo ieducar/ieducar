@@ -567,7 +567,7 @@ class clsPmieducarServidor
 
       $filtros .= "
   {$whereAnd} (s.carga_horaria::text || ':00:00') >= COALESCE(
-    (SELECT SUM(carga_horaria)::text
+    (SELECT SUM(carga_horaria::time)::text
     FROM pmieducar.servidor_alocacao saa
     WHERE saa.ref_cod_servidor = {$str_not_in_servidor}),'00:00') $where";
 
@@ -1176,6 +1176,40 @@ class clsPmieducarServidor
   }
 
   /**
+   * Se o servidor estiver cadastrado pelo Educacenso, retorna o cod_servidor.
+   * @param $cod_inep int
+   * @return int se houver, null se não.
+   */
+  public static function id_servidor_inep ($cod_inep) {
+      $db = new clsBanco();
+      $db->Consulta("SELECT cod_servidor FROM modules.educacenso_cod_docente WHERE cod_docente_inep = {$cod_inep}");
+      $db->ProximoRegistro();
+      $row = $db->Tupla();
+      if ($row)
+          return $row['cod_servidor'];
+      else
+          return null;
+  
+  }
+  
+  /**
+   * Adiciona vínculo do INEP.
+   * @param $cod_inep int
+   * @param fonte str
+   * @return true se executar, false se não
+   */
+  public function vincula_educacenso ($cod_inep, $fonte = '') {
+      if (!clsPmieducarServidor::id_servidor_inep($cod_inep)) {
+          $db = new clsBanco();
+          $db->Consulta(sprintf("INSERT INTO modules.educacenso_cod_docente " .
+                  "(cod_servidor, cod_docente_inep, fonte, created_at) VALUES " .
+                  "(%d, %d, '%s', NOW());", $this->cod_servidor, $cod_inep, $fonte));
+          return true;
+      }
+      return false;
+  }
+  
+  /**
    * Define quais campos da tabela serão selecionados no método Lista().
    */
   function setCamposLista($str_campos)
@@ -1194,11 +1228,12 @@ class clsPmieducarServidor
   /**
    * Define limites de retorno para o método Lista().
    */
-  function setLimite($intLimiteQtd, $intLimiteOffset = NULL)
-  {
-    $this->_limite_quantidade = $intLimiteQtd;
-    $this->_limite_offset = $intLimiteOffset;
-  }
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
+	{
+		$this->_limite_quantidade = $intLimiteQtd;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
+	}
 
   /**
    * Retorna a string com o trecho da query responsável pelo limite de

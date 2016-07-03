@@ -28,14 +28,17 @@ $desvio_diretorio = "";
 require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
+require_once 'include/localizacaoSistema.php';
 
 class clsIndex extends clsBase
 {
 	
 	function Formular()
 	{
-		$this->SetTitulo( "{$this->_instituicao} Diária Valores" );
+		//$this->SetTitulo( "{$this->_instituicao} Diária Valores" );
 		$this->processoAp = "295";
+                $this->addEstilo( "localizacaoSistema" );
+
 	}
 }
 
@@ -99,10 +102,11 @@ class indice extends clsListagem
 		$this->nome_acao = "Novo";
 
 		$this->largura = "100%";
+                $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos(array($_SERVER['SERVER_NAME'] . '/intranet' => 'i-Educar', '' => 'Diária Valores'));
+                $this->enviaLocalizacao($localizacao->montar());
 	}
 }
-
-
 $pagina = new clsIndex();
 
 $miolo = new indice();

@@ -446,7 +446,9 @@ else
 		var xml_disciplina = new ajax( getDisciplina );
 		xml_disciplina.envia( "educar_disciplina_xml.php?cur="+campoCurso );
 	}
-<?}?>
+<?
+  }
+?>
 
 function EtapasCurso(xml_qtd_etapas)
 {

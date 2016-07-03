@@ -1,0 +1,53 @@
+body {
+	font-family: 'Trebuchet MS', sans-serif;
+}
+
+.btn-remove-tenant {
+	margin-left: .2em;
+}
+
+.hidden-field {
+	display: none;
+}
+
+.message {
+	 margin-top: .3em;
+	 margin-bottom: .3em;
+}
+
+.message-container {
+	padding: 0 .7em;
+}
+
+.message-text {
+	float: left;
+	margin-right: .3em;
+}
+
+.required-field {
+	color: red;
+	font-weight: bold;
+	margin-left: .5em;
+}
+
+.select-tenant-options {
+	color: #2779aa;
+	border-bottom-right-radius: 6px;
+	border-bottom-left-radius: 6px;
+	border-top-right-radius: 6px;
+	border-top-left-radius: 6px;
+		background: #d7ebf9 url("estilos/images/ui-bg_glass_80_d7ebf9_1x400.png") 50% 50% repeat-x;
+	cursor: pointer;
+	border: 1px solid #aed0ea;
+	font-weight: bold;
+	height: 37px;
+	display: inline-block;
+	position: relative;
+	vertical-align: middle;
+	margin-right: 5px;
+}
+
+.tenant-data {
+	height: 30px;
+	margin-right: 5px;
+}

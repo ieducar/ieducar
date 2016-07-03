@@ -33,6 +33,9 @@ require_once 'include/clsDetalhe.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
 
+require_once 'App/Model/MatriculaSituacao.php';
+require_once 'Portabilis/View/Helper/Application.php';
+
 /**
  * clsIndexBase class.
  *
@@ -80,6 +83,12 @@ class indice extends clsDetalhe
 
   function Gerar()
   {
+
+    // carrega estilo para feedback messages, exibindo msgs da api.
+
+    $style = "/modules/Portabilis/Assets/Stylesheets/Frontend.css";
+    Portabilis_View_Helper_Application::loadStylesheet($this, $style);
+
     @session_start();
     $this->pessoa_logada = $_SESSION['id_pessoa'];
     session_write_close();
@@ -97,7 +106,7 @@ class indice extends clsDetalhe
     }
 
     if (! $registro) {
-      header("Location: educar_matricula_lst.php?ref_cod_aluno=" . $registro['ref_cod_aluno']);
+      header("Location: educar_aluno_det.php?cod_aluno=" . $registro['ref_cod_aluno']);
       die();
     }
 
@@ -131,18 +140,6 @@ class indice extends clsDetalhe
       $nm_aluno = $det_aluno['nome_aluno'];
     }
 
-    // Nome da turma
-    $obj_mat_turma = new clsPmieducarMatriculaTurma();
-    $det_mat_turma = $obj_mat_turma->lista($this->ref_cod_matricula, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL, 1);
-
-    if ($det_mat_turma){
-      $det_mat_turma = array_shift($det_mat_turma);
-      $obj_turma     = new clsPmieducarTurma($det_mat_turma['ref_cod_turma']);
-      $det_turma     = $obj_turma->detalhe();
-      $nm_turma      = $det_turma['nm_turma'];
-    }
-
     if ($registro['cod_matricula']) {
       $this->addDetalhe(array('Número Matrícula', $registro['cod_matricula']));
     }
@@ -167,39 +164,36 @@ class indice extends clsDetalhe
       $this->addDetalhe(array('Série', $registro['ref_ref_cod_serie']));
     }
 
-    if ($nm_turma) {
-      $this->addDetalhe(array('Turma', $nm_turma));
+    // Nome da turma
+    $enturmacoes = new clsPmieducarMatriculaTurma();
+    $enturmacoes = $enturmacoes->lista($this->ref_cod_matricula, NULL, NULL,
+      NULL, NULL, NULL, NULL, NULL, 1);
+
+    $nomesTurmas = array();
+    foreach ($enturmacoes as $enturmacao) {
+      $turma         = new clsPmieducarTurma($enturmacao['ref_cod_turma']);
+      $turma         = $turma->detalhe();
+      $nomesTurmas[] = $turma['nm_turma'];
     }
+  
+    $nomesTurmas = implode('<br />', $nomesTurmas);
+
+    if ($nomesTurmas)
+      $this->addDetalhe(array('Turma', $nomesTurmas));
+    else
+      $this->addDetalhe(array('Turma', ''));
 
     if ($registro['ref_cod_reserva_vaga']) {
       $this->addDetalhe(array('Número Reserva Vaga', $registro['ref_cod_reserva_vaga']));
     }
 
+    $campoObs = false;
     if ($registro['aprovado']) {
-      if ($registro['aprovado'] == 1) {
-        $aprovado = 'Aprovado';
-      }
-      elseif ($registro['aprovado'] == 2) {
-        $aprovado = 'Reprovado';
-      }
-      elseif ($registro['aprovado'] == 3) {
-        $aprovado = 'Em Andamento';
-      }
-      elseif ($registro['aprovado'] == 4) {
-        $aprovado = 'Transferido';
-      }
-      elseif ($registro['aprovado'] == 5) {
-        $aprovado = 'Reclassificado';
-      }
-      elseif ($registro['aprovado'] == 6) {
-        $aprovado = 'Abandono';
-      }
-      elseif ($registro['aprovado'] == 7) {
-        $aprovado = 'Em Exame';
-      }
-
-      $this->addDetalhe(array('Situação', $aprovado));
+      $this->addDetalhe(array('Situação', App_Model_MatriculaSituacao::getInstance()->getValue($registro['aprovado'])));
     }
+
+    if($campoObs)
+      $this->addDetalhe(array('Observação',$registro['observacao']));
 
     $this->addDetalhe(array('Formando', $registro['formando'] == 0 ? 'N&atilde;o' : 'Sim'));
 
@@ -231,7 +225,7 @@ class indice extends clsDetalhe
         $this->array_botao_url_script[] = "go(\"educar_matricula_ocorrencia_disciplinar_lst.php?ref_cod_matricula={$registro['cod_matricula']}\")";
 
         // Apenas libera a dispensa de disciplina quando o aluno estiver enturmado
-        if ($registro['ref_ref_cod_serie'] && isset($nm_turma)) {
+        if ($registro['ref_ref_cod_serie'] && $nomesTurmas) {
           $this->array_botao[]            = 'Dispensa de Componentes Curriculares';
           $this->array_botao_url_script[] = "go(\"educar_dispensa_disciplina_lst.php?ref_cod_matricula={$registro['cod_matricula']}\")";
         }
@@ -240,7 +234,7 @@ class indice extends clsDetalhe
         $this->array_botao_url_script[] = "go(\"educar_matricula_turma_lst.php?ref_cod_matricula={$registro['cod_matricula']}\")";
 
         $this->array_botao[]            = 'Abandono';
-        $this->array_botao_url_script[] = "if(confirm(\"Deseja confirmar o abandono desta matrícula?\"))go(\"educar_matricula_abandono_cad.php?ref_cod_matricula={$registro['cod_matricula']}&ref_cod_aluno={$registro['ref_cod_aluno']}\");";
+        $this->array_botao_url_script[] = "go(\"educar_abandono_cad.php?ref_cod_matricula={$registro['cod_matricula']}&ref_cod_aluno={$registro['ref_cod_aluno']}\");";
 
         if ($registro['ref_ref_cod_serie']) {
           $this->array_botao[]            = 'Reclassificar';
@@ -250,7 +244,7 @@ class indice extends clsDetalhe
 
       if ($registro['aprovado'] != 4 && $registro['aprovado'] != 6) {
         if (is_array($lst_transferencia) && !isset($data_transferencia)) {
-          $this->array_botao[]            = 'Cancelar Solicitação Transferência';
+          $this->array_botao[]            = 'Cancelar Solicitação Transferência (escola do sistema)';
           $this->array_botao_url_script[] = "go(\"educar_transferencia_solicitacao_cad.php?ref_cod_matricula={$registro['cod_matricula']}&ref_cod_aluno={$registro['ref_cod_aluno']}&cancela=true\")";
         }
         else {
@@ -274,14 +268,44 @@ class indice extends clsDetalhe
         }
       }
 
-      if ($registro['aprovado'] == 4 || $det_transferencia) {
-        $this->array_botao[]            = 'Imprimir Atestado Frequência';
-        $this->array_botao_url_script[] = "showExpansivelImprimir(400, 200,  \"educar_relatorio_atestado_frequencia.php?cod_matricula={$registro['cod_matricula']}\",[], \"Relatório Atestado de Freqüência\")";
+      if($registro['aprovado'] == 4 &&
+         $this->canCancelTransferenciaExterna($registro['cod_matricula'], $registro['ref_cod_aluno'])) {
+        $this->array_botao[]            = 'Cancelar transferência (escola externa)';
+
+
+        # TODO ver se código, seta matricula como em andamento, ativa ultima matricula_turma for matricula, e desativa transferencia solicitacao
+        $this->array_botao_url_script[] = "go(\"educar_transferencia_solicitacao_cad.php?ref_cod_matricula={$registro['cod_matricula']}&ref_cod_aluno={$registro['ref_cod_aluno']}&cancela=true&reabrir_matricula=true\")";
+      }
+
+      if ($registro['aprovado'] == App_Model_MatriculaSituacao::ABANDONO) {
+        $this->array_botao[]            = "Desfazer abandono";
+        $this->array_botao_url_script[] = "deleteAbandono({$registro['cod_matricula']})";
       }
     }
 
-    $this->url_cancelar = 'educar_matricula_lst.php?ref_cod_aluno=' . $registro['ref_cod_aluno'];
+    $this->url_cancelar = 'educar_aluno_det.php?cod_aluno=' . $registro['ref_cod_aluno'];
     $this->largura      = '100%';
+
+    // js
+    Portabilis_View_Helper_Application::loadJQueryLib($this);
+
+    $scripts = array(
+      '/modules/Portabilis/Assets/Javascripts/Utils.js',
+      '/modules/Portabilis/Assets/Javascripts/ClientApi.js',
+      '/modules/Cadastro/Assets/Javascripts/MatriculaShow.js'
+    );
+
+    Portabilis_View_Helper_Application::loadJavascript($this, $scripts);
+  }
+
+
+  function canCancelTransferenciaExterna($matriculaId, $alunoId) {
+    $sql = "select 1 from pmieducar.matricula where ativo = 1 and cod_matricula > $matriculaId and ref_cod_aluno = $alunoId limit 1";
+
+    $db = new clsBanco();
+    $existeNovaMatricula = $db->CampoUnico($sql) == '1';
+
+    return ! $existeNovaMatricula;
   }
 }
 

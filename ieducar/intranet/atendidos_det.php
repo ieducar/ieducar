@@ -31,7 +31,9 @@
 require_once 'include/clsBase.inc.php';
 require_once 'include/clsDetalhe.inc.php';
 require_once 'include/clsBanco.inc.php';
+require_once 'include/pmieducar/geral.inc.php';
 require_once 'include/pessoa/clsCadastroRaca.inc.php';
+require_once 'include/pessoa/clsCadastroFisicaFoto.inc.php';
 require_once 'include/pessoa/clsCadastroFisicaRaca.inc.php';
 
 require_once 'App/Model/ZonaLocalizacao.php';
@@ -69,6 +71,10 @@ class indice extends clsDetalhe
 {
   function Gerar()
   {
+  	@session_start();
+  	$this->pessoa_logada = $_SESSION['id_pessoa'];
+  	session_write_close();
+  	
     $this->titulo = 'Detalhe da Pessoa';
 
     $this->addBanner('imagens/nvp_top_intranet.jpg',
@@ -86,7 +92,15 @@ class indice extends clsDetalhe
       'ddd_fax', 'fone_fax', 'email', 'url', 'tipo', 'sexo', 'zona_localizacao'
     );
 
-    $this->addDetalhe(array('Nome', $detalhe['nome']));
+
+    $objFoto = new clsCadastroFisicaFoto($cod_pessoa);
+    $caminhoFoto = $objFoto->detalhe();
+    if ($caminhoFoto!=false)
+      $this->addDetalhe(array('Nome', $detalhe['nome'].'
+                                  <p><img height="117" src="'.$caminhoFoto['caminho'].'"/></p>'));
+    else
+      $this->addDetalhe(array('Nome', $detalhe['nome']));
+     
     $this->addDetalhe(array('CPF', int2cpf($detalhe['cpf'])));
 
     if ($detalhe['data_nasc']) {
@@ -178,8 +192,11 @@ class indice extends clsDetalhe
 
     $this->addDetalhe(array('Sexo', $sexo));
 
-    $this->url_novo     = 'atendidos_cad.php';
-    $this->url_editar   = 'atendidos_cad.php?cod_pessoa_fj=' . $detalhe['idpes'];
+    $obj_permissoes = new clsPermissoes();
+    if ($obj_permissoes->permissao_cadastra(43, $this->pessoa_logada, 3)) {
+    	$this->url_novo     = 'atendidos_cad.php';
+    	$this->url_editar   = 'atendidos_cad.php?cod_pessoa_fj=' . $detalhe['idpes'];
+    }
     $this->url_cancelar = 'atendidos_lst.php';
 
     $this->largura = '100%';

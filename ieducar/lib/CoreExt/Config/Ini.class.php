@@ -88,6 +88,15 @@ class CoreExt_Config_Ini extends CoreExt_Config
   }
 
   /**
+   * Verifica se possui a seção desejada.
+   * @param  string  $section
+   */
+  function hasEnviromentSection($section) {
+    return array_key_exists($section, $this->iniArr) 
+    	&& is_array($this->iniArr[$section]);
+  }
+
+  /**
    * Carrega as configuração da seção desejada.
    * @param  string  $section
    */

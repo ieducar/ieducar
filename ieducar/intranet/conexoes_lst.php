@@ -28,6 +28,7 @@ $desvio_diretorio = "";
 require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
+require_once 'include/localizacaoSistema.php';
 
 class clsIndex extends clsBase
 {
@@ -36,6 +37,9 @@ class clsIndex extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} Conexões!" );
 		$this->processoAp = "157";
+                $this->addEstilo( "localizacaoSistema" );
+
+
 	}
 }
 
@@ -56,7 +60,7 @@ class indice extends clsListagem
 		$id_pessoa = $_SESSION['id_pessoa'];
 		session_write_close();
 		
-		$sql = "SELECT b.data_hora, b.ip_externo FROM acesso b WHERE cod_pessoa={$id_pessoa}";
+		$sql = "SELECT to_char(b.data_hora, 'DD/MM/YYY - HH24:MI:SS') as data_hora, b.ip_externo FROM acesso b WHERE cod_pessoa={$id_pessoa}";
 		if (!empty($_GET['status']))
 		{
 			if ($_GET['status'] == 'P')
@@ -106,6 +110,9 @@ class indice extends clsListagem
 		$this->addPaginador2( "conexoes_lst.php", $total, $_GET, $this->nome, $limite );
 
 		$this->largura = "100%";
+                $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos(array($_SERVER['SERVER_NAME'] . '/intranet' => 'i-Educar', '' => 'Registro de Empresas'));
+                $this->enviaLocalizacao($localizacao->montar());
 
 	}
 }

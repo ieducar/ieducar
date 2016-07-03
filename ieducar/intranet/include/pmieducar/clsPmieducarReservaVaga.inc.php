@@ -490,7 +490,7 @@ class clsPmieducarReservaVaga
     }
 
     if (is_numeric($int_cpf_responsavel)) {
-      $filtros .= "{$whereAnd} rv.cpf_responsavel like '%{$int_cpf_responsavel}%'";
+      $filtros .= "{$whereAnd} rv.cpf_responsavel = $int_cpf_responsavel";
       $whereAnd = " AND ";
     }
 
@@ -594,11 +594,12 @@ class clsPmieducarReservaVaga
    * @param int $intLimiteQtd
    * @param int $intLimiteOffset
    */
-  function setLimite($intLimiteQtd, $intLimiteOffset = NULL)
-  {
-    $this->_limite_quantidade = $intLimiteQtd;
-    $this->_limite_offset = $intLimiteOffset;
-  }
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
+	{
+		$this->_limite_quantidade = $intLimiteQtd;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
+	}
 
   /**
    * Retorna a string com o trecho da query resposável pelo limite de registros.

@@ -28,6 +28,7 @@ $desvio_diretorio = "";
 require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
+require_once 'include/localizacaoSistema.php';
 
 class clsIndex extends clsBase
 {
@@ -36,6 +37,7 @@ class clsIndex extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} Diaria" );
 		$this->processoAp = "293";
+                $this->addEstilo( "localizacaoSistema" );
 	}
 }
 
@@ -46,7 +48,7 @@ class indice extends clsListagem
 	 
 	function Gerar()
 	{
-		$this->titulo = "Di&aacute;rias";
+		//$this->titulo = "Di&aacute;rias";
 		$this->addBanner( "imagens/nvp_top_intranet.jpg", "imagens/nvp_vert_intranet.jpg", "Intranet" );	
 		$this->addCabecalhos( array( "Secretaria", "Funcion&aacute;rio", "Partida", "Chegada", "Valor", "Nº Di&aacute;ria" ) );
 		if($_GET['ref_cod_setor'])	
@@ -136,6 +138,10 @@ class indice extends clsListagem
 		$this->nome_acao = "Novo";
 
 		$this->largura = "100%";
+                
+                $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos( array($_SERVER['SERVER_NAME']."/intranet" => "i-Educar",""=> "Diárias"));
+                $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 

@@ -100,7 +100,8 @@ class indice extends clsListagem
     $this->addCabecalhos( array(
       'Nome do Servidor',
       'Matrícula',
-      'Instituição'
+      'Instituição',
+      'Escolas'
     ));
 
     $get_escola      = TRUE;
@@ -178,7 +179,6 @@ class indice extends clsListagem
         if (class_exists('clsPmieducarInstituicao')) {
           $obj_ref_cod_instituicao = new clsPmieducarInstituicao($registro['ref_cod_instituicao']);
           $det_ref_cod_instituicao = $obj_ref_cod_instituicao->detalhe();
-
           $registro['ref_cod_instituicao'] = $det_ref_cod_instituicao['nm_instituicao'];
         }
         else {
@@ -195,6 +195,14 @@ class indice extends clsListagem
         else {
           $registro['cod_servidor'] = 'Erro na geracao';
         }
+        
+        if (class_exists('clsPmieducarServidorAlocacao')) {
+        	$obj_ref_alocacao = new clsPmieducarServidorAlocacao($registro['cod_servidor']);
+        	$registro['ref_alocacaoes'] = $obj_ref_alocacao->listaEscolaAlocado();
+        }
+        else {
+        	$registro['ref_alocacaoes'] = 'Erro na geração';
+        }
 
         $path = 'educar_servidor_det.php';
         $options = array(
@@ -207,7 +215,7 @@ class indice extends clsListagem
           $url->l($registro['nome'], $path, $options),
           $url->l($registro['matricula'], $path, $options),
           $url->l($registro['ref_cod_instituicao'], $path, $options),
-        ));
+          $registro['ref_alocacaoes']));
       }
     }
 

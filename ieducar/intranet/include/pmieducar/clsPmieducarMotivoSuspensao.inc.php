@@ -433,16 +433,15 @@ class clsPmieducarMotivoSuspensao
 		}
 		return false;
 	}
-	
+
 	function listaClienteBiblioteca($int_cod_cliente)
 	{
 		if(is_numeric($int_cod_cliente))
 		{
 			$db = new clsBanco();
 			$db->Consulta("
-							SELECT 
-								cod_motivo_suspensao
-								, nm_motivo
+							SELECT
+								cod_motivo_suspensao, nm_motivo, descricao
 							FROM
 							    pmieducar.motivo_suspensao
 							WHERE
@@ -549,10 +548,11 @@ class clsPmieducarMotivoSuspensao
 	 *
 	 * @return null
 	 */
-	function setLimite( $intLimiteQtd, $intLimiteOffset = null )
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
 	{
 		$this->_limite_quantidade = $intLimiteQtd;
-		$this->_limite_offset = $intLimiteOffset;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
 	}
 
 	/**

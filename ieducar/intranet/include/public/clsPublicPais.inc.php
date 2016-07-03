@@ -99,7 +99,7 @@ class clsPublicPais
 
 	/**
 	 * Construtor (PHP 4)
-	 * 
+	 *
 	 * @param integer idpais
 	 * @param string nome
 	 * @param string geom
@@ -149,7 +149,7 @@ class clsPublicPais
 			if( is_string( $this->nome ) )
 			{
 				$campos .= "{$gruda}nome";
-				$valores .= "{$gruda}'{$this->nome}'";
+				$valores .= "{$gruda}'" . addslashes($this->nome) . "'";
 				$gruda = ", ";
 			}
 			if( is_string( $this->geom ) )
@@ -182,7 +182,7 @@ class clsPublicPais
 
 			if( is_string( $this->nome ) )
 			{
-				$set .= "{$gruda}nome = '{$this->nome}'";
+				$set .= "{$gruda}nome = '" . addslashes($this->nome) . "'";
 				$gruda = ", ";
 			}
 			if( is_string( $this->geom ) )
@@ -203,7 +203,7 @@ class clsPublicPais
 
 	/**
 	 * Retorna uma lista filtrados de acordo com os parametros
-	 * 
+	 *
 	 * @param string str_nome
 	 * @param string str_geom
 	 *
@@ -223,7 +223,7 @@ class clsPublicPais
 		}
 		if( is_string( $str_nome ) )
 		{
-			$filtros .= "{$whereAnd} nome LIKE '%{$str_nome}%'";
+			$filtros .= "{$whereAnd} nome LIKE E'%" . addslashes($str_nome) . "%'";
 			$whereAnd = " AND ";
 		}
 		if( is_string( $str_geom ) )
@@ -348,10 +348,11 @@ class clsPublicPais
 	 *
 	 * @return null
 	 */
-	function setLimite( $intLimiteQtd, $intLimiteOffset = null )
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
 	{
 		$this->_limite_quantidade = $intLimiteQtd;
-		$this->_limite_offset = $intLimiteOffset;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
 	}
 
 	/**

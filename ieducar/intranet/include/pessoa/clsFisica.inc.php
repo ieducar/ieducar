@@ -1,24 +1,24 @@
 <?php
 
 /*
- * i-Educar - Sistema de gestão escolar
+ * i-Educar - Sistema de gestï¿½o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de Itajaí
+ * Copyright (C) 2006  Prefeitura Municipal de Itajaï¿½
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa é software livre; você pode redistribuí-lo e/ou modificá-lo
- * sob os termos da Licença Pública Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a versão 2 da Licença, como (a seu critério)
- * qualquer versão posterior.
+ * Este programa ï¿½ software livre; vocï¿½ pode redistribuï¿½-lo e/ou modificï¿½-lo
+ * sob os termos da Licenï¿½a Pï¿½blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a versï¿½o 2 da Licenï¿½a, como (a seu critï¿½rio)
+ * qualquer versï¿½o posterior.
  *
- * Este programa é distribuí­do na expectativa de que seja útil, porém, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implí­cita de COMERCIABILIDADE OU
- * ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral
+ * Este programa ï¿½ distribuï¿½do na expectativa de que seja ï¿½til, porï¿½m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia implï¿½cita de COMERCIABILIDADE OU
+ * ADEQUAï¿½ï¿½O A UMA FINALIDADE ESPECï¿½FICA. Consulte a Licenï¿½a Pï¿½blica Geral
  * do GNU para mais detalhes.
  *
- * Você deve ter recebido uma cópia da Licença Pública Geral do GNU junto
- * com este programa; se não, escreva para a Free Software Foundation, Inc., no
- * endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Vocï¿½ deve ter recebido uma cï¿½pia da Licenï¿½a Pï¿½blica Geral do GNU junto
+ * com este programa; se nï¿½o, escreva para a Free Software Foundation, Inc., no
+ * endereï¿½o 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  */
 
 require_once 'include/clsBanco.inc.php';
@@ -27,11 +27,11 @@ require_once 'include/Geral.inc.php';
 /**
  * clsFisica class.
  *
- * @author      Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
+ * @author      Prefeitura Municipal de Itajaï¿½ <ctima@itajai.sc.gov.br>
  * @license     http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package     Core
  * @subpackage  pessoa
- * @since       Classe disponível desde a versão 1.0.0
+ * @since       Classe disponï¿½vel desde a versï¿½o 1.0.0
  * @version     $Id$
  */
 class clsFisica
@@ -193,16 +193,28 @@ class clsFisica
 		{
 			$campos = "";
 			$valores = "";
-			if(is_string($this->data_nasc))
-			{
-				$campos .= ", data_nasc";
+
+
+			// data_nasc
+
+			$campos  .= ", data_nasc";
+
+			if($this->data_nasc)
 				$valores .= ", '{$this->data_nasc}'";
-			}
-			if(is_string($this->sexo))
-			{
-				$campos .= ", sexo";
+			else
+				$valores .= ", NULL";
+
+
+			// sexo
+
+			$campos .= ", sexo";
+
+			if($this->sexo)
 				$valores .= ", '$this->sexo' ";
-			}
+			else
+				$valores .= ", NULL";
+
+
 			if(is_numeric($this->idpes_mae))
 			{
 				$campos .= ", idpes_mae";
@@ -288,7 +300,7 @@ class clsFisica
 				$campos .= ", nome_conjuge";
 				$valores .= ", '$this->nome_conjuge' ";
 			}
-			if(is_string($this->nome-responsavel))
+			if(is_string($this->nome_responsavel))
 			{
 				$campos .= ", nome_responsavel";
 				$valores .= ", '$this->nome_responsavel' ";
@@ -459,20 +471,18 @@ class clsFisica
 			   $set .= "$gruda idpes_rev = '{$this->idpes_rev}'";
 			   $gruda = ", ";
 			}
-			if($this->cpf)
-			{
-			   $set .= "$gruda cpf = '{$this->cpf}'";
+
+			if($this->cpf) {
+			   $set .= "$gruda cpf = {$this->cpf}";
 			   $gruda = ", ";
 			}
 
-			if(is_numeric($this->ref_cod_sistema) || $this->ref_cod_sistema == "NULL")
-			{
+			if(is_numeric($this->ref_cod_sistema) || $this->ref_cod_sistema == "NULL") {
 				$set .= "$gruda ref_cod_sistema = {$this->ref_cod_sistema}";
 				$gruda = ", ";
 			}
 
-			if(is_numeric($this->ref_cod_religiao))
-			{
+			if(is_numeric($this->ref_cod_religiao)) {
 				$set .= "$gruda ref_cod_religiao = {$this->ref_cod_religiao}";
 				$gruda = ", ";
 			}
@@ -645,7 +655,7 @@ class clsFisica
 
 		if(is_numeric($int_cpf))
 		{
-			$where .= "{$whereAnd}cpf like '%$int_cpf%'";
+			$where .= "{$whereAnd}cpf = $int_cpf";
 		}
 
 		if( is_array( $arrayint_idisin ) )
@@ -797,7 +807,7 @@ class clsFisica
 		}elseif($this->cpf)
 		{
 			$db = new clsBanco();
-			$db->Consulta("SELECT idpes, data_nasc, sexo, idpes_mae, idpes_pai, idpes_responsavel, idesco, ideciv, idpes_con, data_uniao, data_obito, nacionalidade, idpais_estrangeiro, data_chegada_brasil, idmun_nascimento, ultima_empresa, idocup, nome_mae, nome_pai, nome_conjuge, nome_responsavel, justificativa_provisorio,cpf, ref_cod_religiao FROM {$this->schema}.{$this->tabela} WHERE cpf = '{$this->cpf}'");
+			$db->Consulta("SELECT idpes, data_nasc, sexo, idpes_mae, idpes_pai, idpes_responsavel, idesco, ideciv, idpes_con, data_uniao, data_obito, nacionalidade, idpais_estrangeiro, data_chegada_brasil, idmun_nascimento, ultima_empresa, idocup, nome_mae, nome_pai, nome_conjuge, nome_responsavel, justificativa_provisorio,cpf, ref_cod_religiao FROM {$this->schema}.{$this->tabela} WHERE cpf = {$this->cpf}");
 			if( $db->ProximoRegistro() )
 			{
 				$tupla = $db->Tupla();

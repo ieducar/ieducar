@@ -188,8 +188,9 @@ class indice extends clsCadastro
 
     $this->campoLista('concluinte', 'Concluinte', $opcoes, $this->concluinte);
 
-    $this->campoMonetario('carga_horaria', 'Carga Hor&aacute;ria',
-      $this->carga_horaria, 7, 7, TRUE);
+    $this->campoMonetario('carga_horaria', 'Carga Hor&aacute;ria', $this->carga_horaria, 7, 7, TRUE);
+
+    $this->campoNumero('dias_letivos', 'Dias letivos', $this->dias_letivos, 3, 3, TRUE);
 
     $this->campoNumero('intervalo', 'Intervalo', $this->intervalo, 2, 2, TRUE);
 
@@ -197,6 +198,8 @@ class indice extends clsCadastro
       2, 2, FALSE, '', '', FALSE, FALSE, TRUE);
 
     $this->campoNumero('idade_final', '&nbsp;até', $this->idade_final, 2, 2, FALSE);
+
+		$this->campoMemo( "observacao_historico", "Observa&ccedil;&atilde;o histórico", $this->observacao_historico, 60, 5, false );
   }
 
   function Novo()
@@ -211,7 +214,7 @@ class indice extends clsCadastro
     $obj = new clsPmieducarSerie(NULL, NULL, $this->pessoa_logada, $this->ref_cod_curso,
       $this->nm_serie, $this->etapa_curso, $this->concluinte, $this->carga_horaria,
       NULL, NULL, 1, $this->intervalo, $this->idade_inicial, $this->idade_final,
-      $this->regra_avaliacao_id);
+      $this->regra_avaliacao_id, $this->observacao_historico, $this->dias_letivos);
 
     $cadastrou = $obj->cadastra();
 
@@ -238,7 +241,7 @@ class indice extends clsCadastro
     $obj = new clsPmieducarSerie($this->cod_serie, $this->pessoa_logada, NULL,
       $this->ref_cod_curso, $this->nm_serie, $this->etapa_curso, $this->concluinte,
       $this->carga_horaria, NULL, NULL, 1, $this->intervalo, $this->idade_inicial,
-      $this->idade_final, $this->regra_avaliacao_id);
+      $this->idade_final, $this->regra_avaliacao_id, $this->observacao_historico, $this->dias_letivos);
 
     $editou = $obj->edita();
     if ($editou) {
@@ -325,24 +328,27 @@ function EtapasCurso(xml_qtd_etapas)
 
 function RegrasInstituicao(xml_qtd_regras)
 {
-  var campoRegras = document.getElementById('regra_avaliacao_id');
-  var DOM_array = xml_qtd_regras.getElementsByTagName('regra');
+    var campoRegras = document.getElementById('regra_avaliacao_id');
+    var DOM_array = xml_qtd_regras.getElementsByTagName('regra');
+    campoRegras.length = 0;
 
-  if (DOM_array.length) {
-    campoRegras.length = 1;
-    campoRegras.options[0].text = 'Selecione uma regra';
-    campoRegras.disabled = false;
+    if (DOM_array.length) {
+        campoRegras.length = 1;
+        campoRegras.options[0].text = 'Selecione uma regra';
+        campoRegras.options[0].value = '';
+        campoRegras.disabled = false;
 
-    var loop = DOM_array.length;
-
-    for (var i = 0; i < loop;i++) {
-      campoRegras.options[i] = new Option(DOM_array[i].firstChild.data, i, false, false);
+        for (var i = 0; i < DOM_array.length; i++) {
+            campoRegras.options[i + 1] = new Option(DOM_array[i].firstChild.data, i + 1, false, false);
+        }
     }
-  }
-  else {
-	  campoRegras.options[0].text = 'A instituição não possui uma Regra de Avaliação';
-  }
+    else {
+        campoRegras.length = 1;
+        campoRegras.options[0].text = 'A instituição não possui uma Regra de Avaliação';
+        campoRegras.disabled = true;
+    }
 }
+
 
 document.getElementById('ref_cod_curso').onchange = function()
 {

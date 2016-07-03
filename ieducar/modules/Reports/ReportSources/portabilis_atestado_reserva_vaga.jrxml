@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="portabilis_atestado_vaga" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="0cebf96a-c86e-439d-b777-7239a5c2af6a">
+	<property name="ireport.zoom" value="1.1"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="341"/>
+	<parameter name="cod_reserva_vaga" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new java.lang.Integer(0)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="logo" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[
+                SELECT 
+					    escola_ano_letivo.ano as ano_corrente,
+					    COALESCE (al.nome, reserva_vaga.nm_aluno) as aluno,
+					    UPPER(instituicao.nm_instituicao) as nm_instituicao, 
+					    UPPER(instituicao.nm_responsavel) as nm_responsavel, 
+					    UPPER(pessoa.nome) as nm_escola,
+					    v_endereco.logradouro, 
+					    v_endereco.bairro,
+					    v_endereco.cidade as municipio,
+					    v_endereco.numero, 
+					    v_endereco.sigla_uf as uf_municipio, 
+					    v_fone_pessoa.ddd_1 as fone_ddd,
+					    to_char(v_endereco.cep,'99999-999') as cep,
+					    to_char(v_fone_pessoa.fone_1,'9999-9999') as fone,
+					    pessoa.email, 
+					    curso.nm_curso,
+					    serie.nm_serie,
+					    to_char(reserva_vaga.data_cadastro,'dd/mm/yyyy') as data_atual
+					FROM 
+					  pmieducar.reserva_vaga 
+					  LEFT JOIN (SELECT cadastro.pessoa.nome, pmieducar.aluno.cod_aluno FROM pmieducar.aluno, cadastro.pessoa WHERE cadastro.pessoa.idpes = aluno.ref_idpes) al ON al.cod_aluno = reserva_vaga.ref_cod_aluno,
+					  pmieducar.escola, 
+					  pmieducar.instituicao, 
+					  cadastro.pessoa, 
+					  pmieducar.serie, 
+					  cadastro.v_endereco, 
+					  cadastro.v_fone_pessoa, 
+					  pmieducar.curso,
+					  pmieducar.escola_ano_letivo
+					WHERE 
+					  reserva_vaga.ref_ref_cod_serie = serie.cod_serie AND
+					  escola.cod_escola = reserva_vaga.ref_ref_cod_escola AND
+					  escola.ref_cod_instituicao = instituicao.cod_instituicao AND
+					  escola.ref_idpes = pessoa.idpes AND
+					  pessoa.idpes = v_fone_pessoa.idpes AND
+					  serie.ref_cod_curso = curso.cod_curso AND
+					  v_endereco.idpes = pessoa.idpes AND
+					  escola_ano_letivo.ref_cod_escola = escola.cod_escola AND
+					  escola_ano_letivo.andamento = 1 AND
+					  escola_ano_letivo.ativo = 1 AND
+					  reserva_vaga.cod_reserva_vaga =$P{cod_reserva_vaga};
+
+        ]]>
+	</queryString>
+	<field name="ano_corrente" class="java.lang.String"/>
+	<field name="aluno" class="java.lang.String"/>
+	<field name="nm_instituicao" class="java.lang.String"/>
+	<field name="nm_responsavel" class="java.lang.String"/>
+	<field name="nm_escola" class="java.lang.String"/>
+	<field name="logradouro" class="java.lang.String"/>
+	<field name="bairro" class="java.lang.String"/>
+	<field name="municipio" class="java.lang.String"/>
+	<field name="numero" class="java.math.BigDecimal"/>
+	<field name="uf_municipio" class="java.lang.String"/>
+	<field name="fone_ddd" class="java.math.BigDecimal"/>
+	<field name="cep" class="java.lang.String"/>
+	<field name="fone" class="java.lang.String"/>
+	<field name="email" class="java.lang.String"/>
+	<field name="nm_curso" class="java.lang.String"/>
+	<field name="nm_serie" class="java.lang.String"/>
+	<field name="data_atual" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="723" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="934f694c-f92f-4d15-8202-4b62a24f56e4" x="16" y="158" width="529" height="16"/>
+				<textElement textAlignment="Center">
+					<font fontName="DejaVu Sans" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[ATESTADO DE RESERVA DE VAGA]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="1f4edead-220b-41fa-9c8f-a47f05117ca6" x="289" y="64" width="249" height="13" forecolor="#000000"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="8" isBold="true" isItalic="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["E-mail: "+$F{email}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="c00be8f6-d1eb-4b09-a6a2-6fac1b8943c3" x="79" y="40" width="308" height="13"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Endereço: "+$F{logradouro}+" "+$F{numero}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="9dba342b-be6c-469c-af55-cbc2ad1df97d" x="79" y="28" width="308" height="13"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nm_escola}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="664a8f7e-73e9-4081-acb3-0898320daa5c" x="53" y="324" width="352" height="20"/>
+				<textElement markup="none">
+					<font fontName="DejaVu Sans" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{municipio}+" - "+$F{uf_municipio}+", "+$F{data_atual}+"."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="131a3b2e-fdab-4db8-ba18-6d5d66ded657" x="22" y="209" width="523" height="15"/>
+				<textElement textAlignment="Justified">
+					<font fontName="DejaVu Sans" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Atesto para os devidos fins que o aluno "+$F{aluno}+", solicitou reserva de vaga na escola "+$F{nm_escola}+", para o curso "+$F{nm_curso}+", na série "+$F{nm_serie}+", para o ano letivo de "+$F{ano_corrente}+" e que esta reserva possui a validade de 48 horas a partir da data de solicitação ("+$F{data_atual}+")."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="c412e310-8027-4ac0-83da-9e0eaf860af5" x="79" y="4" width="308" height="13"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nm_instituicao}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="0641ef42-4d79-45d3-ab5c-c89b0a266671" x="415" y="52" width="77" height="13"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["CEP: "+$F{cep}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="9522e660-0e88-4c9b-809c-1fa92c2b2c20" x="289" y="52" width="123" height="13"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{municipio}+" - "+$F{uf_municipio}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="b5b0fdd3-aacd-4601-b49f-e2bf631872b3" x="79" y="16" width="308" height="13"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nm_responsavel}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="0d179794-4148-414e-aa50-655ce102c43f" x="181" y="498" width="193" height="1"/>
+			</line>
+			<staticText>
+				<reportElement uuid="53dfdc87-5f39-4c16-b175-76e9f12f488f" x="181" y="502" width="193" height="13"/>
+				<textElement textAlignment="Center">
+					<font fontName="DejaVu Sans" size="8"/>
+				</textElement>
+				<text><![CDATA[Assinatura]]></text>
+			</staticText>
+			<image>
+				<reportElement uuid="02f66b90-a668-4320-8b8a-d4ad07e378a4" x="16" y="4" width="56"/>
+				<imageExpression><![CDATA[$P{logo}]]></imageExpression>
+			</image>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="afca9683-4ad5-4136-af58-44c170fa1c32" x="79" y="52" width="206" height="13"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Bairro: "+$F{bairro}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="8ede2a59-2714-4613-8c6e-78e8579099af" x="79" y="64" width="201" height="13"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Telefone: ("+$F{fone_ddd}+") "+$F{fone}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="15" splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="11" splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band height="6" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="10" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="9" splitType="Stretch"/>
+	</summary>
+</jasperReport>

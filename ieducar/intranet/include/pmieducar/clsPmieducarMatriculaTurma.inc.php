@@ -51,6 +51,7 @@ class clsPmieducarMatriculaTurma
   var $ativo;
   var $ref_cod_turma_transf;
   var $sequencial;
+  var $sequencial_fechamento;
 
   /**
    * Armazena o total de resultados obtidos na última chamada ao método lista().
@@ -108,13 +109,13 @@ class clsPmieducarMatriculaTurma
   function clsPmieducarMatriculaTurma($ref_cod_matricula = NULL,
     $ref_cod_turma = NULL, $ref_usuario_exc = NULL, $ref_usuario_cad = NULL,
     $data_cadastro = NULL, $data_exclusao = NULL, $ativo = NULL,
-    $ref_cod_turma_transf = NULL,$sequencial = NULL
+    $ref_cod_turma_transf = NULL,$sequencial = NULL, $data_enturmacao = NULL
   ) {
     $db = new clsBanco();
     $this->_schema = "pmieducar.";
     $this->_tabela = "{$this->_schema}matricula_turma";
 
-    $this->_campos_lista = $this->_todos_campos = "mt.ref_cod_matricula, mt.ref_cod_turma, mt.ref_usuario_exc, mt.ref_usuario_cad, mt.data_cadastro, mt.data_exclusao, mt.ativo, mt.sequencial, (SELECT pes.nome FROM cadastro.pessoa pes, pmieducar.aluno alu, pmieducar.matricula mat WHERE pes.idpes = alu.ref_idpes AND mat.ref_cod_aluno = alu.cod_aluno AND mat.cod_matricula = mt.ref_cod_matricula ) AS nome, (SELECT to_ascii(pes.nome) FROM cadastro.pessoa pes, pmieducar.aluno alu, pmieducar.matricula mat WHERE pes.idpes = alu.ref_idpes AND mat.ref_cod_aluno = alu.cod_aluno AND mat.cod_matricula = mt.ref_cod_matricula ) AS nome_ascii";
+    $this->_campos_lista = $this->_todos_campos = "mt.ref_cod_matricula, mt.ref_cod_turma, mt.ref_usuario_exc, mt.ref_usuario_cad, mt.data_cadastro, mt.data_exclusao, mt.ativo, mt.sequencial, mt.data_enturmacao, (SELECT pes.nome FROM cadastro.pessoa pes, pmieducar.aluno alu, pmieducar.matricula mat WHERE pes.idpes = alu.ref_idpes AND mat.ref_cod_aluno = alu.cod_aluno AND mat.cod_matricula = mt.ref_cod_matricula ) AS nome, (SELECT to_ascii(pes.nome) FROM cadastro.pessoa pes, pmieducar.aluno alu, pmieducar.matricula mat WHERE pes.idpes = alu.ref_idpes AND mat.ref_cod_aluno = alu.cod_aluno AND mat.cod_matricula = mt.ref_cod_matricula ) AS nome_ascii";
 
     if (is_numeric($ref_usuario_exc)) {
       if (class_exists("clsPmieducarUsuario")) {
@@ -237,6 +238,10 @@ class clsPmieducarMatriculaTurma
     if (is_numeric($sequencial)) {
       $this->sequencial = $sequencial;
     }
+
+    if (is_string($data_enturmacao)) {
+      $this->data_enturmacao = $data_enturmacao;
+    }    
   }
 
   /**
@@ -286,6 +291,20 @@ class clsPmieducarMatriculaTurma
       $valores .= "{$gruda}'1'";
       $gruda = ", ";
 
+      if (is_string($this->data_enturmacao)) {
+        $campos .= "{$gruda}data_enturmacao";
+        $valores .= "{$gruda}'{$this->data_enturmacao}'";
+        $gruda = ", ";
+      }
+
+      $this->sequencial_fechamento = $this->getSequencialFechamento($this->ref_cod_matricula, $this->ref_cod_turma, $this->data_enturmacao);
+
+      if(is_numeric($this->sequencial_fechamento)){
+        $campos .= "{$gruda}sequencial_fechamento";
+        $valores .= "{$gruda}'{$this->sequencial_fechamento}'";
+        $gruda = ", ";        
+      }      
+
       $db->Consulta("INSERT INTO {$this->_tabela} ($campos) VALUES ($valores)");
 
       return TRUE;
@@ -333,6 +352,11 @@ class clsPmieducarMatriculaTurma
         $gruda = ", ";
       }
 
+      if (is_string($this->data_enturmacao)) {
+        $set .= "{$gruda}data_enturmacao = '{$this->data_enturmacao}'";
+        $gruda = ", ";
+      }      
+
       if ($set) {
         $db->Consulta("UPDATE {$this->_tabela} SET $set WHERE ref_cod_matricula = '{$this->ref_cod_matricula}' AND ref_cod_turma = '{$this->ref_cod_turma}' and sequencial = '$this->sequencial' ");
         return TRUE;
@@ -361,14 +385,10 @@ class clsPmieducarMatriculaTurma
     $pegar_ano_em_andamento = FALSE, $parar=NULL)
   {
     if ($bool_get_nome_aluno === true) {
-      $nome = " ,(SELECT (nome)
-                        FROM cadastro.pessoa
-                           WHERE idpes = a.ref_idpes
-                    ) as nome_aluno";
-      $tab_aluno = ", {$this->_schema}aluno a";
-
-      $where_nm_aluno = " AND a.cod_aluno = m.ref_cod_aluno ";
+      $nome = " ,pessoa.nome as nome_aluno";            
     }
+    $tab_aluno = ", {$this->_schema}aluno a";
+    $where_nm_aluno = " AND a.cod_aluno = m.ref_cod_aluno AND a.ativo=1";
 
     if ( $bool_escola_andamento) {
       if ($pegar_ano_em_andamento) {
@@ -392,10 +412,10 @@ class clsPmieducarMatriculaTurma
       }
     }
 
-    $sql = "SELECT {$this->_campos_lista}, c.nm_curso, t.nm_turma, i.nm_instituicao, m.ref_ref_cod_serie, m.ref_cod_curso, m.ref_ref_cod_escola, c.ref_cod_instituicao, m.ref_cod_aluno,t.hora_inicial $nome FROM {$this->_tabela} mt, {$this->_schema}matricula m, {$this->_schema}curso c, {$this->_schema}turma t, {$this->_schema}instituicao i{$tab_aluno} {$from}";
+    $sql = "SELECT {$this->_campos_lista}, c.nm_curso, t.nm_turma, i.nm_instituicao, m.ref_ref_cod_serie, m.ref_cod_curso, m.ref_ref_cod_escola, c.ref_cod_instituicao, m.ref_cod_aluno,t.hora_inicial,s.nm_serie $nome FROM {$this->_tabela} mt, {$this->_schema}matricula m, {$this->_schema}curso c, {$this->_schema}turma t, {$this->_schema}instituicao i{$tab_aluno}, {$this->_schema}serie s {$from}, cadastro.pessoa ";
 
     $whereAnd = " AND ";
-    $filtros = " WHERE mt.ref_cod_matricula = m.cod_matricula AND m.ref_cod_curso = c.cod_curso AND t.cod_turma = mt.ref_cod_turma AND i.cod_instituicao = c.ref_cod_instituicao {$where_nm_aluno} {$where}";
+    $filtros = " WHERE mt.ref_cod_matricula = m.cod_matricula AND idpes = a.ref_idpes AND m.ref_cod_curso = c.cod_curso AND t.cod_turma = mt.ref_cod_turma AND m.ref_ref_cod_serie = s.cod_serie AND i.cod_instituicao = c.ref_cod_instituicao {$where_nm_aluno} {$where}";
 
     if (is_numeric($int_ref_cod_matricula)) {
       $filtros .= "{$whereAnd} mt.ref_cod_matricula = '{$int_ref_cod_matricula}'";
@@ -578,7 +598,7 @@ class clsPmieducarMatriculaTurma
       die($sql);
     }
 
-    $this->_total = $db->CampoUnico("SELECT COUNT(0) FROM {$this->_tabela} mt, {$this->_schema}matricula m, {$this->_schema}curso c, {$this->_schema}turma t, {$this->_schema}instituicao i{$tab_aluno} {$from} {$filtros} {$where}");
+    $this->_total = $db->CampoUnico("SELECT COUNT(0) FROM {$this->_tabela} mt, cadastro.pessoa, {$this->_schema}matricula m, {$this->_schema}curso c, {$this->_schema}turma t, {$this->_schema}serie s, {$this->_schema}instituicao i{$tab_aluno} {$from} {$filtros} {$where}");
     $db->Consulta($sql);
 
     if ($countCampos > 1) {
@@ -1001,11 +1021,12 @@ class clsPmieducarMatriculaTurma
   /**
    * Define limites de retorno para o método Lista().
    */
-  function setLimite($intLimiteQtd, $intLimiteOffset = NULL)
-  {
-    $this->_limite_quantidade = $intLimiteQtd;
-    $this->_limite_offset = $intLimiteOffset;
-  }
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
+	{
+		$this->_limite_quantidade = $intLimiteQtd;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
+	}
 
   /**
    * Retorna a string com o trecho da query responsável pelo limite de
@@ -1053,7 +1074,11 @@ class clsPmieducarMatriculaTurma
   {
     if (is_numeric($this->ref_cod_matricula) && is_numeric($this->ref_cod_turma)) {
       $db = new clsBanco();
-      $max = $db->CampoUnico("SELECT COALESCE(MAX(sequencial),0) + 1 AS MAX FROM {$this->_tabela} WHERE ref_cod_matricula = '{$this->ref_cod_matricula}' AND ref_cod_turma = '{$this->ref_cod_turma}'");
+      $max = $db->CampoUnico("SELECT COALESCE(MAX(sequencial),0) + 1 AS MAX FROM {$this->_tabela} WHERE ref_cod_matricula = '{$this->ref_cod_matricula}'"); 
+
+      //removido filtro pois tornou-se possivel enturmar uma matricula em mais de uma turma       
+      //AND ref_cod_turma = '{$this->ref_cod_turma}'");
+
       return $max;
     }
 
@@ -1254,4 +1279,15 @@ class clsPmieducarMatriculaTurma
 
     return FALSE;
   }
+  function getSequencialFechamento($matriculaId, $turmaId, $dataEnturmacao){
+    $db = new clsBanco();
+    $possui_fechamento = $db->CampoUnico("SELECT data_fechamento FROM pmieducar.turma WHERE cod_turma = {$turmaId}");
+    if (is_string($possui_fechamento)){
+      if (strtotime($possui_fechamento) < strtotime($dataEnturmacao))
+        return $db->CampoUnico("SELECT MAX(sequencial_fechamento)+1 FROM {$this->_tabela} where ref_cod_turma = {$turmaId}");
+      else
+        return 0;
+    }else
+      return 0;
+  }  
 }

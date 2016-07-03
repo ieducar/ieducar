@@ -480,6 +480,43 @@ class clsPmieducarServidorAlocacao
 
     return FALSE;
   }
+  
+  /**
+   * Retorna uma lista de siglas de escolas onde o servidor está alocado.
+   * @return String
+   */
+  function listaEscolaAlocado()
+  {
+  	if (is_numeric($this->cod_servidor_alocacao)) {
+	  	$sql = "SELECT 
+				 distinct  escola.sigla
+				FROM 
+				  pmieducar.servidor_alocacao, 
+				  pmieducar.escola
+				WHERE 
+				  servidor_alocacao.ref_cod_escola = escola.cod_escola and
+				  servidor_alocacao.ref_cod_servidor= {$this->cod_servidor_alocacao};";
+	
+	      $db = new clsBanco();
+	      $resultado = '';
+	      $db->Consulta($sql);
+	      $cnt = $db->Num_Linhas();
+	      if($cnt > 0){
+		      while ($db->ProximoRegistro()) {
+		        $tupla = $db->Tupla();
+		        $resultado.= $tupla['sigla'].', ';
+		      }
+		      $resultado=rtrim($resultado,', ');
+	      }else 
+	      {
+	      	$resultado='Servidor não alocado';
+	      }
+		  return $resultado;
+		      
+  	}else{
+   		return FALSE;
+  	}
+  }
 
   /**
    * Retorna um array com os dados de um registro.
@@ -609,11 +646,12 @@ class clsPmieducarServidorAlocacao
   /**
    * Define limites de retorno para o método Lista().
    */
-  function setLimite($intLimiteQtd, $intLimiteOffset = NULL)
-  {
-    $this->_limite_quantidade = $intLimiteQtd;
-    $this->_limite_offset = $intLimiteOffset;
-  }
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
+	{
+		$this->_limite_quantidade = $intLimiteQtd;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
+	}
 
   /**
    * Retorna a string com o trecho da query responsável pelo limite de

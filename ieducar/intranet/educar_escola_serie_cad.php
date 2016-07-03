@@ -85,7 +85,6 @@ class indice extends clsCadastro
   var $ativo;
   var $hora_inicio_intervalo;
   var $hora_fim_intervalo;
-  var $hora_fim_intervalo_;
 
   var $ref_cod_instituicao;
   var $ref_cod_curso;
@@ -139,6 +138,7 @@ class indice extends clsCadastro
       'educar_escola_serie_lst.php';
 
     $this->nome_url_cancelar = 'Cancelar';
+    
     return $retorno;
   }
 
@@ -202,15 +202,14 @@ class indice extends clsCadastro
     $this->hora_inicio_intervalo = substr($this->hora_inicio_intervalo, 0, 5);
     $this->hora_fim_intervalo    = substr($this->hora_fim_intervalo, 0, 5);
 
-    // hora
-    $this->campoHora('hora_inicial', 'Hora Inicial', $this->hora_inicial, TRUE);
-    $this->campoHora('hora_final', 'Hora Final', $this->hora_final, TRUE);
+    $this->campoOculto('hora_inicial', "00:00");
+    $this->campoOculto('hora_final', "23:59");
+    $this->campoOculto('hora_inicio_intervalo', "12:00");
+    $this->campooculto('hora_fim_intervalo', "12:01");
 
-    $this->campoHora('hora_inicio_intervalo', 'Hora In&iacute;cio Intervalo',
-      $this->hora_inicio_intervalo, TRUE);
+		$this->campoCheck("bloquear_enturmacao_sem_vagas", "Bloquear enturmação após atingir limite de vagas", $this->bloquear_enturmacao_sem_vagas);
 
-    $this->campoHora('hora_fim_intervalo', 'Hora Fim Intervalo',
-      $this->hora_fim_intervalo, TRUE);
+		$this->campoCheck("bloquear_cadastro_turma_para_serie_com_vagas", "Bloquear cadastro de novas turmas antes de atingir limite de vagas (no mesmo turno)", $this->bloquear_cadastro_turma_para_serie_com_vagas);
 
     $this->campoQuebra();
 
@@ -250,6 +249,11 @@ class indice extends clsCadastro
         $conteudo .= '  <span style="display: block; float: left">Usar padrão do componente?</span>';
         $conteudo .= '</div>';
         $conteudo .= '<br style="clear: left" />';
+        $conteudo .= '<div style="margin-bottom: 10px; float: left">';
+        $conteudo .= "  <label style='display: block; float: left; width: 350px;'><input type='checkbox' name='CheckTodos' onClick='marcarCheck(".'"disciplinas[]"'.");'/>Marcar Todos</label>";
+        $conteudo .= "  <label style='display: block; float: left; width: 100px;'><input type='checkbox' name='CheckTodos2' onClick='marcarCheck(".'"usar_componente[]"'.");';/>Marcar Todos</label>";
+        $conteudo .= '</div>';
+        $conteudo .= '<br style="clear: left" />';         
 
         foreach ($lista as $registro) {
           $checked = '';
@@ -272,7 +276,8 @@ class indice extends clsCadastro
           $conteudo .= '<div style="margin-bottom: 10px; float: left">';
           $conteudo .= "  <label style='display: block; float: left; width: 250px'><input type=\"checkbox\" $checked name=\"disciplinas[$registro->id]\" id=\"disciplinas[]\" value=\"{$registro->id}\">{$registro}</label>";
           $conteudo .= "  <label style='display: block; float: left; width: 100px;'><input type='text' name='carga_horaria[$registro->id]' value='{$cargaHoraria}' size='5' maxlength='7'></label>";
-          $conteudo .= "  <label style='display: block; float: left'><input type='checkbox' name='usar_componente[$registro->id]' value='1' ". ($usarComponente == TRUE ? $checked : '') .">($cargaComponente h)</label>";
+          $conteudo .= "  <label style='display: block; float: left'><input type='checkbox' id='usar_componente[]' name='usar_componente[$registro->id]' value='1' ". ($usarComponente == TRUE ? $checked : '') .">($cargaComponente h)</label>";
+
           $conteudo .= '</div>';
           $conteudo .= '<br style="clear: left" />';
 
@@ -326,10 +331,20 @@ class indice extends clsCadastro
       return FALSE;
     }
 
+    $this->bloquear_enturmacao_sem_vagas = is_null($this->bloquear_enturmacao_sem_vagas) ? 0 : 1;
+    $this->bloquear_cadastro_turma_para_serie_com_vagas = is_null($this->bloquear_cadastro_turma_para_serie_com_vagas) ? 0 : 1;
+    
+    // Por alguma razão além de minha compreensão,
+    // campos ocultos fazem urlencode de chars especiais.
+    $this->hora_inicial = urldecode($this->hora_inicial);
+    $this->hora_final = urldecode($this->hora_final);
+    $this->hora_inicio_intervalo = urldecode($this->hora_inicio_intervalo);
+    $this->hora_fim_intervalo = urldecode($this->hora_fim_intervalo);
+    
     $obj = new clsPmieducarEscolaSerie($this->ref_cod_escola, $this->ref_cod_serie,
       $this->pessoa_logada, $this->pessoa_logada, $this->hora_inicial,
       $this->hora_final, NULL, NULL, 1, $this->hora_inicio_intervalo,
-      $this->hora_fim_intervalo);
+      $this->hora_fim_intervalo, $this->bloquear_enturmacao_sem_vagas, $this->bloquear_cadastro_turma_para_serie_com_vagas);
 
     if ($obj->existe()) {
       $cadastrou = $obj->edita();
@@ -399,9 +414,19 @@ class indice extends clsCadastro
       return FALSE;
     }
 
+    $this->bloquear_enturmacao_sem_vagas = is_null($this->bloquear_enturmacao_sem_vagas) ? 0 : 1;
+    $this->bloquear_cadastro_turma_para_serie_com_vagas = is_null($this->bloquear_cadastro_turma_para_serie_com_vagas) ? 0 : 1;
+    
+    // Por alguma razão além de minha compreensão,
+    // campos ocultos fazem urlencode de chars especiais.
+    $this->hora_inicial = urldecode($this->hora_inicial);
+    $this->hora_final = urldecode($this->hora_final);
+    $this->hora_inicio_intervalo = urldecode($this->hora_inicio_intervalo);
+    $this->hora_fim_intervalo = urldecode($this->hora_fim_intervalo);
+
     $obj = new clsPmieducarEscolaSerie($this->ref_cod_escola, $this->ref_cod_serie,
       $this->pessoa_logada, NULL, $this->hora_inicial, $this->hora_final,
-      NULL, NULL, 1, $this->hora_inicio_intervalo, $this->hora_fim_intervalo);
+      NULL, NULL, 1, $this->hora_inicio_intervalo, $this->hora_fim_intervalo, $this->bloquear_enturmacao_sem_vagas, $this->bloquear_cadastro_turma_para_serie_com_vagas);
 
     $editou = $obj->edita();
     $obj = new clsPmieducarEscolaSerieDisciplina($this->ref_cod_serie,
@@ -524,6 +549,11 @@ function getDisciplina(xml_disciplina)
     conteudo += '  <label span="display: block; float: left">Usar padrão do componente?</span>';
     conteudo += '</div>';
     conteudo += '<br style="clear: left" />';
+    conteudo += '<div style="margin-bottom: 10px; float: left">';
+    conteudo += "  <label style='display: block; float: left; width: 350px;'><input type='checkbox' name='CheckTodos' onClick='marcarCheck("+'"disciplinas[]"'+");'/>Marcar Todos</label>";
+    conteudo += "  <label style='display: block; float: left; width: 100px;'><input type='checkbox' name='CheckTodos2' onClick='marcarCheck("+'"usar_componente[]"'+");';/>Marcar Todos</label>";
+    conteudo += '</div>';
+    conteudo += '<br style="clear: left" />';    
 
     for (var i = 0; i < DOM_array.length; i++) {
       id = DOM_array[i].getAttribute("cod_disciplina");
@@ -531,7 +561,7 @@ function getDisciplina(xml_disciplina)
       conteudo += '<div style="margin-bottom: 10px; float: left">';
       conteudo += '  <label style="display: block; float: left; width: 250px;"><input type="checkbox" name="disciplinas['+ id +']" id="disciplinas[]" value="'+ id +'">'+ DOM_array[i].firstChild.data +'</label>';
       conteudo += '  <label style="display: block; float: left; width: 100px;"><input type="text" name="carga_horaria['+ id +']" value="" size="5" maxlength="7"></label>';
-      conteudo += '  <label style="display: block; float: left"><input type="checkbox" name="usar_componente['+ id +']" value="1">('+ DOM_array[i].getAttribute("carga_horaria") +' h)</label>';
+      conteudo += '  <label style="display: block; float: left"><input type="checkbox" id="usar_componente[]" name="usar_componente['+ id +']" value="1">('+ DOM_array[i].getAttribute("carga_horaria") +' h)</label>';    
       conteudo += '</div>';
       conteudo += '<br style="clear: left" />';
     }
@@ -614,4 +644,28 @@ function atualizaLstSerie(xml)
     campoSerie.disabled = true;
   }
 }
+
+function marcarCheck(idValue) {
+    // testar com formcadastro
+    var contaForm = document.formcadastro.elements.length;
+    var campo = document.formcadastro;
+    var i;
+    if (idValue == 'disciplinas[]'){
+      for (i=0; i<contaForm; i++) {
+          if (campo.elements[i].id == idValue) {
+
+              campo.elements[i].checked = campo.CheckTodos.checked;
+          }
+      }
+    }else {
+      for (i=0; i<contaForm; i++) {
+          if (campo.elements[i].id == idValue) {
+
+              campo.elements[i].checked = campo.CheckTodos2.checked;
+           }
+       }
+
+    }
+     
+} 
 </script>

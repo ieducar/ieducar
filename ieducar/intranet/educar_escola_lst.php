@@ -28,6 +28,7 @@ require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/pmieducar/geral.inc.php" );
+require_once ("include/localizacaoSistema.php");
 
 class clsIndexBase extends clsBase
 {
@@ -36,6 +37,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Escola" );
 		$this->processoAp = "561";
+                $this->addEstilo( "localizacaoSistema" );
 	}
 }
 
@@ -97,7 +99,7 @@ class indice extends clsListagem
 
 		$this->addBanner( "imagens/nvp_top_intranet.jpg", "imagens/nvp_vert_intranet.jpg", "Intranet" );
 
-		$cabecalhos = array( "Escola" );
+		$cabecalhos = array("Escola");
 		$nivel = $obj_permissoes->nivel_acesso($this->pessoa_logada);
 		if( $nivel == 1 )
 		{
@@ -138,7 +140,7 @@ class indice extends clsListagem
 		$obj_escola->setLimite( $this->limite, ( $this->pagina_formulario - 1 ) * $this->limite );
 
 		$cod_escola = $obj_permissoes->getEscola($this->pessoa_logada);
-		
+
 		$lista = $obj_escola->lista(
 			$cod_escola,
 			null,
@@ -160,7 +162,10 @@ class indice extends clsListagem
 		{
 			foreach ( $lista AS $registro )
 			{
-				$linha = array( "<a href=\"educar_escola_det.php?cod_escola={$registro["cod_escola"]}\">{$registro["nome"]}</a>" );
+
+				$linha = array();
+
+				$linha[] = "<a href=\"educar_escola_det.php?cod_escola={$registro["cod_escola"]}\">{$registro["nome"]}</a>";
 				if( $nivel == 1 )
 				{
 					$objInstituicao = new clsPmieducarInstituicao( $registro["ref_cod_instituicao"] );
@@ -178,6 +183,14 @@ class indice extends clsListagem
 			$this->nome_acao = "Novo";
 		}
 		$this->largura = "100%";
+                
+                $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos( array(
+                    $_SERVER['SERVER_NAME']."/intranet" => "i-Educar",
+                    "educar_index.php"                  => "Escola",
+                    ""                                  => "Lista de Escola"
+                ));
+                $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 // cria uma extensao da classe base

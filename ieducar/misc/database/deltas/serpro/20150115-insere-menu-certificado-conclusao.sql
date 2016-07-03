@@ -1,0 +1,3 @@
+INSERT INTO portal.menu_submenu VALUES(40001, 55, 2, 'Certificado de Conclusão', 'module/Reports/CertificadoConclusao', NULL, 3);
+INSERT INTO pmicontrolesis.menu (cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ord_menu, caminho, alvo, suprime_menu, ref_cod_tutormenu, ref_cod_ico) VALUES (999455,NULL,21127,'Certificados',3,NULL,'_self',1,15,20);
+INSERT INTO pmicontrolesis.menu VALUES(40001, 40001, 999455, 'Certificado de Conclusão', 3, 'module/Reports/CertificadoConclusao', '_self', 1, 15, 122);

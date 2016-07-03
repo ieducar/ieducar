@@ -241,6 +241,20 @@ class clsPmieducarAnoLetivoModulo
 				$gruda = ", ";
 			}
 
+      // ativa escolaAnoLetivo se estiver desativado
+      // (quando o escolaAnoLetivo é 'excluido' o registro não é removido)
+      $escolaAnoLetivo = new clsPmieducarEscolaAnoLetivo($this->ref_ref_cod_escola, 
+                                                         $this->ref_ano,
+                                                         null,
+                                                         $_SESSION['id_pessoa'],
+                                                         null,
+                                                         null,
+                                                         null,
+                                                         1);
+      $escolaAnoLetivoDetalhe = $escolaAnoLetivo->detalhe();
+
+      if (isset($escolaAnoLetivoDetalhe['ativo']) and $escolaAnoLetivoDetalhe['ativo'] != '1')
+        $escolaAnoLetivo->edita();
 
 			$db->Consulta( "INSERT INTO {$this->_tabela} ( $campos ) VALUES( $valores )" );
 			return true;
@@ -467,10 +481,11 @@ class clsPmieducarAnoLetivoModulo
 	 *
 	 * @return null
 	 */
-	function setLimite( $intLimiteQtd, $intLimiteOffset = null )
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
 	{
 		$this->_limite_quantidade = $intLimiteQtd;
-		$this->_limite_offset = $intLimiteOffset;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
 	}
 
 	/**

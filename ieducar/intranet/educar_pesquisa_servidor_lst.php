@@ -231,7 +231,9 @@ class indice extends clsListagem
 
     // Paginador
     $this->limite = 20;
-    $this->offset = ($_GET['pagina_{$this->nome}']) ? $_GET['pagina_{$this->nome}'] * $this->limite-$this->limite: 0;
+    $this->offset = $_GET['pagina_' . $this->nome] ?
+    $_GET['pagina_' . $this->nome] * $this->limite - $this->limite :
+    0;
 
     $obj_servidor = new clsPmieducarServidor();
     $obj_servidor->setOrderby('carga_horaria ASC');
@@ -247,6 +249,10 @@ class indice extends clsListagem
     // globalizado e sem disciplinas cadastradas
     $this->ref_cod_disciplina = $this->ref_cod_disciplina ?
       $this->ref_cod_disciplina : NULL;
+
+    // permite alocacao em multiplas turmas no mesmo horario.
+    $array_hora = NULL;
+    $this->horario = NULL;
 
     // Passa NULL para $alocacao_escola_instituicao senão o seu filtro anula
     // um anterior (referente a selecionar somente servidores não alocados),
@@ -334,7 +340,7 @@ class indice extends clsListagem
               $script = " onclick=\"addVal1('{$_SESSION['campo1']}','{$registro['nome']}','{$registro['cod_servidor']}'); addVal1('{$_SESSION['campo2']}','{$registro['cod_servidor']}','{$registro['nome']}'); $setAll fecha();\"";
             }
             else {
-              $script = " onclick=\"addVal1('{$_SESSION['campo1']}','{$registro['cod_servidor']}', null); addVal1('{$_SESSION['campo2']}','{$registro['nome']}', null); $setAll fecha();\"";
+              $script = " onclick=\"addVal1('{$_SESSION['campo1']}',null,'{$registro['cod_servidor']}'); addVal1('{$_SESSION['campo2']}',null,'{$registro['nome']}'); $setAll fecha();\"";
             }
           }
           elseif (is_string($_SESSION['campo1'])) {
@@ -360,9 +366,7 @@ class indice extends clsListagem
         ) );
       }
     }
-
-    $this->addPaginador2('educar_pesquisa_servidor_lst.php', $total, $_GET,
-      $this->nome, $this->limite);
+    $this->addPaginador2('educar_pesquisa_servidor_lst.php', $total, $_GET, $this->nome, $this->limite);
 
     $obj_permissoes = new clsPermissoes();
     $this->largura = '100%';
@@ -382,21 +386,21 @@ $pagina->addForm($miolo);
 $pagina->MakeAll();
 ?>
 <script type="text/javascript">
-function addVal1(campo, valor, opcao)
+function addVal1(campo,opcao, valor)
 {
   if (window.parent.document.getElementById(campo)) {
     if (window.parent.document.getElementById(campo).type == 'select-one') {
       obj                     = window.parent.document.getElementById(campo);
       novoIndice              = obj.options.length;
-      obj.options[novoIndice] = new Option(opcao);
-      opcao                   = obj.options[novoIndice];
-      opcao.value             = valor;
-      opcao.selected          = true;
+      obj.options[novoIndice] = new Option(valor);
+      valor                   = obj.options[novoIndice];
+      valor.value             = opcao.toString();
+      valor.selected          = true;
       obj.onchange();
     }
     else if (window.parent.document.getElementById(campo)) {
       obj       =  window.parent.document.getElementById(campo);
-      obj.value = opcao;
+      obj.value = valor;
     }
   }
 }

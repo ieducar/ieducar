@@ -107,7 +107,7 @@ class indice extends clsDetalhe
 				$tipo = 1;
 				$endereco_lst = $obj_endereco->lista($registro["ref_idpes"]);
 				if ( $endereco_lst )
-				{			
+				{
 					foreach ($endereco_lst as $endereco)
 					{
 						$cep = $endereco["cep"]->cep;
@@ -392,7 +392,7 @@ class indice extends clsDetalhe
 			{
 				$this->addDetalhe( array( "Fax", "{$telefone_fax}") );
 			}
-			
+
 		}
 		else if ($tipo == 3)
 		{
@@ -477,25 +477,26 @@ class indice extends clsDetalhe
 			$this->addDetalhe( array( "Curso", "{$tabela}") );
 		}
 
-		if( $tabela = $this->listaAnos() )
-		{
+		if( $tabela = $this->listaAnos() ) {
 			$this->addDetalhe( array( "-", "{$tabela}") );
 		}
-		$obj_permissoes = new clsPermissoes();
-		if( $obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 3 ) )
-		{
-			$this->url_novo = "educar_escola_cad.php";
-			$this->url_editar = "educar_escola_cad.php?cod_escola={$registro["cod_escola"]}";
 
-		}
-		if( $obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 7 ) )
-		{
-			$this->array_botao = array ("Definir Ano Letivo");
+		$obj_permissoes = new clsPermissoes();
+
+		$canCreate = $obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 3 );
+		$canEdit   = $obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 7 );
+
+  	if($canCreate)
+			$this->url_novo = "educar_escola_cad.php";
+
+		if($canEdit) {
+			$this->url_editar      = "educar_escola_cad.php?cod_escola={$registro["cod_escola"]}";
+			$this->array_botao     = array ("Definir Ano Letivo");
 			$this->array_botao_url = array ("educar_escola_ano_letivo_cad.php?cod_escola={$registro["cod_escola"]}");
 		}
-		$this->url_cancelar = "educar_escola_lst.php";
 
-		$this->largura = "100%";
+		$this->url_cancelar = "educar_escola_lst.php";
+		$this->largura      = "100%";
 	}
 
 	//***
@@ -544,16 +545,21 @@ class indice extends clsDetalhe
 				$matricula_em_andamento = $obj_matricula_ano->lista(null,null,$this->cod_escola,null,null,null,null,3,null,null,null,null,1,$ano['ano'],null,null,1,null,1,null,null,null,null,null,null,false);
 				if(!$matricula_em_andamento && $existe_ano_andamento && $ano['andamento'] == 1)
 					$excluir = "<td><a href='#' onclick=\"preencheForm('{$ano['ano']}','{$ano['ref_cod_escola']}','finalizar');\" ><img src=\"imagens/i-educar/nvp_bot_finalizar_ano.gif\" border=0 style='padding-left:10px;'></a></td>";
-				else
+				elseif ($matricula_em_andamento && $existe_ano_andamento && $ano['andamento'] == 1)
 				{
 
+					$excluir = "<td width='130' align='center'><span class='formlttd'><b>--- Ano Corrente ---</b></span></td>";
+				}
+				else
+				{
 					$excluir = "<td width='130'>&nbsp;</td>";
 				}
+
 
 				$editar = "";//"<td align='center'> - </td>";
 
 				if($ano['andamento'] == 2)
-					$incluir = "<td colspan='3' align='center'><span class='formlttd'><b>--- Ano Finalizado ---</b></span></td>";
+					$incluir = "<td>&nbsp;</td><td align='center'><span class='formlttd'><b>--- Ano Finalizado ---</b></span></td><td>&nbsp;</td>";
 				else
 					$editar = "<td><a href='#' onclick=\"preencheForm('{$ano['ano']}','{$ano['ref_cod_escola']}','editar');\" ><img src=\"imagens/i-educar/nvp_bot_editar_ano.gif\" alt=\"Editar Ano Letivo\" border=0 style='padding-left:10px;'></a></td>";
 

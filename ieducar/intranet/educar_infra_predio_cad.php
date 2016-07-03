@@ -104,61 +104,19 @@ class indice extends clsCadastro
 		@session_write_close();
 		// primary keys
 		$this->campoOculto( "cod_infra_predio", $this->cod_infra_predio );
-
-
-		//** 2 - Escola 1 - institucional 0 - poli-institucional
-//		$obj_permissao = new clsPermissoes();
-//		$nivel_usuario = $obj_permissao->nivel_acesso($this->pessoa_logada);
-//
-//		//busca instituicao e escola do usuario
-//		$obj_usuario = new clsPmieducarUsuario($this->pessoa_logada);
-//		$obj_usuario->setCamposLista("ref_cod_instituicao,ref_cod_escola");
-//		$det_obj_usuario = $obj_usuario->detalhe();
-//
-//
-//		$instituicao_usuario = $det_obj_usuario["ref_cod_instituicao"];
-//		$escola_usuario = $det_obj_usuario["ref_cod_escola"];
-//
-//		if( class_exists( "clsPmieducarEscola" ) )
-//		{
-//			$objTemp = new clsPmieducarEscola($escola_usuario);
-//			$objTemp->setCamposLista("nm_escola");
-//			$det_objTemp = $objTemp->detalhe();
-//			$nome_escola = $det_objTemp["nm_escola"];
-//
-//		}
-//		else
-//		{
-//			echo "<!--\nErro\nClasse clsPmieducarEscola nao encontrada\n-->";
-//			$nome_escola =  "Erro na geracao";
-//		}
-//
-//		// listagem escola - instituicao
-//		if(!$this->ref_cod_escola)
-//		{
-//			$obrigatorio = true;
-//			include("include/pmieducar/educar_pesquisa_instituicao_escola.php");
-//			if($nivel_usuario == 2)
-//				$this->campoRotulo("ref_cod_escola_","Escola",ucfirst($nome_escola));
-//		}else{
-//
-//				$this->campoRotulo("ref_cod_escola_","Escola",ucfirst($nome_escola));
-//				$this->campoOculto("ref_cod_escola",$escola_usuario);
-//				//$this->campoOculto("ref_cod_instituicao",$escola_usuario);
-//		}
+		
+		// Sem o id da instituição ele não preenche os campos de instituição e escola
+		$escola = new clsPmieducarEscola($this->ref_cod_escola);
+		$escola_data = $escola->detalhe();
+		$this->ref_cod_instituicao = $escola_data['ref_cod_instituicao'];
 
 		$obrigatorio = true;
 		$get_escola	 = true;
 		include("include/pmieducar/educar_campo_lista.php");
 
-		// text
 		$this->campoTexto( "nm_predio", "Nome Prédio", $this->nm_predio, 30, 255, true );
 		$this->campoMemo( "desc_predio", "Descrição Prédio", $this->desc_predio, 60, 10, false );
 		$this->campoMemo( "endereco", "Endereço", $this->endereco, 60, 2, true );
-
-
-
-
 	}
 
 	function Novo()

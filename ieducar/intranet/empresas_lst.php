@@ -28,6 +28,9 @@ $desvio_diretorio = "";
 require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
+require_once 'include/pmieducar/geral.inc.php';
+require_once 'include/localizacaoSistema.php';
+
 
 class clsIndex extends clsBase
 {
@@ -36,6 +39,8 @@ class clsIndex extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} Empresas!" );
 		$this->processoAp = array("41", "649");
+                $this->addEstilo( "localizacaoSistema" );
+
 	}
 }
 
@@ -43,6 +48,10 @@ class indice extends clsListagem
 {
 	function Gerar()
 	{
+		@session_start();
+		$this->pessoa_logada = $_SESSION['id_pessoa'];
+		session_write_close();
+		
 		$this->titulo = "Empresas";
 		$this->addBanner( "imagens/nvp_top_intranet.jpg", "imagens/nvp_vert_intranet.jpg", "Intranet" );
 		
@@ -96,10 +105,16 @@ class indice extends clsListagem
 		// Paginador
 		$this->addPaginador2( " empresas_lst.php", $total, $_GET, $this->nome, $limite );
 
-		$this->acao = "go(\"empresas_cad.php\")";
-		$this->nome_acao = "Novo";
+		$obj_permissoes = new clsPermissoes();
+		if( $obj_permissoes->permissao_cadastra(41, $this->pessoa_logada, 3)) {
+			$this->acao = "go(\"empresas_cad.php\")";
+			$this->nome_acao = "Novo";
+		}
 
 		$this->largura = "100%";
+                $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos(array($_SERVER['SERVER_NAME'] . '/intranet' => 'i-Educar', '' => 'Registro de Empresas'));
+                $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 

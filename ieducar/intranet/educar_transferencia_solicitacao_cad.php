@@ -28,6 +28,7 @@ require_once ("include/clsBase.inc.php");
 require_once ("include/clsCadastro.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/pmieducar/geral.inc.php" );
+require_once 'lib/Portabilis/Date/Utils.php';
 
 class clsIndexBase extends clsBase
 {
@@ -82,6 +83,11 @@ class indice extends clsCadastro
 		{
 			if( $obj_permissoes->permissao_excluir( 578, $this->pessoa_logada, 7 ) )
 			{
+
+        if ($_GET['reabrir_matricula']) {
+          $this->reabrirMatricula($this->ref_cod_matricula);
+        }
+
 				$this->Excluir();
 			}
 		}
@@ -90,6 +96,25 @@ class indice extends clsCadastro
 		$this->nome_url_cancelar = "Cancelar";
 		return $retorno;
 	}
+
+  
+  function reabrirMatricula($matriculaId) {
+    $matricula = new clsPmieducarMatricula($matriculaId, NULL, NULL, NULL, $this->pessoa_logada, NULL, NULL, 3);
+    $matricula->edita();   
+
+    $sql = "select ref_cod_turma, sequencial from pmieducar.matricula_turma where ref_cod_matricula = $matriculaId and sequencial = (select max(sequencial) from pmieducar.matricula_turma where ref_cod_matricula = $matriculaId) and not exists(select 1 from pmieducar.matricula_turma where ref_cod_matricula = $matriculaId and ativo = 1 limit 1) limit 1";
+
+    $db = new clsBanco();
+    $ultimaEnturmacao = $db->Consulta($sql);
+    $db->ProximoRegistro();
+    $ultimaEnturmacao = $db->Tupla();
+
+    if($ultimaEnturmacao) {
+      $enturmacao = new clsPmieducarMatriculaTurma($matriculaId, $ultimaEnturmacao['ref_cod_turma'], $this->pessoa_logada, NULL, NULL, NULL, 1, null, $ultimaEnturmacao['sequencial']);
+      $enturmacao->edita();
+    }
+  }
+
 
 	function Gerar()
 	{
@@ -132,7 +157,7 @@ class indice extends clsCadastro
 			$opcoes = array( "" => "Erro na geracao" );
 		}
 		$this->campoLista( "ref_cod_transferencia_tipo", "Transfer&ecirc;ncia Motivo", $opcoes, $this->ref_cod_transferencia_tipo );
-
+		$this->inputsHelper()->date('data_cancel', array('label' => 'Data da transferência', 'placeholder' => 'dd/mm/yyyy', 'value' => date('d/m/Y')));
 		// text
 		$this->campoMemo( "observacao", "Observa&ccedil;&atilde;o", $this->observacao, 60, 5, false );
 	}
@@ -153,6 +178,30 @@ class indice extends clsCadastro
 //			$det_matricula = array_shift($lst_matricula);
 //			$this->ref_cod_matricula_saida = $det_matricula["cod_matricula"];
 
+  
+    // escola externa
+		$this->data_cancel = Portabilis_Date_Utils::brToPgSQL($this->data_cancel);
+		$obj = new clsPmieducarMatricula( $this->ref_cod_matricula, null,null,null,$this->pessoa_logada);
+		$det_matricula = $obj->detalhe();
+
+		if(is_null($det_matricula['data_matricula'])){
+
+			if(substr($det_matricula['data_cadastro'], 0, 10) > $this->data_cancel){
+
+				$this->mensagem = "Data de abandono não pode ser inferior a data da matrícula.<br>";
+				return false;	
+				die();							
+			} 
+		}else{
+			if(substr($det_matricula['data_matricula'], 0, 10) > $this->data_cancel){
+				$this->mensagem = "Data de abandono não pode ser inferior a data da matrícula.<br>";
+				return false;
+				die();
+			}
+		}		
+		$editou = $obj->edita();
+
+		$obj->data_cancel = $this->data_cancel;    
 		if ($this->transferencia_tipo == 2)
 		{
 			$this->data_transferencia = date("Y-m-d");
@@ -171,19 +220,23 @@ class indice extends clsCadastro
 					$this->mensagem = "N&atilde;o foi poss&iacute;vel editar a Matr&iacute;cula do Aluno.<br>";
 					return false;
 				}
-				
-				$obj_matricula_turma = new clsPmieducarMatriculaTurma();
-				$lst_matricula_turma = $obj_matricula_turma->lista( $this->ref_cod_matricula, null, null, null, null, null, null, null, 1 );
-				if( $lst_matricula_turma ) 
+			
+				$enturmacoes = new clsPmieducarMatriculaTurma();
+				$enturmacoes = $enturmacoes->lista($this->ref_cod_matricula, null, null, null, null, null, null, null, 1 );
+
+				if($enturmacoes) 
 				{
-					$det_matricula_turma = array_shift($lst_matricula_turma);
-					
-					$obj_matricula_turma = new clsPmieducarMatriculaTurma( $this->ref_cod_matricula, $det_matricula_turma['ref_cod_turma'], $this->pessoa_logada, null, null, null, 0, null, $det_matricula_turma['sequencial'] );
-					if( !$obj_matricula_turma->edita() ) 
-					{
-						$this->mensagem = "N&atilde;o foi poss&iacute;vel desativar a Matr&iacute;cula Turma do Aluno.<br>";
-						return false;
-					}
+          // foreach necessário pois metodo edita e exclui da classe clsPmieducarMatriculaTurma, necessitam do
+          // código da turma e do sequencial
+					foreach ($enturmacoes as $enturmacao) {
+					  $enturmacao = new clsPmieducarMatriculaTurma( $this->ref_cod_matricula, $enturmacao['ref_cod_turma'], $this->pessoa_logada, null, null, null, 0, null, $enturmacao['sequencial']);
+
+					  if(! $enturmacao->edita())
+					  {
+    				  $this->mensagem = "N&atilde;o foi poss&iacute;vel desativar as enturma&ccedil;&otilde;es da matr&iacute;cula.";
+						  return false;
+					  }
+          }
 				}
 			}
 		}
@@ -192,6 +245,11 @@ class indice extends clsCadastro
 		$cadastrou = $obj->cadastra();
 		if( $cadastrou )
 		{
+			
+			$obj = new clsPmieducarMatricula( $this->ref_cod_matricula, null,null,null,$this->pessoa_logada);
+			$det_matricula = $obj->detalhe();
+			$obj->data_cancel = $this->data_cancel;
+			$obj->edita();			
 			$this->mensagem .= "Cadastro efetuado com sucesso.<br>";
 			header( "Location: educar_matricula_det.php?cod_matricula={$this->ref_cod_matricula}" );
 			die();

@@ -28,6 +28,7 @@ require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/pmieducar/geral.inc.php" );
+require_once ("include/localizacaoSistema.php");
 
 class clsIndexBase extends clsBase
 {
@@ -35,6 +36,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Exemplar Devolu&ccedil;&atilde;o" );
 		$this->processoAp = "628";
+                $this->addEstilo( "localizacaoSistema" );
 	}
 }
 
@@ -100,6 +102,7 @@ class indice extends clsListagem
 
 		$lista_busca = array(
 			"Cliente",
+			"Código exemplar",
 			"Tombo",
 			"Exemplar",
 			"Data Retirada"
@@ -120,7 +123,8 @@ class indice extends clsListagem
 		$this->campoTexto("nm_obra","Obra", $this->nm_obra, 30, 255, false, false, false, "", "<img border=\"0\" onclick=\"pesquisa_obra();\" id=\"ref_cod_exemplar_lupa\" name=\"ref_cod_exemplar_lupa\" src=\"imagens/lupa.png\"\/>");
 		$this->campoOculto("ref_cod_acervo", $this->ref_cod_acervo);
 
-		$this->campoNumero("ref_cod_exemplar","Tombo", $this->ref_cod_exemplar, 15, 50);
+		$this->campoNumero("ref_cod_exemplar","Código exemplar", $this->ref_cod_exemplar, 15, 10);
+		$this->campoNumero("tombo","Tombo", $this->tombo, 15, 10);
 
 		if ($this->ref_cod_biblioteca)
 		{
@@ -227,6 +231,7 @@ class indice extends clsListagem
 				$lista_busca = array(
 					"<a href=\"educar_exemplar_devolucao_det.php?cod_emprestimo={$registro["cod_emprestimo"]}\">{$registro["ref_cod_cliente"]}</a>",
 					"<a href=\"educar_exemplar_devolucao_det.php?cod_emprestimo={$registro["cod_emprestimo"]}\">{$registro["ref_cod_exemplar"]}</a>",
+					"<a href=\"educar_exemplar_devolucao_det.php?cod_emprestimo={$registro["cod_emprestimo"]}\">{$det_exemplar["tombo"]}</a>",
 					"<a href=\"educar_exemplar_devolucao_det.php?cod_emprestimo={$registro["cod_emprestimo"]}\">{$registro["titulo"]}</a>",
 					"<a href=\"educar_exemplar_devolucao_det.php?cod_emprestimo={$registro["cod_emprestimo"]}\">{$registro["data_retirada_br"]}</a>"
 				);
@@ -245,6 +250,14 @@ class indice extends clsListagem
 		}
 		$this->addPaginador2( "educar_exemplar_devolucao_lst.php", $total, $_GET, $this->nome, $this->limite );
 		$this->largura = "100%";
+                
+                $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos( array(
+                    $_SERVER['SERVER_NAME']."/intranet" => "i-Educar",
+                    "educar_biblioteca_index.php"                  => "Biblioteca",
+                    ""                                  => "Lista de Devoluções"
+                ));
+                $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 // cria uma extensao da classe base

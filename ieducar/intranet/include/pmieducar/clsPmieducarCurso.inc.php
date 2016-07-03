@@ -61,6 +61,7 @@ class clsPmieducarCurso
   var $ref_cod_instituicao;
   var $padrao_ano_escolar;
   var $hora_falta;
+  var $multi_seriado;
 
   /**
    * Armazena o total de resultados obtidos na última chamada ao método lista().
@@ -128,13 +129,13 @@ class clsPmieducarCurso
     $ato_poder_publico = NULL, $edicao_final = NULL, $objetivo_curso = NULL,
     $publico_alvo = NULL, $data_cadastro = NULL, $data_exclusao = NULL,
     $ativo = NULL, $ref_usuario_exc = NULL, $ref_cod_instituicao = NULL,
-    $padrao_ano_escolar = NULL, $hora_falta = NULL, $avaliacao_globalizada = NULL)
+    $padrao_ano_escolar = NULL, $hora_falta = NULL, $avaliacao_globalizada = NULL, $multi_seriado = NULL)
   {
     $db = new clsBanco();
     $this->_schema = 'pmieducar.';
     $this->_tabela = $this->_schema . 'curso';
 
-    $this->_campos_lista = $this->_todos_campos = 'cod_curso, ref_usuario_cad, ref_cod_tipo_regime, ref_cod_nivel_ensino, ref_cod_tipo_ensino, nm_curso, sgl_curso, qtd_etapas, carga_horaria, ato_poder_publico, objetivo_curso, publico_alvo, data_cadastro, data_exclusao, ativo, ref_usuario_exc, ref_cod_instituicao, padrao_ano_escolar, hora_falta';
+    $this->_campos_lista = $this->_todos_campos = 'cod_curso, ref_usuario_cad, ref_cod_tipo_regime, ref_cod_nivel_ensino, ref_cod_tipo_ensino, nm_curso, sgl_curso, qtd_etapas, carga_horaria, ato_poder_publico, objetivo_curso, publico_alvo, data_cadastro, data_exclusao, ativo, ref_usuario_exc, ref_cod_instituicao, padrao_ano_escolar, hora_falta, multi_seriado';
 
     if (is_numeric($ref_cod_instituicao)) {
       if (class_exists('clsPmieducarInstituicao')) {
@@ -313,6 +314,8 @@ class clsPmieducarCurso
     if (is_numeric($hora_falta)) {
       $this->hora_falta = $hora_falta;
     }
+
+    $this->multi_seriado = $multi_seriado;
   }
 
   /**
@@ -424,6 +427,12 @@ class clsPmieducarCurso
         $gruda = ", ";
       }
 
+      if (is_numeric($this->multi_seriado)) {
+				$campos .= "{$gruda}multi_seriado";
+				$valores .= "{$gruda}'{$this->multi_seriado}'";
+				$gruda = ", ";
+      }
+
       $db->Consulta("INSERT INTO {$this->_tabela} ( $campos ) VALUES( $valores )");
       return $db->InsertId("{$this->_tabela}_cod_curso_seq");
     }
@@ -533,6 +542,12 @@ class clsPmieducarCurso
         $set .= "{$gruda}hora_falta = 0";
         $gruda = ", ";
       }
+
+			if( is_numeric( $this->multi_seriado))
+			{
+				$set .= "{$gruda}multi_seriado = '{$this->multi_seriado}'";
+				$gruda = ", ";
+			}
 
       if ($set) {
         $db->Consulta("UPDATE {$this->_tabela} SET $set WHERE cod_curso = '{$this->cod_curso}'");
@@ -773,14 +788,17 @@ class clsPmieducarCurso
     $this->_campos_lista = $this->_todos_campos;
   }
 
-  /**
-   * Define limites de retorno para o método Lista().
-   */
-  function setLimite($intLimiteQtd, $intLimiteOffset = NULL)
-  {
-    $this->_limite_quantidade = $intLimiteQtd;
-    $this->_limite_offset = $intLimiteOffset;
-  }
+	/**
+	 * Define limites de retorno para o metodo lista
+	 *
+	 * @return null
+	 */
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
+	{
+		$this->_limite_quantidade = $intLimiteQtd;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
+	}
 
   /**
    * Retorna a string com o trecho da query responsável pelo limite de

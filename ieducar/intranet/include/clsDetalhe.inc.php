@@ -154,43 +154,65 @@ class clsDetalhe extends Core_Controller_Page_Abstract
       ";
 
     if (empty($this->detalhe)) {
-      $retorno .= "<tr><td class='tableDetalheLinhaSim' colspan='2'>N&atilde;o h&aacute; informa&ccedil;&atilde;o a ser apresentada.</td></tr>\n";
+      $retorno .= "<tr><td class='tableDetalheLinhaSim' colspan='2'>N&atilde;o h&aacute; informa&ccedil;&atilde;o a ser apresentada.</td></tr>";
     }
-    else {
-      if (is_array($this->detalhe)) {
+    else
+    {
+      if (is_array($this->detalhe))
+      {
         reset($this->detalhe);
 
         $campo_anterior = "";
         $md = TRUE;
 
-        foreach ($this->detalhe as $pardetalhe) {
-          $campo = $pardetalhe[0].":";
-          $texto = $pardetalhe[1];
+        foreach ($this->detalhe as $pardetalhe)
+        {
+          if (is_array($pardetalhe))
+          {
+            $campo 			 = $pardetalhe[0].":";
+            $texto			 = $pardetalhe[1];
+            $classe_estilo 	 = $pardetalhe[2];
 
-          if ($campo == $campo_anterior) {
-            $campo = "";
-          }
-          else {
-            $campo_anterior = $campo;
-            $md = !$md;
-          }
-
-          if ($campo == "-:") {
-            if (empty($texto)) {
-              $texto = '&nbsp;';
+            if ($campo == $campo_anterior)
+            {
+              $campo = "";
+            }
+            else
+            {
+              $campo_anterior = $campo;
+              $md = !$md;
             }
 
-            $retorno .= "<tr><td colspan='2' class='' width='20%'><span class='form'><b>$texto</b></span></td></tr>\n";
+            if ($campo == "-:")
+            {
+              if (empty($texto))
+              {
+                $texto = '&nbsp;';
+              }
+              $retorno .= "<tr><td colspan='2' class='' width='20%'><span class='form'><b>$texto</b></span></td></tr>";
+            }
+            else
+            {
+              $classe = $md ? 'formmdtd' : 'formlttd';
+              $retorno .= "<tr><td class='$classe' width='20%'>$campo</td><td class='$classe'>";
+              if (isset($classe_estilo))
+              	$retorno .= '<span class="'.$classe_estilo.'">'.$texto.'</span>';
+              else
+              	$retorno .= $texto;
+              $retorno .= '</td></tr>';
+            }
           }
-          else {
-            $classe = $md ? 'formmdtd' : 'formlttd';
-            $retorno .= "<tr><td class='$classe' width='20%'>$campo</td><td class='$classe'>$texto</td></tr>\n";
+          else
+          {
+
+            $retorno .= "<tr><td colspan='2'>$pardetalhe</td></tr>";
+
           }
         }
       }
     }
 
-    $retorno .= "<tr><td class='tableDetalheLinhaSeparador' colspan='2'></td></tr>\n";
+    $retorno .= "<tr><td class='tableDetalheLinhaSeparador' colspan='2'></td></tr>";
 
     if (!empty($this->url_editar) || !empty($this->url_cancelar) || $this->array_botao) {
       $retorno .= "
@@ -203,15 +225,15 @@ class clsDetalhe extends Core_Controller_Page_Abstract
             </script>";
 
       if ($this->url_novo) {
-        $retorno .= "&nbsp;<input type='button' class='botaolistagem' onclick='javascript:go( \"$this->url_novo\" );' value=' {$this->caption_novo} '>&nbsp;\n";
+        $retorno .= "&nbsp;<input type='button' class='botaolistagem' onclick='javascript:go( \"$this->url_novo\" );' value=' {$this->caption_novo} '>&nbsp;";
       }
 
       if ($this->url_editar) {
-        $retorno .= "&nbsp;<input type='button' class='botaolistagem' onclick='javascript:go( \"$this->url_editar\" );' value=' Editar '>&nbsp;\n";
+        $retorno .= "&nbsp;<input type='button' class='botaolistagem' onclick='javascript:go( \"$this->url_editar\" );' value=' Editar '>&nbsp;";
       }
 
       if ($this->url_cancelar) {
-        $retorno .= "&nbsp;<input type='button' class='botaolistagem' onclick='javascript:go( \"$this->url_cancelar\" );' value=' $this->nome_url_cancelar '>&nbsp;\n";
+        $retorno .= "&nbsp;<input type='button' class='botaolistagem' onclick='javascript:go( \"$this->url_cancelar\" );' value=' $this->nome_url_cancelar '>&nbsp;";
       }
       $retorno .= "</td></tr>";
 
@@ -221,12 +243,12 @@ class clsDetalhe extends Core_Controller_Page_Abstract
 
       if ($this->array_botao_url) {
         for ($i = 0, $total = count($this->array_botao); $i < $total; $i++) {
-          $retorno .= "&nbsp;<input type='button' class='botaolistagem' onclick='javascript:go( \"".$this->array_botao_url[$i]."\" );' value='".$this->array_botao[$i]."'>&nbsp;\n";
+          $retorno .= "&nbsp;<input type='button' class='botaolistagem' onclick='javascript:go( \"".$this->array_botao_url[$i]."\" );' value='".$this->array_botao[$i]."'>&nbsp;";
         }
       }
       elseif ($this->array_botao_url_script) {
         for ($i = 0, $total = count($this->array_botao); $i < $total; $i++) {
-          $retorno .= "&nbsp;<input type='button' class='botaolistagem' onclick='{$this->array_botao_url_script[$i]}' value='".$this->array_botao[$i]."'>&nbsp;\n";
+          $retorno .= "&nbsp;<input type='button' class='botaolistagem' onclick='{$this->array_botao_url_script[$i]}' value='".$this->array_botao[$i]."'>&nbsp;";
         }
       }
 

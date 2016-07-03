@@ -51,7 +51,7 @@ class indice extends clsDetalhe
 		$objPessoa = new clsPessoaFisica();
 		
 		$db = new clsBanco();
-		$db->Consulta( "SELECT b.ref_ref_cod_pessoa_fj, b.cod_portal_banner, b.caminho, b.title, b.prioridade, b.link, b.lateral FROM portal_banner b WHERE b.cod_portal_banner={$cod_portal_banner}" );
+		$db->Consulta( "SELECT b.ref_ref_cod_pessoa_fj, b.cod_portal_banner, b.caminho, b.title, b.prioridade, b.link, b.is_lateral FROM portal_banner b WHERE b.cod_portal_banner={$cod_portal_banner}" );
 		if ($db->ProximoRegistro())
 		{
 			list ($cod_pessoa, $cod_portal_banner, $caminho, $title, $prioridade, $link, $lateral ) = $db->Tupla();

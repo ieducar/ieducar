@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -68,6 +68,7 @@ class indice extends clsDetalhe
 	var $origem;
 	var $extra_curricular;
 	var $ref_cod_matricula;
+	var $frequencia;
 
 	function Gerar()
 	{
@@ -132,7 +133,7 @@ class indice extends clsDetalhe
 			}
 			if( $registro["nm_serie"] )
 			{
-				$this->addDetalhe( array( "Curso", "{$registro["nm_serie"]}") );
+				$this->addDetalhe( array( "SÃ©rie", "{$registro["nm_serie"]}") );
 			}
 		}
 		else
@@ -154,6 +155,12 @@ class indice extends clsDetalhe
 				$this->addDetalhe( array( "S&eacute;rie", "{$registro["nm_serie"]}") );
 			}
 		}
+
+		if( $registro["nm_curso"] )
+		{
+			$this->addDetalhe( array( "Curso", "{$registro["nm_curso"]}") );
+		}
+
 		if( $registro["ano"] )
 		{
 			$this->addDetalhe( array( "Ano", "{$registro["ano"]}") );
@@ -164,9 +171,16 @@ class indice extends clsDetalhe
 
 			$this->addDetalhe( array( "Carga Hor&aacute;ria", "{$registro["carga_horaria"]}") );
 		}
+
+		$this->addDetalhe( array( "Faltas globalizadas", is_numeric($registro["faltas_globalizadas"]) ? 'Sim' : 'NÃ£o'));
+
 		if( $registro["dias_letivos"] )
 		{
 			$this->addDetalhe( array( "Dias Letivos", "{$registro["dias_letivos"]}") );
+		}
+		if( $registro["frequencia"] )
+		{
+			$this->addDetalhe( array( "FrequÃªncia", "{$registro["frequencia"]}") );
 		}
 		if( $registro["extra_curricular"] )
 		{
@@ -175,6 +189,15 @@ class indice extends clsDetalhe
 		else
 		{
 			$this->addDetalhe( array( "Extra-Curricular", "N&atilde;o") );
+		}
+
+    if( $registro["aceleracao"] )
+		{
+			$this->addDetalhe( array( "AceleraÃ§Ã£o", "Sim") );
+		}
+		else
+		{
+			$this->addDetalhe( array( "AceleraÃ§Ã£o", "N&atilde;o") );
 		}
 		if( $registro["origem"] )
 		{
@@ -209,6 +232,21 @@ class indice extends clsDetalhe
 			$this->addDetalhe( array( "Situa&ccedil;&atilde;o", "{$registro["aprovado"]}") );
 		}
 
+			if( $registro["registro"] )
+			{
+				$this->addDetalhe( array( "Registro (arquivo)", "{$registro["registro"]}") );
+			}
+
+			if( $registro["livro"] )
+			{
+				$this->addDetalhe( array( "Livro", "{$registro["livro"]}") );
+			}
+
+			if( $registro["folha"] )
+			{
+				$this->addDetalhe( array( "Folha", "{$registro["folha"]}") );
+			}
+
 		$obj = new clsPmieducarHistoricoDisciplinas();
 		$obj->setOrderby("nm_disciplina ASC");
 		$lst = $obj->lista( null,$this->ref_cod_aluno,$this->sequencial );
@@ -240,9 +278,9 @@ class indice extends clsDetalhe
 							    <td {$color} align='left'>{$valor["nm_disciplina"]}</td>
 							    <td {$color} align='center'>{$valor["nota"]}</td>";
 
-				if ($registro["faltas_globalizadas"] && !$prim_disciplina)
+				if (is_numeric($registro["faltas_globalizadas"]) && !$prim_disciplina)
 					$tabela .= "<td rowspan='{$qtd_disciplinas}' {$color} align='center'>{$registro["faltas_globalizadas"]}</td>";
-				else if ( !$registro["faltas_globalizadas"] )
+				else if ( !is_numeric($registro["faltas_globalizadas"]) )
 					$tabela .= "<td {$color} align='center'>{$valor["faltas"]}</td>";
 
 				$tabela .= "</tr>";
@@ -258,6 +296,8 @@ class indice extends clsDetalhe
 		{
 			$this->addDetalhe( array( "Disciplina", "{$tabela}") );
 		}
+
+		$this->addBotao('Copiar Hist&oacute;rico',"educar_historico_escolar_cad.php?ref_cod_aluno={$registro["ref_cod_aluno"]}&sequencial={$registro["sequencial"]}&copia=true");
 
 		$obj_permissoes = new clsPermissoes();
 		if( $obj_permissoes->permissao_cadastra( 578, $this->pessoa_logada, 7 ) )

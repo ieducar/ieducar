@@ -1,31 +1,31 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *																	     *
-*	@author Prefeitura Municipal de Itajaí								 *
+*	@author Prefeitura Municipal de ItajaÃ­								 *
 *	@updated 29/03/2007													 *
-*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 *																		 *
-*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 *						ctima@itajai.sc.gov.br					    	 *
 *																		 *
-*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 *																		 *
-*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 *																		 *
-*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 *	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 *	02111-1307, USA.													 *
 *																		 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /**
-* @author Prefeitura Municipal de Itajaï¿½
+* @author Prefeitura Municipal de ItajaÃ¯Â¿Â½
 *
 * Criado em 17/07/2006 09:18 pelo gerador automatico de classes
 */
@@ -333,6 +333,9 @@ class clsPmieducarExemplar
 	 */
 	function cadastra()
 	{
+		if(!is_numeric( $this->preco ))
+			$this->preco = 0.00;		
+		
 		if( is_numeric( $this->ref_cod_fonte ) && is_numeric( $this->ref_cod_acervo ) && is_numeric( $this->ref_cod_situacao ) && is_numeric( $this->ref_usuario_cad ) && is_numeric( $this->permite_emprestimo ) && is_numeric( $this->preco ) )
 		{
 			$db = new clsBanco();
@@ -395,13 +398,22 @@ class clsPmieducarExemplar
 			$campos .= "{$gruda}ativo";
 			$valores .= "{$gruda}'1'";
 			$gruda = ", ";
-			if( is_string( $this->data_aquisicao ) )
+			
+                        if( is_string( $this->data_aquisicao ) )
 			{
 				$campos .= "{$gruda}data_aquisicao";
 				$valores .= "{$gruda}'{$this->data_aquisicao}'";
 				$gruda = ", ";
 			}
-
+                        
+                        if($this->tombo != NULL){
+                            $sql = "SELECT * FROM pmieducar.exemplar WHERE tombo = {$this->tombo}";
+                            $consulta = new clsBanco();
+                            $tombo = $consulta->CampoUnico($sql);
+                            if($tombo != NULL){
+                                return false;
+                            }
+                        }
 
 			$db->Consulta( "INSERT INTO {$this->_tabela} ( $campos ) VALUES( $valores )" );
 			return $db->InsertId( "{$this->_tabela}_cod_exemplar_seq");
@@ -480,6 +492,11 @@ class clsPmieducarExemplar
 				$gruda = ", ";
 			}
 
+			if(is_numeric($this->tombo))
+			{
+				$set .= "{$gruda}tombo = '{$this->tombo}'";
+				$gruda = ", ";
+			}
 
 			if( $set )
 			{
@@ -488,6 +505,32 @@ class clsPmieducarExemplar
 			}
 		}
 		return false;
+	}
+	/**
+	 * Verifica se o tombo a ser cadastrado jï¿½ nï¿½o foi cadastrado
+	 *
+	 * @return boolean
+	 */
+	function retorna_tombo_valido($bibliotecaId, $exceptExemplarId = null, $tombo=null) {
+    	if (empty($bibliotecaId))
+    		throw new Exception("Deve ser enviado um argumento '\$bibliotecaId' ao mÃ©todo 'retorna_tombo_maximo'");
+		if (empty($tombo))
+			return true;
+		 // Sem essa regra ao editar e salvar com o mesmo tombo retornaria falso
+   		 if (! empty($exceptExemplarId))
+   			   $exceptExemplar = " and exemplar.cod_exemplar !=  $exceptExemplarId";
+   		 else
+     			 $exceptExemplar = '';
+
+		$sql = "SELECT tombo FROM pmieducar.exemplar, pmieducar.acervo WHERE exemplar.ativo = 1 and exemplar.ref_cod_acervo = acervo.cod_acervo and tombo = $tombo and acervo.ref_cod_biblioteca = $bibliotecaId $exceptExemplar";
+
+		$db = new clsBanco();
+		$consulta = $db->CampoUnico($sql);
+		if ($consulta==$tombo){
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	/**
@@ -673,19 +716,29 @@ class clsPmieducarExemplar
 		}
 		return false;
 	}
-	
-	function retorna_tombo_maximo() {
-		$sql = "SELECT MAX(tombo) as tombo_max FROM pmieducar.exemplar WHERE ativo = 1";
+
+	function retorna_tombo_maximo($bibliotecaId, $exceptExemplarId = null) {
+    if (empty($bibliotecaId))
+      throw new Exception("Deve ser enviado um argumento '\$bibliotecaId' ao mÃ©todo 'retorna_tombo_maximo'");
+
+    // sem esta regra ao editar o ultimo exemplar sem informar o tombo, seria pego o proprio tombo.
+    if (! empty($exceptExemplarId))
+      $exceptExemplar = " and exemplar.cod_exemplar !=  $exceptExemplarId";
+    else
+      $exceptExemplar = '';
+
+		$sql = "SELECT MAX(tombo) as tombo_max FROM pmieducar.exemplar, pmieducar.acervo WHERE exemplar.ativo = 1 and exemplar.ref_cod_acervo = acervo.cod_acervo and acervo.ref_cod_biblioteca = $bibliotecaId $exceptExemplar";
+
 		$db = new clsBanco();
 		return $db->CampoUnico($sql);
 	}
-	
+
 	/**
 	 * Retorna uma lista filtrados de acordo com os parametros
 	 *
 	 * @return array
-	 */										
-	function lista_com_acervos( $int_cod_exemplar = null, $int_ref_cod_fonte = null, $int_ref_cod_motivo_baixa = null, $int_ref_cod_acervo = null, $int_ref_cod_situacao = null, $int_ref_usuario_exc = null, $int_ref_usuario_cad = null, $int_permite_emprestimo = null, $int_preco = null, $date_data_cadastro_ini = null, $date_data_cadastro_fim = null, $date_data_exclusao_ini = null, $date_data_exclusao_fim = null, $int_ativo = null, $date_data_aquisicao_ini = null, $date_data_aquisicao_fim = null, $int_ref_exemplar_tipo = null, $str_titulo_livro = null,$int_ref_cod_biblioteca = null, $str_titulo = null, $int_ref_cod_instituicao = null, $int_ref_cod_escola = null, $int_ref_cod_acervo_colecao = null, $int_ref_cod_acervo_editora = null)	{
+	 */
+	function lista_com_acervos( $int_cod_exemplar = null, $int_ref_cod_fonte = null, $int_ref_cod_motivo_baixa = null, $int_ref_cod_acervo = null, $int_ref_cod_situacao = null, $int_ref_usuario_exc = null, $int_ref_usuario_cad = null, $int_permite_emprestimo = null, $int_preco = null, $date_data_cadastro_ini = null, $date_data_cadastro_fim = null, $date_data_exclusao_ini = null, $date_data_exclusao_fim = null, $int_ativo = null, $date_data_aquisicao_ini = null, $date_data_aquisicao_fim = null, $int_ref_exemplar_tipo = null, $str_titulo_livro = null,$int_ref_cod_biblioteca = null, $int_ref_cod_instituicao = null, $int_ref_cod_escola = null, $int_ref_cod_acervo_colecao = null, $int_ref_cod_acervo_editora = null, $tombo)	{
 		$sql = "SELECT {$this->_campos_lista}, a.ref_cod_biblioteca, a.titulo FROM {$this->_tabela} e, {$this->_schema}acervo a, {$this->_schema}biblioteca b";
 
 		$whereAnd = " AND";
@@ -776,24 +829,22 @@ class clsPmieducarExemplar
 			$filtros .= "{$whereAnd} e.data_aquisicao <= '{$date_data_aquisicao_fim}'";
 			$whereAnd = " AND ";
 		}
-		if( is_string( $str_titulo ) )
+		if( is_string( $str_titulo_livro ) )
 		{
-			$filtros .= "{$whereAnd} a.titulo LIKE '%{$str_titulo}%'";
+			$filtros .= "{$whereAnd} to_ascii(a.titulo) LIKE to_ascii('%{$str_titulo_livro}%')";
 			$whereAnd = " AND ";
 		}
 
+		if (is_numeric($tombo)) {
+			$filtros .= "{$whereAnd} e.tombo = $tombo";
+			$whereAnd = " AND ";
+		}
 
 		/**
 		 * INICIO  - PESQUISAS EXTRAS
 		 */
 		$whereAnd2 = " AND ";
 		$filtros_extra = null;
-
-		if( is_string( $str_titulo_livro ) )
-		{
-			$filtros_extra .= "{$whereAnd2} to_ascii(a.titulo) ilike to_ascii('%{$date_data_aquisicao_fim}%') ";
-			$whereAnd2 = " AND ";
-		}
 
 		if( is_numeric( $int_ref_exemplar_tipo ) )
 		{
@@ -953,10 +1004,11 @@ class clsPmieducarExemplar
 	 *
 	 * @return null
 	 */
-	function setLimite( $intLimiteQtd, $intLimiteOffset = null )
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
 	{
 		$this->_limite_quantidade = $intLimiteQtd;
-		$this->_limite_offset = $intLimiteOffset;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
 	}
 
 	/**

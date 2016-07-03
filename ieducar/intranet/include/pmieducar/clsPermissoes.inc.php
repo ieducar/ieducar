@@ -106,9 +106,15 @@ class clsPermissoes
 
       if (!$ok && $nivel == 8) {
         header("Location: index.php?negado=1");
+        echo("Usuário não adicionado (ao cadastro da) biblioteca. <a href='/intranet'>Inicio</a>");
         die();
       }
     }
+    // Liberando para admin.
+    if ($obj_usuario->idpes == 1) {
+        $ok = TRUE;
+    }
+
 
     if (!$ok) {
       if ($str_pagina_redirecionar) {

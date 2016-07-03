@@ -239,7 +239,7 @@ class indice extends clsListagem
         $lista_busca[] = $url->l($registro['nm_turma'], $path, $params);
 
         $lista_busca[] = $url->l(
-          $registro['ref_ref_cod_serie'] ? $registro['ref_ref_cod_serie'] : '',
+          $registro['nm_serie'] ? $registro['nm_serie'] : '',
           $path, $params
         );
 

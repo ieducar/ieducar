@@ -110,7 +110,7 @@ class clsPmieducarQuadroHorarioHorariosAux
 		{
 			if( class_exists( "clsPmieducarServidor" ) )
 			{
-				$tmp_obj = new clsPmieducarServidor( $ref_servidor,null,null,null,null,null,null,null, $ref_cod_instituicao_servidor );
+				$tmp_obj = new clsPmieducarServidor( $ref_servidor,null,null,null,null,null,null,$ref_cod_instituicao_servidor,null);
 				if( method_exists( $tmp_obj, "existe") )
 				{
 					if( $tmp_obj->existe() )
@@ -649,10 +649,11 @@ class clsPmieducarQuadroHorarioHorariosAux
 	 *
 	 * @return null
 	 */
-	function setLimite( $intLimiteQtd, $intLimiteOffset = null )
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
 	{
 		$this->_limite_quantidade = $intLimiteQtd;
-		$this->_limite_offset = $intLimiteOffset;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
 	}
 
 	/**

@@ -1,0 +1,40 @@
+.pie-chart-area {
+	display: block;
+}
+
+.pie-chart-area h2 {
+	text-align: center;
+}
+
+.stats-box {
+	width: 200px;
+	height: 560px;
+	float: left;
+	margin-right: 100px;
+}
+
+.stats-table {
+	border-collapse: collapse;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.stats-table thead {
+	font-weight: bold;
+	background-color: rgba(220,220,220,0.8);
+}
+
+.stats-table tbody tr:hover {
+	background-color: rgba(151,187,205,0.5);
+}
+
+.stats-table td {
+	border: 1px solid black;
+	padding: 0 .2em 0 .2em;
+}
+
+.vacuum_analyze_title:hover {
+	text-decoration: underline;
+	cursor: pointer;
+	
+}

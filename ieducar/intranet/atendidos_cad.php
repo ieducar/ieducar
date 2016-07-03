@@ -1,5 +1,8 @@
 <?php
 
+#error_reporting(E_ALL);
+#ini_set("display_errors", 1);
+
 /**
  * i-Educar - Sistema de gestão escolar
  *
@@ -33,8 +36,16 @@ require_once 'include/clsBanco.inc.php';
 require_once 'include/clsCadastro.inc.php';
 require_once 'include/pessoa/clsCadastroRaca.inc.php';
 require_once 'include/pessoa/clsCadastroFisicaRaca.inc.php';
+require_once 'include/pmieducar/clsPmieducarAluno.inc.php';
+require_once 'include/pessoa/clsCadastroFisicaFoto.inc.php';
 
 require_once 'App/Model/ZonaLocalizacao.php';
+
+require_once 'Portabilis/String/Utils.php';
+require_once 'Portabilis/View/Helper/Application.php';
+require_once 'Portabilis/Utils/Validation.php';
+require_once 'Portabilis/Date/Utils.php';
+require_once 'image_check.php';
 
 /**
  * clsIndex class.
@@ -85,7 +96,6 @@ class indice extends clsCadastro
   var $ddd_telefone_fax;
   var $telefone_fax;
   var $email;
-  var $http;
   var $tipo_pessoa;
   var $sexo;
   var $busca_pessoa;
@@ -101,67 +111,59 @@ class indice extends clsCadastro
   var $caminho_det;
   var $caminho_lst;
 
-  var $alterado;
+  // Variáveis para controle da foto
+  var $objPhoto;
+  var $arquivoFoto;  
 
   function Inicializar()
   {
-    if ($_REQUEST['busca_pessoa']) {
-      $this->retorno = 'Novo';
+    $this->cod_pessoa_fj = @$_GET['cod_pessoa_fj'];
+    $this->retorno       = 'Novo';
+    
+    @session_start();
+    $this->pessoa_logada = $_SESSION['id_pessoa'];
+    @session_write_close();
+    
+    $obj_permissoes = new clsPermissoes();
+    $obj_permissoes->permissao_cadastra(43, $this->pessoa_logada, 3,
+    		'atendidos_lst.php');
 
-      $cpf = idFederal2int($_REQUEST['busca_pessoa']);
-
-      $this->busca_pessoa = $cpf;
-      $this->id_federal   = $cpf;
-
-      $objPessoa     = new clsPessoaFisica(FALSE, $cpf);
-      $detalhePessoa = $objPessoa->detalhe();
-
-      $this->cod_pessoa_fj = $detalhePessoa["idpes"];
-    }
-    elseif ($_REQUEST['cod_pessoa_fj'] != '') {
-      $this->busca_pessoa = TRUE;
-
-      if ($_REQUEST['cod_pessoa_fj'] != 0) {
-        $this->cod_pessoa_fj = $_REQUEST['cod_pessoa_fj'];
-      }
-      else {
-        $this->retorno = 'Novo';
-      }
-    }
-
-    if ($this->cod_pessoa_fj) {
-      $this->cod_pessoa_fj = @$_GET['cod_pessoa'] ?
-        @$_GET['cod_pessoa'] : $this->cod_pessoa_fj;
-
-      $db = new clsBanco();
-      $objPessoa = new clsPessoaFisica();
+    if (is_numeric($this->cod_pessoa_fj)) {
+      $this->retorno = 'Editar';
+      $objPessoa     = new clsPessoaFisica();
 
       list($this->nm_pessoa, $this->id_federal, $this->data_nasc,
         $this->ddd_telefone_1, $this->telefone_1, $this->ddd_telefone_2,
         $this->telefone_2, $this->ddd_telefone_mov, $this->telefone_mov,
         $this->ddd_telefone_fax, $this->telefone_fax, $this->email,
-        $this->http, $this->tipo_pessoa, $this->sexo, $this->cidade,
+        $this->tipo_pessoa, $this->sexo, $this->cidade,
         $this->bairro, $this->logradouro, $this->cep, $this->idlog, $this->idbai,
         $this->idtlog, $this->sigla_uf, $this->complemento, $this->numero,
-        $this->bloco, $this->apartamento, $this->andar, $this->zona_localizacao
+        $this->bloco, $this->apartamento, $this->andar, $this->zona_localizacao, $this->estado_civil,
+        $this->pai_id, $this->mae_id, $this->tipo_nacionalidade, $this->pais_origem, $this->naturalidade,
+        $this->letra
       ) =
+
       $objPessoa->queryRapida(
         $this->cod_pessoa_fj, 'nome', 'cpf', 'data_nasc',  'ddd_1', 'fone_1',
         'ddd_2', 'fone_2', 'ddd_mov', 'fone_mov', 'ddd_fax', 'fone_fax', 'email',
-        'url', 'tipo', 'sexo', 'cidade', 'bairro', 'logradouro', 'cep', 'idlog',
+        'tipo', 'sexo', 'cidade', 'bairro', 'logradouro', 'cep', 'idlog',
         'idbai', 'idtlog', 'sigla_uf', 'complemento', 'numero', 'bloco', 'apartamento',
-        'andar', 'zona_localizacao'
+        'andar', 'zona_localizacao', 'ideciv', 'idpes_pai', 'idpes_mae', 'nacionalidade',
+        'idpais_estrangeiro', 'idmun_nascimento', 'letra'
       );
 
-      // Cor/Raça.
-      $raca = new clsCadastroFisicaRaca($this->cod_pessoa_fj);
-      $raca = $raca->detalhe();
-      if (is_array($raca)) {
-        $this->cod_raca = $raca['ref_cod_raca'];
-      }
+      $this->id_federal      = is_numeric($this->id_federal) ? int2CPF($this->id_federal) : '';
+      $this->cep             = is_numeric($this->cep)        ? int2Cep($this->cep) : '';
+      $this->data_nasc       = $this->data_nasc              ? dataFromPgToBr($this->data_nasc) : '';
 
-      $this->cep     = int2Cep($this->cep);
-      $this->retorno = 'Editar';
+      $this->estado_civil_id = $this->estado_civil->ideciv;
+      $this->pais_origem_id  = $this->pais_origem->idpais;
+      $this->naturalidade_id = $this->naturalidade->idmun;
+
+      $raca           = new clsCadastroFisicaRaca($this->cod_pessoa_fj);
+      $raca           = $raca->detalhe();
+      $this->cod_raca = is_array($raca) ? $raca['ref_cod_raca'] : null;
     }
 
     $this->nome_url_cancelar = 'Cancelar';
@@ -171,477 +173,1098 @@ class indice extends clsCadastro
 
   function Gerar()
   {
-    $this->addBanner('imagens/nvp_top_intranet.jpg',
-      'imagens/nvp_vert_intranet.jpg', 'Intranet', FALSE);
+    $this->url_cancelar = $this->retorno == 'Editar' ?
+      'atendidos_det.php?cod_pessoa=' . $this->cod_pessoa_fj : 'atendidos_lst.php';
 
-    if (! $this->busca_pessoa) {
-      $this->campoOculto('cod_pessoa_fj', '');
+    $this->campoCpf('id_federal', 'CPF', $this->id_federal, FALSE);
 
-      $parametros = new clsParametrosPesquisas();
-      $parametros->setSubmit(1);
-      $parametros->adicionaCampoTexto('busca_pessoa', 'id_federal');
-      $parametros->adicionaCampoTexto('cod_pessoa_fj', 'idpes');
-      $parametros->setPessoa('F');
-      $parametros->setPessoaCampo('cod_pessoa_fj');
-      $parametros->setPessoaNovo('S');
-      $parametros->setPessoaTela('window');
+    $this->campoOculto('cod_pessoa_fj', $this->cod_pessoa_fj);
+    $this->campoTexto('nm_pessoa', 'Nome', $this->nm_pessoa, '50', '255', TRUE);
 
-      $html = sprintf(
-        '<img id="lupa" src="imagens/lupa.png" border="0" ' .
-        "onclick=\"showExpansivel(500, 500, '<iframe name=\'miolo\' id=\'miolo\' frameborder=\'0\' height=\'100%%\' width=\'500\' marginheight=\'0\' marginwidth=\'0\' src=\'pesquisa_pessoa_lst.php?campos=%s\'></iframe>');\"".
-        '>',
-        $parametros->serializaCampos()
-      );
+    // TODO: Tornar configurável.
+    /* Não tem S3 nem quick-retrieval cloud file storage.
+       Nada de foto.
+    $foto = false;
+    if (is_numeric($this->cod_pessoa_fj)){
+      $objFoto = new ClsCadastroFisicaFoto($this->cod_pessoa_fj);
+      $detalheFoto = $objFoto->detalhe();
+      if(count($detalheFoto))
+      $foto = $detalheFoto['caminho'];
+    } else 
+      $foto=false;
+ 
+    if ($foto!=false){
+      $this->campoRotulo('fotoAtual_','Foto atual','<img height="117" src="'.$foto.'"/>');
+      $this->campoArquivo('file','Trocar foto',$this->arquivoFoto,40,'<br/> <span style="font-style: italic; font-size= 10px;">* Recomenda-se imagens nos formatos jpeg, jpg, png e gif. Tamanho máximo: 150KB</span>');
+    }else
+      $this->campoArquivo('file','Foto',$this->arquivoFoto,40,'<br/> <span style="font-style: italic; font-size= 10px;">* Recomenda-se imagens nos formatos jpeg, jpg, png e gif. Tamanho máximo: 150KB</span>');
+      */
+    $this->campoOculto('file', null);
+ 
 
-      $this->campoCpf('busca_pessoa', 'CPF', $this->ref_cod_pessoa_fj, TRUE,
-        $html, FALSE, TRUE);
+    // ao cadastrar pessoa do pai ou mãe apartir do cadastro de outra pessoa,
+    // é enviado o tipo de cadastro (pai ou mae).
+    $parentType = isset($_REQUEST['parent_type']) ? $_REQUEST['parent_type'] : '';
+    $naturalidadeObrigatoria = ($parentType == '' ? true : false);
+
+
+     // sexo
+
+    $sexo = $this->sexo;
+
+    // sugere sexo quando cadastrando o pai ou mãe
+
+    if (! $sexo && $parentType == 'pai')
+      $sexo = 'M';
+    elseif (! $sexo && $parentType == 'mae')
+      $sexo = 'F';
+
+
+    $options = array(
+      'label'       => 'Sexo / Estado civil',
+      'value'     => $sexo,
+      'resources' => array(
+        '' => 'Sexo',
+        'M' => 'Masculino',
+        'F' => 'Feminino'
+      ),
+      'inline' => true
+    );
+
+    $this->inputsHelper()->select('sexo', $options);
+
+    // estado civil
+
+    $this->inputsHelper()->estadoCivil(array('label' => '', 'required' => empty($parentType)));
+
+
+    // data nascimento
+
+    $options = array(
+      'label'       => 'Data nascimento',
+      'value'       => $this->data_nasc,
+      'required'    => empty($parentType)
+    );
+
+    $this->inputsHelper()->date('data_nasc', $options);
+
+
+    // Input para os pais da pessoa física.
+    // Se o formulário foi gerado para cadastro de pai ou mãe,
+    // a partir desta input, não mostrar novamente esta opção.
+    if (!$parentType) {
+    	$this->inputPai();
+    	$this->inputMae();
     }
-    else {
-      $this->campoOculto('busca_pessoa', $this->busca_pessoa);
 
-      $this->url_cancelar = $this->retorno == 'Editar' ?
-        'atendidos_det.php?cod_pessoa=' . $this->cod_pessoa_fj : 'atendidos_lst.php';
 
-      $this->campoOculto('cod_pessoa_fj', $this->cod_pessoa_fj);
-      $this->campoTexto('nm_pessoa', 'Nome', $this->nm_pessoa, '50', '255', TRUE);
+    // documentos
 
-      if ($this->id_federal) {
-        $this->campoRotulo('id_federal', 'CPF', int2CPF($this->id_federal));
-      }
-      else {
-        $this->campoCpf('id_federal', 'CPF', '', FALSE);
-      }
+    $documentos        = new clsDocumento();
+    $documentos->idpes = $this->cod_pessoa_fj;
+    $documentos        = $documentos->detalhe();
 
-      if ($this->data_nasc) {
-        $this->data_nasc = dataFromPgToBr($this->data_nasc);
-      }
+    // rg
 
-      $this->campoData('data_nasc', 'Data de Nascimento', $this->data_nasc);
+    // o rg é obrigatorio ao cadastrar pai ou mãe, exceto se configurado como opcional.
 
-      $lista_sexos      = array();
-      $lista_sexos['']  = 'Escolha uma opção...';
-      $lista_sexos['M'] = 'Masculino';
-      $lista_sexos['F'] = 'Feminino';
-      $this->campoLista('sexo', 'Sexo', $lista_sexos, $this->sexo);
+    $required = (! empty($parentType));
 
-      // Cor/raça.
-      $opcoes_raca = array('' => 'Selecione');
-      $obj_raca = new clsCadastroRaca();
-      $lst_raca = $obj_raca->lista(NULL, NULL, NULL, NULL, NULL, NULL, NULL, TRUE);
-
-      if ($lst_raca) {
-        foreach ($lst_raca as $raca) {
-          $opcoes_raca[$raca['cod_raca']] = $raca['nm_raca'];
-        }
-      }
-
-      $this->campoLista('cor_raca', 'Raça', $opcoes_raca,
-        $this->cod_raca, '', FALSE, '', '', '', FALSE);
-
-      // Detalhes do Endereço
-      $objTipoLog   = new clsTipoLogradouro();
-      $listaTipoLog = $objTipoLog->lista();
-      $listaTLog    = array('0' => 'Selecione');
-
-      if ($listaTipoLog) {
-        foreach ($listaTipoLog as $tipoLog) {
-          $listaTLog[$tipoLog['idtlog']] = $tipoLog['descricao'];
-        }
-      }
-
-      $objUf       = new clsUf();
-      $listauf     = $objUf->lista();
-      $listaEstado = array('0' => 'Selecione');
-
-      if ($listauf) {
-        foreach ($listauf as $uf) {
-          $listaEstado[$uf['sigla_uf']] = $uf['sigla_uf'];
-        }
-      }
-
-      $this->campoOculto('idbai', $this->idbai);
-      $this->campoOculto('idlog', $this->idlog);
-      $this->campoOculto('cep', $this->cep);
-      $this->campoOculto('ref_sigla_uf', $this->sigla_uf);
-      $this->campoOculto('ref_idtlog', $this->idtlog);
-      $this->campoOculto('id_cidade', $this->cidade);
-
-      $zona = App_Model_ZonaLocalizacao::getInstance();
-
-      if ($this->idlog && $this->idbai && $this->cep && $this->cod_pessoa_fj) {
-        $this->campoCep('cep_', 'CEP', $this->cep, true, '-',
-          "&nbsp;<img id='lupa' src=\"imagens/lupa.png\" border=\"0\" onclick=\"showExpansivel( 500,500, '<iframe name=\'miolo\' id=\'miolo\' frameborder=\'0\' height=\'100%\' width=\'500\' marginheight=\'0\' marginwidth=\'0\' src=\'educar_pesquisa_cep_log_bairro.php?campo1=bairro&campo2=idbai&campo3=cep&campo4=logradouro&campo5=idlog&campo6=ref_sigla_uf&campo7=cidade&campo8=ref_idtlog&campo9=isEnderecoExterno&campo10=cep_&campo11=sigla_uf&campo12=idtlog&campo13=id_cidade\'></iframe>');\">",
-          TRUE);
-
-        $this->campoLista('idtlog', 'Tipo Logradouro', $listaTLog, $this->idtlog,
-          FALSE, FALSE, FALSE, FALSE, TRUE);
-
-        $this->campoTextoInv('logradouro', 'Logradouro', $this->logradouro,
-          '50', '255', FALSE);
-
-        $this->campoTextoInv('cidade', 'Cidade', $this->cidade, '50', '255',
-          FALSE);
-
-        $this->campoTextoInv('bairro', 'Bairro', $this->bairro, '50', '255', FALSE);
-
-        $this->campoTexto('complemento', 'Complemento',  $this->complemento, '50', '255',
-          FALSE);
-
-        $this->campoTexto('numero', 'Número', $this->numero, '10', '10');
-
-        $this->campoTexto('letra', 'Letra', $this->letra, '1', '1', FALSE);
-
-        $this->campoTexto('apartamento', 'Número Apartamento', $this->apartamento, '6', '6',
-          FALSE);
-
-        $this->campoTexto('bloco', 'Bloco', $this->bloco, '20', '20', FALSE);
-        $this->campoTexto('andar', 'Andar', $this->andar, '2', '2', FALSE);
-
-        $this->campoLista('sigla_uf', 'Estado', $listaEstado, $this->sigla_uf,
-          FALSE, FALSE, FALSE, FALSE, TRUE);
-      }
-      elseif($this->cod_pessoa_fj && $this->cep) {
-        $this->campoCep('cep_', 'CEP', $this->cep, true, '-',
-          "&nbsp;<img id='lupa' src=\"imagens/lupa.png\" border=\"0\" onclick=\"showExpansivel( 500,500, '<iframe name=\'miolo\' id=\'miolo\' frameborder=\'0\' height=\'100%\' width=\'500\' marginheight=\'0\' marginwidth=\'0\' src=\'educar_pesquisa_cep_log_bairro.php?campo1=bairro&campo2=idbai&campo3=cep&campo4=logradouro&campo5=idlog&campo6=ref_sigla_uf&campo7=cidade&campo8=ref_idtlog&campo9=isEnderecoExterno&campo10=cep_&campo11=sigla_uf&campo12=idtlog&campo13=id_cidade\'></iframe>');\">",
-          $disabled);
-
-        $this->campoLista('idtlog', 'Tipo Logradouro', $listaTLog, $this->idtlog);
-
-        $this->campoTexto('logradouro', 'Logradouro',  $this->logradouro, '50',
-          '255', FALSE);
-
-        $this->campoTexto('cidade', 'Cidade', $this->cidade, '50', '255', FALSE);
-
-        $this->campoTexto('bairro', 'Bairro',  $this->bairro, '50', '255', FALSE);
-
-        $this->campoTexto('complemento', 'Complemento',  $this->complemento, '50',
-          '255', FALSE);
-
-        $this->campoTexto('numero', 'Número', $this->numero, '10', '10');
-
-        $this->campoTexto('letra', 'Letra', $this->letra, '1', '1', FALSE);
-
-        $this->campoTexto('apartamento', 'Número Apartamento', $this->apartamento,
-          '6', '6', FALSE);
-
-        $this->campoTexto('bloco', 'Bloco', $this->bloco, '20', '20', FALSE);
-
-        $this->campoTexto('andar', 'Andar', $this->andar, '2', '2', FALSE);
-
-        $this->campoLista('sigla_uf', 'Estado', $listaEstado, $this->sigla_uf);
-      }
-      else {
-        $this->campoCep('cep_', 'CEP', $this->cep, TRUE, '-',
-          "&nbsp;<img id='lupa' src=\"imagens/lupa.png\" border=\"0\"
-          onclick=\"showExpansivel(500, 500, '<iframe name=\'miolo\' id=\'miolo\' frameborder=\'0\' height=\'100%\' width=\'500\' marginheight=\'0\' marginwidth=\'0\' src=\'educar_pesquisa_cep_log_bairro.php?campo1=bairro&campo2=idbai&campo3=cep&campo4=logradouro&campo5=idlog&campo6=ref_sigla_uf&campo7=cidade&campo8=ref_idtlog&campo9=isEnderecoExterno&campo10=cep_&campo11=sigla_uf&campo12=idtlog&campo13=id_cidade&campo14=zona_localizacao\'></iframe>');\">",
-          false
-        );
-
-        $this->campoLista('idtlog', 'Tipo Logradouro', $listaTLog, $this->idtlog,
-          FALSE, FALSE, FALSE, FALSE, FALSE);
-
-        $this->campoTexto('logradouro', 'Logradouro', $this->logradouro,
-          '50', '255');
-
-        $this->campoTexto('cidade', 'Cidade', $this->cidade, '50', '255');
-
-        $this->campoTexto('bairro', 'Bairro', $this->bairro, '50', '255');
-
-        $this->campoTexto('complemento', 'Complemento', $this->complemento,
-          '50', '255', FALSE);
-
-        $this->campoTexto('numero', 'Número', $this->numero, '10', '10');
-
-        $this->campoTexto('letra', 'Letra', $this->letra, '1', '1', FALSE);
-
-        $this->campoTexto('apartamento', 'Número Apartamento', $this->apartamento,
-          '6', '6', FALSE);
-
-        $this->campoTexto('bloco', 'Bloco', $this->bloco, '20', '20', FALSE);
-
-        $this->campoTexto('andar', 'Andar', $this->andar, '2', '2', FALSE);
-
-        $this->campoLista('sigla_uf', 'Estado', $listaEstado, $this->sigla_uf,
-          FALSE, FALSE, FALSE, FALSE, FALSE);
-      }
-
-      $this->campoLista('zona_localizacao', 'Zona Localização', $zona->getEnums(),
-        $this->zona_localizacao, FALSE, FALSE, FALSE, FALSE,
-        ($this->idbai ? TRUE : FALSE)
-      );
-
-      $this->campoTexto('ddd_telefone_1', 'DDD Telefone 1', $this->ddd_telefone_1,
-        '3', '2', FALSE);
-
-      $this->campoTexto('telefone_1', 'Telefone 1',  $this->telefone_1, '10',
-        '15', FALSE);
-
-      $this->campoTexto('ddd_telefone_2', 'DDD Telefone 2', $this->ddd_telefone_2,
-        '3', '2', FALSE);
-
-      $this->campoTexto('telefone_2', 'Telefone 2', $this->telefone_2, '10',
-        '15', FALSE);
-
-      $this->campoTexto('ddd_telefone_mov', 'DDD Celular',
-        $this->ddd_telefone_mov, '3', '2', FALSE);
-
-      $this->campoTexto('telefone_mov', 'Celular',  $this->telefone_mov, '10',
-        '15', FALSE);
-
-      $this->campoTexto('ddd_telefone_fax', 'DDD Fax',  $this->ddd_telefone_fax,
-        '3', '2', FALSE);
-
-      $this->campoTexto('telefone_fax', 'Fax',  $this->telefone_fax, '10', '15',
-        FALSE);
-
-      $this->campoTexto('http', 'Site', $this->http, '50', '255', FALSE);
-
-      $this->campoTexto('email', 'E-mail', $this->email, '50', '255', FALSE);
-
-      if ($this->cod_pessoa_fj) {
-        $this->campoRotulo('documentos', '<b><i>Documentos</i></b>',
-          "<a href='#' onclick=\"openPage('adicionar_documentos_cad.php?id_pessoa={$this->cod_pessoa_fj}', '400', '400', 'yes', '10', '10'); \"><img src='imagens/nvp_bot_ad_doc.png' border='0'></a>");
-
-        $this->campoCheck('alterado', 'Alterado', $this->alterado);
-      }
+    if ($required && $GLOBALS['coreExt']['Config']->app->rg_pessoa_fisica_pais_opcional) {
+      $required = false;
     }
+
+    $options = array(
+      'required'    => $required,
+      'label'       => 'RG / Data emissão',
+      'placeholder' => 'Documento identidade',
+      'value'       => $documentos['rg'],
+      'max_length'  => 20,
+      'size'        => 27,
+      'inline'      => true
+    );
+
+    $this->inputsHelper()->integer('rg', $options);
+
+
+    // data emissão rg
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Data emissão',
+      'value'       => $documentos['data_exp_rg'],
+      'size'        => 19
+    );
+
+    $this->inputsHelper()->date('data_emissao_rg', $options);
+
+
+    // orgão emissão rg
+
+    $selectOptions = array( null => 'Orgão emissor' );
+    $orgaos        = new clsOrgaoEmissorRg();
+    $orgaos        = $orgaos->lista();
+
+    foreach ($orgaos as $orgao)
+      $selectOptions[$orgao['idorg_rg']] = $orgao['sigla'];
+
+    $selectOptions = Portabilis_Array_Utils::sortByValue($selectOptions);
+
+    $options = array(
+      'required'  => false,
+      'label'     => '',
+      'value'     => $documentos['idorg_exp_rg'],
+      'resources' => $selectOptions,
+      'inline'    => true
+    );
+
+    $this->inputsHelper()->select('orgao_emissao_rg', $options);
+
+
+    // uf emissão rg
+
+    $options = array(
+      'required' => false,
+      'label'    => '',
+      'value'    => $documentos['sigla_uf_exp_rg']
+    );
+
+    $helperOptions = array(
+      'attrName' => 'uf_emissao_rg'
+    );
+
+    $this->inputsHelper()->uf($options, $helperOptions);
+
+
+    // tipo de certidao civil
+
+    $selectOptions = array(
+      null                               => 'Tipo certidão civil',
+      'certidao_nascimento_novo_formato' => 'Nascimento (novo formato)',
+      91                                 => 'Nascimento (antigo formato)',
+      92                                 => 'Casamento'
+    );
+
+
+    // caso certidao nascimento novo formato tenha sido informado,
+    // considera este o tipo da certidão
+    if (! empty($documentos['certidao_nascimento']))
+      $tipoCertidaoCivil = 'certidao_nascimento_novo_formato';
+    else
+      $tipoCertidaoCivil = $documentos['tipo_cert_civil'];
+
+    $options = array(
+      'required'  => false,
+      'label'     => 'Tipo certidão civil',
+      'value'     => $tipoCertidaoCivil,
+      'resources' => $selectOptions,
+      'inline'    => true
+    );
+
+    $this->inputsHelper()->select('tipo_certidao_civil', $options);
+
+
+    // termo certidao civil
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Termo',
+      'value'       => $documentos['num_termo'],
+      'max_length'  => 8,
+      'inline'      => true
+    );
+
+    $this->inputsHelper()->integer('termo_certidao_civil', $options);
+
+
+    // livro certidao civil
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Livro',
+      'value'       => $documentos['num_livro'],
+      'max_length'  => 8,
+      'size'        => 15,
+      'inline'      => true
+    );
+
+    $this->inputsHelper()->text('livro_certidao_civil', $options);
+
+
+    // folha certidao civil
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Folha',
+      'value'       => $documentos['num_folha'],
+      'max_length'  => 4,
+      'inline'      => true
+    );
+
+    $this->inputsHelper()->integer('folha_certidao_civil', $options);
+
+
+    // certidao nascimento (novo padrão)
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Certidão nascimento',
+      'value'       => $documentos['certidao_nascimento'],
+      'max_length'  => 50,
+      'size'        => 50
+    );
+
+    $this->inputsHelper()->text('certidao_nascimento', $options);
+
+
+    // uf emissão certidão civil
+
+    $options = array(
+      'required' => false,
+      'label'    => 'Estado emissão / Data emissão',
+      'value'    => $documentos['sigla_uf_cert_civil'],
+      'inline'   => true
+    );
+
+    $helperOptions = array(
+      'attrName' => 'uf_emissao_certidao_civil'
+    );
+
+    $this->inputsHelper()->uf($options, $helperOptions);
+
+
+    // data emissão certidão civil
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Data emissão',
+      'value'       => $documentos['data_emissao_cert_civil']
+    );
+
+    $this->inputsHelper()->date('data_emissao_certidao_civil', $options);
+
+
+    // cartório emissão certidão civil
+
+    $options = array(
+      'required'    => false,
+      'label'       => 'Cartório emissão',
+      'value'       => $documentos['cartorio_cert_civil'],
+      'cols'        => 45,
+      'max_length'  => 150
+    );
+
+    $this->inputsHelper()->textArea('cartorio_emissao_certidao_civil', $options);
+
+
+    // carteira de trabalho
+
+    $options = array(
+      'required'    => false,
+      'label'       => 'Carteira de trabalho / Série',
+      'placeholder' => 'Carteira de trabalho',
+      'value'       => $documentos['num_cart_trabalho'],
+      'max_length'  => 7,
+      'inline'      => true
+
+    );
+
+    $this->inputsHelper()->integer('carteira_trabalho', $options);
+
+    // serie carteira de trabalho
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Série',
+      'value'       => $documentos['serie_cart_trabalho'],
+      'max_length'  => 5
+    );
+
+    $this->inputsHelper()->integer('serie_carteira_trabalho', $options);
+
+
+    // uf emissão carteira de trabalho
+
+    $options = array(
+      'required' => false,
+      'label'    => 'Estado emissão / Data emissão',
+      'value'    => $documentos['sigla_uf_cart_trabalho'],
+      'inline'   => true
+    );
+
+    $helperOptions = array(
+      'attrName' => 'uf_emissao_carteira_trabalho'
+    );
+
+    $this->inputsHelper()->uf($options, $helperOptions);
+
+
+    // data emissão carteira de trabalho
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Data emissão',
+      'value'       => $documentos['data_emissao_cart_trabalho']
+    );
+
+    $this->inputsHelper()->date('data_emissao_carteira_trabalho', $options);
+
+
+    // titulo eleitor
+
+    $options = array(
+      'required'    => false,
+      'label'       => 'Titulo eleitor / Zona / Seção',
+      'placeholder' => 'Titulo eleitor',
+      'value'       => $documentos['num_tit_eleitor'],
+      'max_length'  => 13,
+      'inline'      => true
+    );
+
+    $this->inputsHelper()->integer('titulo_eleitor', $options);
+
+
+    // zona titulo eleitor
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Zona',
+      'value'       => $documentos['zona_tit_eleitor'],
+      'max_length'  => 4,
+      'inline'      => true
+    );
+
+    $this->inputsHelper()->integer('zona_titulo_eleitor', $options);
+
+
+    // seção titulo eleitor
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Seção',
+      'value'       => $documentos['secao_tit_eleitor'],
+      'max_length'  => 4
+    );
+
+    $this->inputsHelper()->integer('secao_titulo_eleitor', $options);
+
+
+    // Cor/raça.
+
+    $racas         = new clsCadastroRaca();
+    $racas         = $racas->lista(NULL, NULL, NULL, NULL, NULL, NULL, NULL, TRUE);
+    $selectOptions = array('' => 'Raça');
+
+    foreach ($racas as $raca)
+      $selectOptions[$raca['cod_raca']] = $raca['nm_raca'];
+
+    $selectOptions = Portabilis_Array_Utils::sortByValue($selectOptions);
+
+    $this->campoLista('cor_raca', 'Raça', $selectOptions, $this->cod_raca, '', FALSE, '', '', '', FALSE);
+
+
+    // nacionalidade
+
+    // tipos
+    $tiposNacionalidade = array(null => 'Selecione',
+                                '1'  => 'Brasileiro',
+                                '2'  => 'Naturalizado brasileiro',
+                                '3'  => 'Estrangeiro');
+
+    $options            = array('label'       => 'Nacionalidade',
+                                'resources'   => $tiposNacionalidade,
+                                'required'    => false,
+                                'inline'      => true,
+                                'value'       => $this->tipo_nacionalidade);
+
+    $this->inputsHelper()->select('tipo_nacionalidade', $options);
+
+
+    // pais origem
+
+    $options = array(
+      'label'       => '',
+      'placeholder' => 'Informe o nome do pais',
+      'required'    => true
+    );
+
+    $hiddenInputOptions = array(
+      'options' => array('value' => $this->pais_origem_id)
+    );
+
+    $helperOptions = array(
+      'objectName'         => 'pais_origem',
+      'hiddenInputOptions' => $hiddenInputOptions
+    );
+
+    $this->inputsHelper()->simpleSearchPais('nome', $options, $helperOptions);
+
+
+    // naturalidade
+
+    //$options       = array('label' => 'Naturalidade', 'required'   => true);
+    $options       = array('label' => 'Naturalidade', 'required'   => $naturalidadeObrigatoria); 
+
+    $helperOptions = array('objectName'         => 'naturalidade',
+                           'hiddenInputOptions' => array('options' => array('value' => $this->naturalidade_id)));
+
+    $this->inputsHelper()->simpleSearchMunicipio('nome', $options, $helperOptions);
+
+
+    // Detalhes do Endereço
+
+    $this->campoOculto('idbai', $this->idbai);
+    $this->campoOculto('idlog', $this->idlog);
+    $this->campoOculto('cep', $this->cep);
+    $this->campoOculto('ref_sigla_uf', $this->sigla_uf);
+    $this->campoOculto('ref_idtlog', $this->idtlog);
+    $this->campoOculto('id_cidade', $this->cidade);
+
+
+    // o endereçamento é opcional ao cadastrar pai ou mãe.
+    $enderecamentoObrigatorio = empty($parentType);
+
+
+    // considera como endereço localizado por CEP quando alguma das variaveis de instancia
+    // idbai (bairro) ou idlog (logradouro) estão definidas, neste caso desabilita a edição
+    // dos campos definidos via CEP.
+    $desativarCamposDefinidosViaCep = ((bool)$GLOBALS['coreExt']['Config']->app->obriga_endereco_normalizado_pf) || ($this->idbai || $this->idlog);
+
+    $this->campoCep(
+      'cep_',
+      'CEP',
+      $this->cep,
+      $enderecamentoObrigatorio,
+      '-',
+      "&nbsp;<img id='lupa' src=\"imagens/lupa.png\" border=\"0\" onclick=\"showExpansivel(500, 550, '<iframe name=\'miolo\' id=\'miolo\' frameborder=\'0\' height=\'100%\' width=\'500\' marginheight=\'0\' marginwidth=\'0\' src=\'educar_pesquisa_cep_log_bairro.php?campo1=bairro&campo2=idbai&campo3=cep&campo4=logradouro&campo5=idlog&campo6=ref_sigla_uf&campo7=cidade&campo8=ref_idtlog&campo9=isEnderecoExterno&campo10=cep_&campo11=sigla_uf&campo12=idtlog&campo13=id_cidade&campo14=zona_localizacao\'></iframe>');\">",
+      $desativarCamposDefinidosViaCep
+    );
+
+
+    // estado
+
+    $options = array(
+      'label'    => 'Estado / Cidade',
+      'value'    => $this->sigla_uf,
+      'disabled' => $desativarCamposDefinidosViaCep,
+      'inline'   => true,
+      'required' => $enderecamentoObrigatorio
+    );
+
+    $helperOptions = array(
+      'attrName' => 'sigla_uf'
+    );
+
+    $this->inputsHelper()->uf($options, $helperOptions);
+
+
+    // cidade
+
+    $options = array(
+      'label'       => '',
+      'placeholder' => 'Cidade',
+      'value'       => $this->cidade,
+      'max_length'  => 60,
+      'disabled'    => $desativarCamposDefinidosViaCep,
+      'required'    => $enderecamentoObrigatorio
+    );
+
+    $this->inputsHelper()->text('cidade', $options);
+
+
+    // bairro
+
+    $options = array(
+      'label'       => 'Bairro / Zona localização',
+      'placeholder' => 'Bairro',
+      'value'       => $this->bairro,
+      'max_length'  => 40,
+      'disabled'    => $desativarCamposDefinidosViaCep,
+      'inline'      => true,
+      'required'    => $enderecamentoObrigatorio
+    );
+
+    $this->inputsHelper()->text('bairro', $options);
+
+
+    // zona localização
+
+    $zonas = App_Model_ZonaLocalizacao::getInstance();
+    $zonas = $zonas->getEnums();
+    $zonas = Portabilis_Array_Utils::insertIn(null, 'Zona localização', $zonas);
+
+    $options = array(
+      'label'       => '',
+      'placeholder' => 'Zona localização',
+      'value'       => $this->zona_localizacao,
+      'disabled'    => $desativarCamposDefinidosViaCep,
+      'resources'   => $zonas,
+      'required'    => $enderecamentoObrigatorio
+    );
+
+    $this->inputsHelper()->select('zona_localizacao', $options);
+
+
+    // tipo logradouro
+
+    $options = array(
+      'label'       => 'Tipo / Logradouro',
+      'value'       => $this->idtlog,
+      'disabled'    => $desativarCamposDefinidosViaCep,
+      'inline'      => true,
+      'required'    => $enderecamentoObrigatorio
+    );
+
+    $helperOptions = array(
+      'attrName' => 'idtlog'
+    );
+
+    $this->inputsHelper()->tipoLogradouro($options, $helperOptions);
+
+
+    // logradouro
+
+    $options = array(
+      'label'       => '',
+      'placeholder' => 'Logradouro',
+      'value'       => $this->logradouro,
+      'max_length'  => 150,
+      'disabled'    => $desativarCamposDefinidosViaCep,
+      'required'    => $enderecamentoObrigatorio
+    );
+
+    $this->inputsHelper()->text('logradouro', $options);
+
+
+    // complemento
+
+    $options = array(
+      'required'    => false,
+      'value'       => $this->complemento,
+      'max_length'  => 20
+    );
+
+    $this->inputsHelper()->text('complemento', $options);
+
+
+    // numero
+
+    $options = array(
+      'required'    => false,
+      'label'       => 'Número / Letra',
+      'placeholder' => 'Número',
+      'value'       => $this->numero,
+      'max_length'  => 6,
+      'inline'      => true
+    );
+
+    $this->inputsHelper()->integer('numero', $options);
+
+
+    // letra
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Letra',
+      'value'       => $this->letra,
+      'max_length'  => 1,
+      'size'        => 15
+    );
+
+    $this->inputsHelper()->text('letra', $options);
+
+
+    // apartamento
+
+    $options = array(
+      'required'    => false,
+      'label'       => 'Nº apartamento / Bloco / Andar',
+      'placeholder' => 'Nº apartamento',
+      'value'       => $this->apartamento,
+      'max_length'  => 6,
+      'inline'      => true
+    );
+
+    $this->inputsHelper()->integer('apartamento', $options);
+
+
+    // bloco
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Bloco',
+      'value'       => $this->bloco,
+      'max_length'  => 20,
+      'size'        => 15,
+      'inline'      => true
+    );
+
+    $this->inputsHelper()->text('bloco', $options);
+
+
+    // andar
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => 'Andar',
+      'value'       => $this->andar,
+      'max_length'  => 2
+    );
+
+    $this->inputsHelper()->integer('andar', $options);
+
+
+    // contato
+
+    $this->inputTelefone('1', 'Telefone residencial');
+    $this->inputTelefone('mov', 'Celular');
+    $this->inputTelefone('2', 'Telefone adicional');
+    $this->inputTelefone('fax', 'Fax');
+
+    $this->campoTexto('email', 'E-mail', $this->email, '50', '255', FALSE);
+
+
+    // after change pessoa pai / mae
+
+    if ($parentType)
+      $this->inputsHelper()->hidden('parent_type', array('value' => $parentType));
+
+
+    $styles = array(
+      '/modules/Portabilis/Assets/Stylesheets/Frontend.css',
+      '/modules/Portabilis/Assets/Stylesheets/Frontend/Resource.css',
+      '/modules/Cadastro/Assets/Stylesheets/PessoaFisica.css'
+    );
+
+    Portabilis_View_Helper_Application::loadStylesheet($this, $styles);
+
+    $script = '/modules/Cadastro/Assets/Javascripts/PessoaFisica.js';
+    Portabilis_View_Helper_Application::loadJavascript($this, $script);
   }
 
-  function Novo()
-  {
-    @session_start();
-    $pessoaFj = $_SESSION['id_pessoa'];
-    session_write_close();
+  function Novo() {
+    return $this->createOrUpdate();
+  }
 
-    $db  = new clsBanco();
-    $db2 = new clsBanco();
+  function Editar() {
+    return $this->createOrUpdate($this->cod_pessoa_fj);
+  }
 
-    $ref_cod_sistema = FALSE;
-
-    if ($this->id_federal) {
-      $this->id_federal = idFederal2int($this->id_federal);
-
-      $objCPF = new clsFisica(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-        FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-        FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, $this->id_federal);
-
-      $detalhe_fisica = $objCPF->detalhe();
-      if ($detalhe_fisica['cpf']) {
-        $this->erros['id_federal'] = 'CPF já cadastrado.';
-        return FALSE;
-      }
-    }
-
-    $objPessoa = new clsPessoa_(FALSE, $this->nm_pessoa, $pessoaFj, $this->http,
-      'F', FALSE, FALSE, $this->email);
-
-    $idpes = $objPessoa->cadastra();
-
-    $this->data_nasc = dataToBanco($this->data_nasc);
-
-    if ($this->id_federal) {
-      $objFisica = new clsFisica($idpes, $this->data_nasc, $this->sexo, FALSE,
-        FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-        FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-        $ref_cod_sistema, $this->id_federal);
-    }
-    else {
-      $objFisica = new clsFisica($idpes, $this->data_nasc, $this->sexo, FALSE,
-        FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-        FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-        $ref_cod_sistema);
-    }
-
-    $objFisica->cadastra();
-
-    $objTelefone = new clsPessoaTelefone($idpes, 1, $this->telefone_1, $this->ddd_telefone_1);
-    $objTelefone->cadastra();
-
-    $objTelefone = new clsPessoaTelefone($idpes, 2, $this->telefone_2, $this->ddd_telefone_2);
-    $objTelefone->cadastra();
-
-    $objTelefone = new clsPessoaTelefone($idpes, 3, $this->telefone_mov, $this->ddd_telefone_mov);
-    $objTelefone->cadastra();
-
-    $objTelefone = new clsPessoaTelefone($idpes, 4, $this->telefone_fax, $this->ddd_telefone_fax);
-    $objTelefone->cadastra();
-
-    if ($this->cep && $this->idbai && $this->idlog) {
-      $this->cep    = idFederal2Int($this->cep);
-      $objEndereco  = new clsPessoaEndereco($idpes);
-      $objEndereco2 = new clsPessoaEndereco($idpes, $this->cep, $this->idlog,
-        $this->idbai, $this->numero, $this->complemento, FALSE, $this->letra,
-        $this->bloco, $this->apartamento, $this->andar);
-
-      if ($objEndereco->detalhe()) {
-        $objEndereco2->edita();
-      }
-      else {
-        $objEndereco2->cadastra();
-      }
-    }
-    elseif($this->cep_) {
-      $this->cep_  = idFederal2int($this->cep_);
-
-      $objEnderecoExterno  = new clsEnderecoExterno($idpes);
-      $objEnderecoExterno2 = new clsEnderecoExterno($idpes, '1', $this->idtlog,
-        $this->logradouro, $this->numero, $this->letra, $this->complemento,
-        $this->bairro, $this->cep_, $this->cidade, $this->sigla_uf, FALSE,
-        $this->bloco, $this->apartamento, $this->andar, FALSE, FALSE,
-        $this->zona_localizacao);
-
-      if ($objEnderecoExterno->detalhe()) {
-        $objEnderecoExterno2->edita();
-      }
-      else {
-        $objEnderecoExterno2->cadastra();
-      }
-    }
-
-    // Cadastra raça.
-    $this->_cadastraRaca($idpes, $this->cor_raca);
-
+  function Excluir() {
     echo '<script>document.location="atendidos_lst.php";</script>';
     return TRUE;
   }
 
-  function Editar()
-  {
-    @session_start();
-    $pessoaFj = $_SESSION['id_pessoa'];
-    session_write_close();
+  function afterChangePessoa($id) {
+    Portabilis_View_Helper_Application::embedJavascript($this, "
 
-    if ($this->id_federal) {
-      $ref_cod_sistema  = 'null';
-      $this->id_federal = idFederal2int($this->id_federal);
+      if(window.opener &&  window.opener.afterChangePessoa) {
+        var parentType = \$j('#parent_type').val();
 
-      $objFisicaCpf   = new clsFisica($this->cod_pessoa_fj);
-      $detalhe_fisica = $objFisicaCpf->detalhe();
-
-      if (! $detalhe_fisica['cpf']) {
-        $objCPF = new clsFisica(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-          FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-          FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, $this->id_federal);
-
-        if ($objCPF->detalhe()) {
-          $this->erros['id_federal'] = 'CPF já cadastrado.';
-          return FALSE;
-        }
+        if (parentType)
+          window.opener.afterChangePessoa(self, parentType, $id, \$j('#nm_pessoa').val());
+        else
+          window.opener.afterChangePessoa(self, $id);
       }
-    }
+      else
+        document.location = 'atendidos_lst.php';
 
-    $objPessoa = new clsPessoa_($this->cod_pessoa_fj, $this->nm_pessoa, FALSE,
-      $this->p_http, FALSE, $pessoaFj, date('Y-m-d H:i:s', time()), $this->email);
-
-    $objPessoa->edita();
-
-    $this->data_nasc = dataToBanco($this->data_nasc);
-
-    if ($this->id_federal) {
-      $this->id_federal = idFederal2Int($this->id_federal);
-      $objFisica = new clsFisica($this->cod_pessoa_fj, $this->data_nasc,
-        $this->sexo, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-        FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-        FALSE, FALSE, FALSE, $ref_cod_sistema, $this->id_federal);
-    }
-    else {
-      $objFisica = new clsFisica($this->cod_pessoa_fj, $this->data_nasc,
-        $this->sexo, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-        FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-        FALSE, FALSE, FALSE, $ref_cod_sistema);
-    }
-
-    $objFisica->edita();
-
-    if ($this->alterado) {
-      $db = new clsBanco();
-      $db->Consulta("UPDATE cadastro.fisica SET alterado = 'TRUE' WHERE idpes = '$this->cod_pessoa_fj'");
-    }
-
-    $objTelefone = new clsPessoaTelefone($this->cod_pessoa_fj, 1,
-      $this->telefone_1, $this->ddd_telefone_1);
-    $objTelefone->cadastra();
-
-    $objTelefone = new clsPessoaTelefone($this->cod_pessoa_fj, 2,
-      $this->telefone_2, $this->ddd_telefone_2);
-    $objTelefone->cadastra();
-
-    $objTelefone = new clsPessoaTelefone($this->cod_pessoa_fj, 3,
-      $this->telefone_mov, $this->ddd_telefone_mov);
-    $objTelefone->cadastra();
-
-    $objTelefone = new clsPessoaTelefone($this->cod_pessoa_fj, 4,
-      $this->telefone_fax, $this->ddd_telefone_fax);
-    $objTelefone->cadastra();
-
-    $objEndereco = new clsPessoaEndereco($this->cod_pessoa_fj);
-
-    $this->cep = idFederal2Int($this->cep);
-
-    $objEndereco2 = new clsPessoaEndereco($this->cod_pessoa_fj, $this->cep,
-      $this->idlog, $this->idbai, $this->numero, $this->complemento, FALSE,
-      $this->letra, $this->bloco, $this->apartamento,$this->andar);
-
-    if ($objEndereco->detalhe() && $this->cep && $this->idlog && $this->idbai) {
-      $objEndereco2->edita();
-    }
-    elseif ($this->cep && $this->idlog && $this->idbai) {
-      $objEndereco2->cadastra();
-    }
-    elseif ($objEndereco->detalhe()) {
-      $objEndereco2->exclui();
-    }
-    else {
-      $this->cep_ = idFederal2int($this->cep_);
-      $objEnderecoExterno = new clsEnderecoExterno($this->cod_pessoa_fj);
-
-      $objEnderecoExterno2 = new clsEnderecoExterno($this->cod_pessoa_fj, '1',
-        $this->idtlog, $this->logradouro, $this->numero, $this->letra,
-        $this->complemento, $this->bairro, $this->cep_, $this->cidade,
-        $this->sigla_uf, FALSE, $this->bloco, $this->apartamento, $this->andar,
-        FALSE, FALSE, $this->zona_localizacao);
-
-      if ($objEnderecoExterno->detalhe()) {
-        $objEnderecoExterno2->edita();
-      }
-      else {
-        $objEnderecoExterno2->cadastra();
-      }
-    }
-
-    // Atualizada raça.
-    $this->_cadastraRaca($this->cod_pessoa_fj, $this->cor_raca);
-
-    echo '<script>document.location="atendidos_lst.php";</script>';
-    return TRUE;
+    ", $afterReady = true);
   }
 
-  function Excluir()
-  {
-    echo '<script>document.location="atendidos_lst.php";</script>';
-    return TRUE;
+  protected function loadAlunoByPessoaId($id) {
+    $aluno            = new clsPmieducarAluno();
+    $aluno->ref_idpes = $id;
+
+    return $aluno->detalhe();
   }
 
-  /**
-   * Cadastra ou atualiza a raça de uma pessoa.
-   *
-   * @access protected
-   * @param  int $pessoaId
-   * @param  int $corRaca
-   * @return bool
-   * @since  Método disponível desde a versão 1.2.0
-   */
-  function _cadastraRaca($pessoaId, $corRaca)
-  {
+  protected function inputPai() {
+    $this->addParentsInput('pai');
+  }
+
+  protected function inputMae() {
+    $this->addParentsInput('mae', 'mãe');
+  }
+
+  protected function addParentsInput($parentType, $parentTypeLabel = '') {
+    if (! $parentTypeLabel)
+      $parentTypeLabel = $parentType;
+
+    if (! isset($this->_aluno))
+      $this->_aluno = $this->loadAlunoByPessoaId($this->cod_pessoa_fj);
+
+    $parentId = $this->{$parentType . '_id'};
+
+
+    // mostra uma dica nos casos em que foi informado apenas o nome dos pais,
+    //pela antiga interface do cadastro de alunos.
+
+    if (! $parentId && $this->_aluno['nm_' . $parentType]) {
+      $nome      = Portabilis_String_Utils::toLatin1($this->_aluno['nm_' . $parentType],
+                                                     array('transform' => true, 'escape' => false));
+
+      $inputHint = '<br /><b>Dica:</b> Foi informado o nome "' . $nome .
+                   '" no cadastro de aluno,<br />tente pesquisar esta pessoa ' .
+                   'pelo CPF ou RG, caso não encontre, cadastre uma nova pessoa.';
+    }
+
+
+    $hiddenInputOptions = array('options' => array('value' => $parentId));
+    $helperOptions      = array('objectName' => $parentType, 'hiddenInputOptions' => $hiddenInputOptions);
+
+    $options            = array('label'      => 'Pessoa ' . $parentTypeLabel,
+                                'size'       => 50,
+                                'required'   => false,
+                                'input_hint' => $inputHint);
+
+    $this->inputsHelper()->simpleSearchPessoa('nome', $options, $helperOptions);
+  }
+
+  protected function validatesCpf($cpf) {
+    $isValid = true;
+
+    if ($cpf && ! Portabilis_Utils_Validation::validatesCpf($cpf)) {
+      $this->erros['id_federal'] = 'CPF inválido.';
+      $isValid = false;
+    }
+    elseif($cpf) {
+      $fisica      = new clsFisica();
+      $fisica->cpf = idFederal2int($cpf);
+      $fisica      = $fisica->detalhe();
+
+      if ($fisica['cpf'] && $this->cod_pessoa_fj != $fisica['idpes']) {
+        $link = "<a class='decorated' target='__blank' href='/intranet/atendidos_cad.php?cod_pessoa_fj=" .
+                "{$fisica['idpes']}'>{$fisica['idpes']}</a>";
+
+        $this->erros['id_federal'] = "CPF já utilizado pela pessoa $link.";
+        $isValid = false;
+      }
+    }
+
+    return $isValid;
+  }
+
+  protected function createOrUpdate($pessoaIdOrNull = null) {
+    if (! $this->validatesCpf($this->id_federal))
+      return false;
+
+    if (!$this->validatePhoto())
+      return false;
+
+    $pessoaId = $this->createOrUpdatePessoa($pessoaIdOrNull);
+
+    $this->savePhoto($pessoaId);
+    $this->createOrUpdatePessoaFisica($pessoaId);
+    $this->createOrUpdateDocumentos($pessoaId);
+    $this->createOrUpdateTelefones($pessoaId);
+    $this->createOrUpdateEndereco($pessoaId);
+
+    $this->afterChangePessoa($pessoaId);
+    return true;
+  }
+
+
+  //envia foto e salva caminha no banco
+   protected function savePhoto($id){
+ 
+     if ($this->objPhoto!=null){
+       
+       $caminhoFoto = $this->objPhoto->sendPicture($id);
+       if ($caminhoFoto!=''){
+         //new clsCadastroFisicaFoto($id)->exclui();
+         $obj = new clsCadastroFisicaFoto($id,$caminhoFoto);
+         $detalheFoto = $obj->detalhe();
+         if (is_array($detalheFoto) && count($detalheFoto)>0)
+          $obj->edita();
+         else
+          $obj->cadastra();
+       
+         return true;
+       } else{
+         echo '<script>alert(\'Foto não salva.\')</script>';
+         return false;
+       }  
+     }
+   }
+ 
+   // Retorna true caso a foto seja válida
+   protected function validatePhoto(){
+ 
+     $this->arquivoFoto = $_FILES["file"];
+     if (!empty($this->arquivoFoto["name"])){      
+       $this->objPhoto = new PictureController($this->arquivoFoto);
+       if ($this->objPhoto->validatePicture()){
+         return TRUE;
+       } else {        
+         $this->mensagem = $this->objPhoto->getErrorMessage();
+         return false;
+       }
+       return false;
+     }else{
+       $this->objPhoto = null;
+       return true;
+     }
+     
+   }
+ 
+
+
+  protected function createOrUpdatePessoa($pessoaId = null) {
+    $pessoa        = new clsPessoa_();
+    $pessoa->idpes = $pessoaId;
+    $pessoa->nome  = addslashes($this->nm_pessoa);
+    $pessoa->email = addslashes($this->email);
+
+    $sql = "select 1 from cadastro.pessoa WHERE idpes = $1 limit 1";
+
+    if (! $pessoaId || Portabilis_Utils_Database::selectField($sql, $pessoaId) != 1) {
+      $pessoa->tipo      = 'F';
+      $pessoa->idpes_cad = $this->currentUserId();
+      $pessoaId          = $pessoa->cadastra();
+    }
+    else {
+      $pessoa->idpes_rev = $this->currentUserId();
+      $pessoa->data_rev  = date('Y-m-d H:i:s', time());
+      $pessoa->edita();
+    }
+
+    return $pessoaId;
+  }
+
+  protected function createOrUpdatePessoaFisica($pessoaId) {
+    $fisica                     = new clsFisica();
+    $fisica->idpes              = $pessoaId;
+    $fisica->data_nasc          = Portabilis_Date_Utils::brToPgSQL($this->data_nasc);
+    $fisica->sexo               = $this->sexo;
+    $fisica->ref_cod_sistema    = 'NULL';
+    $fisica->cpf                = $this->id_federal ? idFederal2int($this->id_federal) : 'NULL';
+    $fisica->ideciv             = $this->estado_civil_id;
+    $fisica->idpes_pai          = $this->pai_id ? $this->pai_id : "NULL";
+    $fisica->idpes_mae          = $this->mae_id ? $this->mae_id : "NULL";
+    $fisica->nacionalidade      = $_REQUEST['tipo_nacionalidade'];
+    $fisica->idpais_estrangeiro = $_REQUEST['pais_origem_id'];
+    $fisica->idmun_nascimento   = $_REQUEST['naturalidade_id'];
+
+    $sql = "select 1 from cadastro.fisica WHERE idpes = $1 limit 1";
+
+    if (Portabilis_Utils_Database::selectField($sql, $pessoaId) != 1)
+      $fisica->cadastra();
+    else
+      $fisica->edita();
+
+    $this->createOrUpdateRaca($pessoaId, $this->cor_raca);
+  }
+
+  function createOrUpdateRaca($pessoaId, $corRaca) {
     $pessoaId = (int) $pessoaId;
     $corRaca  = (int) $corRaca;
 
     $raca = new clsCadastroFisicaRaca($pessoaId, $corRaca);
-    if ($raca->existe()) {
+
+    if ($raca->existe())
       return $raca->edita();
-    }
 
     return $raca->cadastra();
+  }
+
+  protected function createOrUpdateDocumentos($pessoaId) {
+    $documentos                             = new clsDocumento();
+    $documentos->idpes                      = $pessoaId;
+
+
+    // rg
+
+    $documentos->rg                         = $_REQUEST['rg'];
+
+    $documentos->data_exp_rg                = Portabilis_Date_Utils::brToPgSQL(
+      $_REQUEST['data_emissao_rg']
+    );
+
+    $documentos->idorg_exp_rg               = $_REQUEST['orgao_emissao_rg'];
+    $documentos->sigla_uf_exp_rg            = $_REQUEST['uf_emissao_rg'];
+
+
+    // certidão civil
+
+
+    // o tipo certidão novo padrão é apenas para exibição ao usuário,
+    // não precisa ser gravado no banco
+    //
+    // quando selecionado um tipo diferente do novo formato,
+    // é removido o valor de certidao_nascimento.
+    //
+    if ($_REQUEST['tipo_certidao_civil'] == 'certidao_nascimento_novo_formato') {
+      $documentos->tipo_cert_civil     = null;
+      $documentos->certidao_nascimento = $_REQUEST['certidao_nascimento'];
+    }
+    else {
+      $documentos->tipo_cert_civil     = $_REQUEST['tipo_certidao_civil'];
+      $documentos->certidao_nascimento = '';
+    }
+
+    $documentos->num_termo                  = $_REQUEST['termo_certidao_civil'];
+    $documentos->num_livro                  = $_REQUEST['livro_certidao_civil'];
+    $documentos->num_folha                  = $_REQUEST['folha_certidao_civil'];
+
+    $documentos->data_emissao_cert_civil    = Portabilis_Date_Utils::brToPgSQL(
+      $_REQUEST['data_emissao_certidao_civil']
+    );
+
+    $documentos->sigla_uf_cert_civil        = $_REQUEST['uf_emissao_certidao_civil'];
+    $documentos->cartorio_cert_civil        = addslashes($_REQUEST['cartorio_emissao_certidao_civil']);
+
+
+    // carteira de trabalho
+
+    $documentos->num_cart_trabalho          = $_REQUEST['carteira_trabalho'];
+    $documentos->serie_cart_trabalho        = $_REQUEST['serie_carteira_trabalho'];
+
+    $documentos->data_emissao_cart_trabalho = Portabilis_Date_Utils::brToPgSQL(
+      $_REQUEST['data_emissao_carteira_trabalho']
+    );
+
+    $documentos->sigla_uf_cart_trabalho     = $_REQUEST['uf_emissao_carteira_trabalho'];
+
+
+    // titulo de eleitor
+
+    $documentos->num_tit_eleitor            = $_REQUEST['titulo_eleitor'];
+    $documentos->zona_tit_eleitor           = $_REQUEST['zona_titulo_eleitor'];
+    $documentos->secao_tit_eleitor          = $_REQUEST['secao_titulo_eleitor'];
+
+
+    // Alteração de documentos compativel com a versão anterior do cadastro,
+    // onde era possivel criar uma pessoa, não informando os documentos,
+    // o que não criaria o registro do documento, sendo assim, ao editar uma pessoa,
+    // o registro do documento será criado, caso não exista.
+
+    $sql = "select 1 from cadastro.documento WHERE idpes = $1 limit 1";
+
+    if (Portabilis_Utils_Database::selectField($sql, $pessoaId) != 1)
+      $documentos->cadastra();
+    else
+      $documentos->edita();
+  }
+
+  protected function _createOrUpdatePessoaEndereco($pessoaId) {
+    $endereco = new clsPessoaEndereco(
+      $pessoaId,
+      idFederal2Int($this->cep),
+      $this->idlog,
+      $this->idbai,
+      $this->numero,
+      addslashes($this->complemento),
+      FALSE,
+      addslashes($this->letra),
+      addslashes($this->bloco),
+      $this->apartamento,
+      $this->andar
+    );
+
+    // forçado exclusão, assim ao cadastrar endereco_pessoa novamente,
+    // será excluido endereco_externo (por meio da trigger fcn_aft_ins_endereco_pessoa).
+    $endereco->exclui();
+    $endereco->cadastra();
+  }
+
+  protected function _createOrUpdateEnderecoExterno($pessoaId) {
+    $endereco = new clsEnderecoExterno(
+      $pessoaId,
+      '1',
+      $this->idtlog,
+      addslashes($this->logradouro),
+      $this->numero,
+      addslashes($this->letra),
+      addslashes($this->complemento),
+      addslashes($this->bairro),
+      idFederal2int($this->cep_),
+      addslashes($this->cidade),
+      $this->sigla_uf,
+      FALSE,
+      addslashes($this->bloco),
+      $this->apartamento,
+      $this->andar,
+      FALSE,
+      FALSE,
+      $this->zona_localizacao
+    );
+
+    // forçado exclusão, assim ao cadastrar endereco_externo novamente,
+    // será excluido endereco_pessoa (por meio da trigger fcn_aft_ins_endereco_externo).
+    $endereco->exclui();
+    $endereco->cadastra();
+  }
+
+  protected function createOrUpdateEndereco($pessoaId) {
+    $enderecoExterno = ! empty($this->cep_);
+
+    if (! $enderecoExterno && $this->cep && $this->idbai && $this->idlog)
+      $this->_createOrUpdatePessoaEndereco($pessoaId);
+
+    elseif($enderecoExterno)
+      $this->_createOrUpdateEnderecoExterno($pessoaId);
+  }
+
+  protected function createOrUpdateTelefones($pessoaId) {
+    $telefones   = array();
+
+    $telefones[] = new clsPessoaTelefone($pessoaId, 1, $this->telefone_1,   $this->ddd_telefone_1);
+    $telefones[] = new clsPessoaTelefone($pessoaId, 2, $this->telefone_2,   $this->ddd_telefone_2);
+    $telefones[] = new clsPessoaTelefone($pessoaId, 3, $this->telefone_mov, $this->ddd_telefone_mov);
+    $telefones[] = new clsPessoaTelefone($pessoaId, 4, $this->telefone_fax, $this->ddd_telefone_fax);
+
+    foreach ($telefones as $telefone)
+      $telefone->cadastra();
+  }
+
+  // inputs usados em Gerar,
+  // implementado estes metodos para não duplicar código
+  // uma vez que estes campos são usados várias vezes em Gerar.
+
+  protected function inputTelefone($type, $typeLabel = '') {
+    if (! $typeLabel)
+      $typeLabel = "Telefone {$type}";
+
+    // ddd
+
+    $options = array(
+      'required'    => false,
+      'label'       => "(ddd) / {$typeLabel}",
+      'placeholder' => 'ddd',
+      'value'       => $this->{"ddd_telefone_{$type}"},
+      'max_length'  => 3,
+      'size'        => 3,
+      'inline'      => true
+    );
+
+    $this->inputsHelper()->integer("ddd_telefone_{$type}", $options);
+
+
+   // telefone
+
+    $options = array(
+      'required'    => false,
+      'label'       => '',
+      'placeholder' => $typeLabel,
+      'value'       => $this->{"telefone_{$type}"},
+      'max_length'  => 11
+    );
+
+    $this->inputsHelper()->integer("telefone_{$type}", $options);
   }
 }
 

@@ -188,7 +188,7 @@ class clsPmieducarFaltaAtraso
     if (is_numeric($ref_cod_servidor) && is_numeric($ref_ref_cod_instituicao)) {
       if (class_exists('clsPmieducarServidor')) {
         $tmp_obj = new clsPmieducarServidor($ref_cod_servidor, NULL, NULL, NULL,
-          NULL, NULL, NULL, NULL, $ref_ref_cod_instituicao);
+          NULL, NULL, NULL, $ref_ref_cod_instituicao, NULL);
 
         if (method_exists($tmp_obj, 'existe')) {
           if ($tmp_obj->existe() ) {
@@ -696,11 +696,12 @@ class clsPmieducarFaltaAtraso
   /**
    * Define limites de retorno para o método Lista().
    */
-  function setLimite($intLimiteQtd, $intLimiteOffset = NULL)
-  {
-    $this->_limite_quantidade = $intLimiteQtd;
-    $this->_limite_offset = $intLimiteOffset;
-  }
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
+	{
+		$this->_limite_quantidade = $intLimiteQtd;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
+	}
 
   /**
    * Retorna a string com o trecho da query responsável pelo limite de

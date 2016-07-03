@@ -32,10 +32,18 @@ require_once 'include/clsBase.inc.php';
 require_once 'include/clsDetalhe.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
+require_once 'include/modules/clsModulesFichaMedicaAluno.inc.php';
+require_once 'include/modules/clsModulesUniformeAluno.inc.php';
+require_once 'include/modules/clsModulesMoradiaAluno.inc.php';
 
 require_once 'App/Model/ZonaLocalizacao.php';
 require_once 'Educacenso/Model/AlunoDataMapper.php';
 require_once 'Transporte/Model/AlunoDataMapper.php';
+
+require_once 'include/pessoa/clsCadastroFisicaFoto.inc.php';
+
+require_once 'Portabilis/View/Helper/Application.php';
+
 
 /**
  * clsIndexBase class.
@@ -93,6 +101,11 @@ class indice extends clsDetalhe
     $this->pessoa_logada = $_SESSION['id_pessoa'];
     session_write_close();
 
+    // Verificação de permissão para cadastro.
+    $this->obj_permissao = new clsPermissoes();
+
+    $this->nivel_usuario = $this->obj_permissao->nivel_acesso($this->pessoa_logada);
+
     $this->titulo = 'Aluno - Detalhe';
     $this->addBanner('imagens/nvp_top_intranet.jpg', 'imagens/nvp_vert_intranet.jpg', 'Intranet');
 
@@ -128,7 +141,12 @@ class indice extends clsDetalhe
         $det_raca = $obj_raca->detalhe();
       }
 
-      $registro['nome_aluno'] = $det_pessoa_fj['nome'];
+      $objFoto = new clsCadastroFisicaFoto($this->ref_idpes);
+      $detalheFoto = $objFoto->detalhe();
+      if ($detalheFoto)
+        $caminhoFoto  = $detalheFoto['caminho'];
+
+      $registro['nome_aluno'] = strtoupper($det_pessoa_fj['nome']);
       $registro['cpf']        = int2IdFederal($det_fisica['cpf']);
       $registro['data_nasc']  = dataToBrasil($det_fisica['data_nasc']);
       $registro['sexo']       = $det_fisica['sexo'] == 'F' ? 'Feminino' : 'Masculino';
@@ -161,8 +179,8 @@ class indice extends clsDetalhe
       $this->idpes_pai = $det_fisica['idpes_pai'];
       $this->idpes_mae = $det_fisica['idpes_mae'];
 
-      $this->nm_pai = $detalhe_aluno['nm_pai'];
-      $this->nm_mae = $detalhe_aluno['nm_mae'];
+      $this->nm_pai = $registro['nm_pai'];
+      $this->nm_mae = $registro['nm_mae'];
 
       if ($this->idpes_pai) {
         $obj_pessoa_pai = new clsPessoaFj($this->idpes_pai);
@@ -343,9 +361,39 @@ class indice extends clsDetalhe
       $this->addDetalhe(array('Código Aluno', $registro['cod_aluno']));
     }
 
-    if ($registro['nome_aluno']) {
-      $this->addDetalhe(array('Nome Aluno', $registro['nome_aluno']));
+    // código inep
+
+    $alunoMapper = new Educacenso_Model_AlunoDataMapper();
+    $alunoInep   = NULL;
+    try {
+      $alunoInep = $alunoMapper->find(array('aluno' => $this->cod_aluno));
+      $this->addDetalhe(array('Código inep', $alunoInep->alunoInep));
     }
+    catch(Exception $e) {
+    }
+
+    // código estado
+
+    $this->addDetalhe(array('Código estado', $registro['aluno_estado_id']));
+
+    if ($registro['caminho_foto']) {
+      $this->addDetalhe(array(
+        'Foto',
+        sprintf(
+          '<img src="arquivos/educar/aluno/small/%s" border="0">',
+          $registro['caminho_foto']
+        )
+      ));
+    }
+
+    if ($registro['nome_aluno']) {
+      if ($caminhoFoto!=null and $caminhoFoto!='')
+        $this->addDetalhe(array('Nome Aluno', $registro['nome_aluno'].'<p><img height="117" src="'.$caminhoFoto.'"/></p>'));
+      else
+        $this->addDetalhe(array('Nome Aluno', $registro['nome_aluno']));
+    }
+
+
 
     if (idFederal2int($registro['cpf'])) {
       $this->addDetalhe(array('CPF', $registro['cpf']));
@@ -602,16 +650,6 @@ class indice extends clsDetalhe
       $this->addDetalhe(array('Seção', $registro['secao_tit_eleitor']));
     }
 
-    if ($registro['caminho_foto']) {
-      $this->addDetalhe(array(
-        'Foto',
-        sprintf(
-          '<img src="arquivos/educar/aluno/small/%s" border="0">',
-          $registro['caminho_foto']
-        )
-      ));
-    }
-
     // Transporte escolar.
     $transporteMapper = new Transporte_Model_AlunoDataMapper();
     $transporteAluno  = NULL;
@@ -621,265 +659,204 @@ class indice extends clsDetalhe
     catch (Exception $e) {
     }
 
-    $this->addDetalhe(array('Transporte escolar', isset($transporteAluno) ? 'Sim' : 'Não'));
-    if ($transporteAluno) {
+    $this->addDetalhe(array('Transporte escolar', isset($transporteAluno) && $transporteAluno->responsavel!='Não utiliza'  ? 'Sim' : 'Não'));
+    if ($transporteAluno && $transporteAluno->responsavel!='Não utiliza') {
       $this->addDetalhe(array('Responsável transporte', $transporteAluno->responsavel));
     }
 
-    // Adiciona uma aba com dados do Inep/Educacenso caso aluno tenha código Inep.
-    if (isset($this->cod_aluno)) {
-      $alunoMapper = new Educacenso_Model_AlunoDataMapper();
+    if ($this->obj_permissao->permissao_cadastra(578, $this->pessoa_logada, 7)) {
+      $this->url_novo   = '/module/Cadastro/aluno';
+      $this->url_editar = '/module/Cadastro/aluno?id=' . $registro['cod_aluno'];
 
-      $alunoInep = NULL;
-      try {
-        $alunoInep = $alunoMapper->find(array('aluno' => $this->cod_aluno));
-      }
-      catch(Exception $e) {
-      }
-
-      if ($alunoInep) {
-        $this->addDetalhe(array('Código do aluno no Educacenso/Inep', $alunoInep->alunoInep));
-
-        if (isset($alunoInep->nomeInep)) {
-          $this->addDetalhe(array('Nome do aluno no Educacenso/Inep', $alunoInep->nomeInep));
-        }
-      }
-    }
-
-    $this->addDetalhe(array('Matrícula', $this->montaTabelaMatricula()));
-
-    // Verificação de permissão para cadastro.
-    $obj_permissao = new clsPermissoes();
-    if ($obj_permissao->permissao_cadastra(578, $this->pessoa_logada, 7)) {
-      $this->url_novo   = 'educar_aluno_cad.php';
-      $this->url_editar = 'educar_aluno_cad.php?cod_aluno=' . $registro['cod_aluno'];
-
-      $this->array_botao = array('Matrícula', 'Atualizar Histórico', 'Ficha do Aluno');
+      $this->array_botao = array('Nova matrícula', 'Atualizar Histórico');
       $this->array_botao_url_script = array(
-        sprintf('go("educar_matricula_lst.php?ref_cod_aluno=%d");', $registro['cod_aluno']),
-        sprintf('go("educar_historico_escolar_lst.php?ref_cod_aluno=%d");', $registro['cod_aluno']),
-        sprintf('showExpansivelImprimir(400, 200, "educar_relatorio_aluno_dados.php?ref_cod_aluno=%d", [], "Relatório i-Educar")', $registro['cod_aluno'])
+        sprintf('go("educar_matricula_cad.php?ref_cod_aluno=%d");', $registro['cod_aluno']),
+        sprintf('go("educar_historico_escolar_lst.php?ref_cod_aluno=%d");', $registro['cod_aluno'])
       );
     }
 
+    $objFichaMedica       = new clsModulesFichaMedicaAluno($this->cod_aluno);
+    $reg                  = $objFichaMedica->detalhe();
+
+    if($reg){    
+
+      $this->addDetalhe(array('<span id="fmedica"></span>Altura/metro', $reg['altura']));
+      if (trim($reg['peso'])!='') $this->addDetalhe(array('Peso/kg', $reg['peso']));    
+      if (trim($reg['grupo_sanguineo'])!='') $this->addDetalhe(array('Grupo sanguíneo', $reg['grupo_sanguineo']));    
+      if (trim($reg['fator_rh'])!='') $this->addDetalhe(array('Fator RH', $reg['fator_rh']));    
+      $this->addDetalhe(array('Possui alergia a algum medicamento', ($reg['alergia_medicamento'] == 'S' ? 'Sim': 'Não') ));    
+      if (trim($reg['desc_alergia_medicamento'])!='') $this->addDetalhe(array('Quais', $reg['desc_alergia_medicamento']));    
+      $this->addDetalhe(array('Possui alergia a algum alimento', ($reg['alergia_alimento'] == 'S' ? 'Sim': 'Não') ));      
+      if (trim($reg['desc_alergia_alimento'])!='') $this->addDetalhe(array('Quais', $reg['desc_alergia_alimento']));    
+      $this->addDetalhe(array('Possui alguma doenca congênita', ($reg['doenca_congenita'] == 'S' ? 'Sim': 'Não') ));    
+      if (trim($reg['desc_doenca_congenita'])!='') $this->addDetalhe(array('Quais', $reg['desc_doenca_congenita']));    
+      $this->addDetalhe(array('É fumante', ($reg['fumante'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Já contraiu caxumba', ($reg['doenca_caxumba'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Já contraiu sarampo', ($reg['doenca_sarampo'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Já contraiu rubeola', ($reg['doenca_rubeola'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Já contraiu catapora', ($reg['doenca_catapora'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Já contraiu escarlatina', ($reg['doenca_escarlatina'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Já contraiu coqueluche', ($reg['doenca_coqueluche'] == 'S' ? 'Sim': 'Não') ));  
+      if (trim($reg['doenca_outras'])!='') $this->addDetalhe(array('Outras doenças que o aluno já contraiu', $reg['doenca_outras']));    
+      $this->addDetalhe(array('Epilético', ($reg['epiletico'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Está em tratamento', ($reg['epiletico_tratamento'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Hemofílico', ($reg['hemofilico'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Hipertenso', ($reg['hipertenso'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Asmático', ($reg['asmatico'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Diabético', ($reg['diabetico'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Depende de insulina', ($reg['insulina'] == 'S' ? 'Sim': 'Não') ));  
+      $this->addDetalhe(array('Faz tratamento médico', ($reg['tratamento_medico'] == 'S' ? 'Sim': 'Não') ));        
+      if (trim($reg['desc_tratamento_medico'])!='') $this->addDetalhe(array('Qual', $reg['desc_tratamento_medico']));    
+      $this->addDetalhe(array('Ingere medicação específica', ($reg['medicacao_especifica'] == 'S' ? 'Sim': 'Não') ));        
+      if (trim($reg['desc_medicacao_especifica'])!='') $this->addDetalhe(array('Qual', $reg['desc_medicacao_especifica']));    
+      $this->addDetalhe(array('Acompanhamento médico ou psicológico', ($reg['acomp_medico_psicologico'] == 'S' ? 'Sim': 'Não') ));              
+      if (trim($reg['desc_acomp_medico_psicologico'])!='') $this->addDetalhe(array('Motivo', $reg['desc_acomp_medico_psicologico']));    
+      $this->addDetalhe(array('Restrição para atividades físicas', ($reg['restricao_atividade_fisica'] == 'S' ? 'Sim': 'Não') ));        
+      if (trim($reg['desc_restricao_atividade_fisica'])!='') $this->addDetalhe(array('Qual', $reg['desc_restricao_atividade_fisica']));    
+      $this->addDetalhe(array('Teve alguma fratura ou trauma', ($reg['fratura_trauma'] == 'S' ? 'Sim': 'Não') ));        
+      if (trim($reg['desc_fratura_trauma'])!='') $this->addDetalhe(array('Qual', $reg['desc_fratura_trauma']));                      
+      $this->addDetalhe(array('Tem plano de saúde', ($reg['plano_saude'] == 'S' ? 'Sim': 'Não') ));        
+      if (trim($reg['desc_plano_saude'])!='') $this->addDetalhe(array('Qual', $reg['desc_plano_saude']));   
+      $this->addDetalhe(array('<span id="tit_dados_hospital">Em caso de emergência, levar para hospital ou clínica</span>'));   
+      $this->addDetalhe(array('Nome', $reg['hospital_clinica'])); 
+      $this->addDetalhe(array('Endereco', $reg['hospital_clinica_endereco']));    
+      $this->addDetalhe(array('Telefone', $reg['hospital_clinica_telefone']));    
+      $this->addDetalhe(array('<span id="tit_dados_responsavel">Em caso de emergência, se não for possível contatar os responsáveis, comunicar</span>'));         
+      $this->addDetalhe(array('Nome', $reg['responsavel']));    
+      $this->addDetalhe(array('Parentesco', $reg['responsavel_parentesco']));    
+      $this->addDetalhe(array('Telefone', $reg['responsavel_parentesco_telefone']));    
+      $this->addDetalhe(array('Celular', $reg['responsavel_parentesco_celular'])); 
+
+    }
+
+    $objUniforme       = new clsModulesUniformeAluno($this->cod_aluno);
+    $reg               = $objUniforme->detalhe();
+
+    if($reg){    
+      $this->addDetalhe(array('<span id="funiforme"></span>Recebeu uniforme escolar', ($reg['recebeu_uniforme'] == 'S' ? 'Sim': 'Não') ));       
+      $this->addDetalhe(array('<span class="tit_uniforme">Camiseta</span>'));   
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_camiseta'])); 
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_camiseta']));  
+      $this->addDetalhe(array('<span class="tit_uniforme">Blusa/Jaqueta</span>'));   
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_blusa_jaqueta'])); 
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_blusa_jaqueta']));  
+      $this->addDetalhe(array('<span class="tit_uniforme">Bermuda</span>'));   
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_bermuda'])); 
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_bermuda']));  
+      $this->addDetalhe(array('<span class="tit_uniforme">Calça</span>'));   
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_calca'])); 
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_calca']));  
+      $this->addDetalhe(array('<span class="tit_uniforme">Saia</span>'));   
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_saia'])); 
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_saia']));  
+      $this->addDetalhe(array('<span class="tit_uniforme">Calçado</span>'));   
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_calcado'])); 
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_calcado']));  
+      $this->addDetalhe(array('<span class="tit_uniforme">Meia</span>'));   
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_meia'])); 
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_meia']));                                              
+    }  
+
+    $objMoradia        = new clsModulesMoradiaAluno($this->cod_aluno);
+    $reg               = $objMoradia->detalhe();
+
+    if($reg){    
+
+      $moradia = '';
+      switch ($reg['moradia']) {
+        case 'A':
+          $moradia = 'Apartamento';
+          break;
+        case 'C':
+          $moradia = 'Casa';
+            switch ($reg['material']) {
+              case 'A':
+                $moradia.= ' de alvenaria';
+                break;
+              case 'M':
+                $moradia.= ' de madeira';
+                break;
+              case 'I':
+                $moradia.= ' mista';
+                break;                                
+            }
+          break;
+        case 'O':
+          $moradia = 'Outra: '.$reg['casa_outra'];
+          break;
+        default: 
+          $moradia = 'Não informado';
+      }
+
+      $this->addDetalhe(array('<span id="fmoradia"></span>Moradia', $moradia ));       
+      $situacao;
+      switch ($reg['moradia_situacao']) {
+        case 1:
+          $situacao = 'Alugado';
+          break;      
+        case 2:
+          $situacao = 'Próprio';
+          break;      
+        case 3:
+          $situacao = 'Cedido';
+          break;      
+        case 4:
+          $situacao = 'Financiado';
+          break;      
+        case 5:
+          $situacao = 'Outra';
+          break;                                              
+      }
+      $this->addDetalhe(array('Situação', $situacao)); 
+      $this->addDetalhe(array('Quantidade de quartos', $reg['quartos'])); 
+      $this->addDetalhe(array('Quantidade de salas', $reg['sala']));       
+      $this->addDetalhe(array('Quantidade de copas', $reg['copa']));       
+      $this->addDetalhe(array('Quantidade de banheiros', $reg['banheiro']));       
+      $this->addDetalhe(array('Quantidade de garagens', $reg['garagem']));       
+      $this->addDetalhe(array('Possui empregada doméstica', $reg['empregada_domestica']));       
+      $this->addDetalhe(array('Possui automóvel', $reg['automovel']));       
+      $this->addDetalhe(array('Possui motocicleta', $reg['motocicleta']));       
+      $this->addDetalhe(array('Possui computador', $reg['computador']));       
+      $this->addDetalhe(array('Possui geladeira', $reg['geladeira']));       
+      $this->addDetalhe(array('Possui fogão', $reg['fogao']));       
+      $this->addDetalhe(array('Possui máquina de lavar', $reg['maquina_lavar']));       
+      $this->addDetalhe(array('Possui microondas', $reg['microondas']));       
+      $this->addDetalhe(array('Possui vídeo/dvd', $reg['video_dvd']));       
+      $this->addDetalhe(array('Possui televisão', $reg['televisao']));       
+      $this->addDetalhe(array('Possui celular', $reg['celular']));       
+      $this->addDetalhe(array('Possui telefone', $reg['telefone']));       
+      $this->addDetalhe(array('Quantidade de pessoas', $reg['quant_pessoas']));       
+      $this->addDetalhe(array('Renda familiar', 'R$ '.$reg['renda']));       
+      $this->addDetalhe(array('Possui água encanada', $reg['agua_encanada']));       
+      $this->addDetalhe(array('Possui poço', $reg['poco']));       
+      $this->addDetalhe(array('Possui energia elétrica', $reg['energia']));       
+      $this->addDetalhe(array('Possui tratamento de esgoto', $reg['esgoto']));       
+      $this->addDetalhe(array('Possui fossa', $reg['fossa']));       
+      $this->addDetalhe(array('Possui coleta de lixo', $reg['lixo']));       
+
+    }          
+
     $this->url_cancelar = 'educar_aluno_lst.php';
     $this->largura      = '100%';
-  }
 
-  function montaTabelaMatricula()
-  {
-    $sql = sprintf('SELECT
-              cod_matricula
-            FROM
-              pmieducar.matricula
-            WHERE
-              ref_cod_aluno = %d
-              AND ativo = 1
-            ORDER BY
-              cod_matricula DESC', $this->cod_aluno);
+    $this->addDetalhe("<input type='hidden' id='escola_id' name='aluno_id' value='{$registro['ref_cod_escola']}' />");
+    $this->addDetalhe("<input type='hidden' id='aluno_id' name='aluno_id' value='{$registro['cod_aluno']}' />");
 
-    $db = new clsBanco();
-    $db->Consulta($sql);
+    // js
 
-    if ($db->Num_Linhas()) {
-      while ($db->ProximoRegistro()) {
-        list($ref_cod_matricula) = $db->Tupla();
+    Portabilis_View_Helper_Application::loadJQueryLib($this);
 
-        if (is_numeric($ref_cod_matricula)) {
-          $obj_matricula = new clsPmieducarMatricula();
-          $obj_matricula->setOrderby('ano ASC');
-          $lst_matricula = $obj_matricula->lista($ref_cod_matricula);
+    $scripts = array(
+      '/modules/Portabilis/Assets/Javascripts/Utils.js',
+      '/modules/Portabilis/Assets/Javascripts/ClientApi.js',  
+      '/modules/Cadastro/Assets/Javascripts/AlunoShow.js'
+      );
 
-          if ($lst_matricula) {
-            $registro = array_shift($lst_matricula);
-          }
+    Portabilis_View_Helper_Application::loadJavascript($this, $scripts);
 
-          $table .= sprintf(
-            '<table class="tableDetalhe">
-               <tr class="formdktd">
-                 <td colspan="2"><strong>Matrícula - Ano %d</strong></td>
-               </tr>',
-            $registro['ano']
-          );
+    $styles = array ('/modules/Cadastro/Assets/Stylesheets/Aluno.css');
 
-          $obj_ref_cod_curso = new clsPmieducarCurso($registro['ref_cod_curso']);
-          $det_ref_cod_curso = $obj_ref_cod_curso->detalhe();
-          $nm_curso = $det_ref_cod_curso['nm_curso'];
-
-          $obj_serie = new clsPmieducarSerie($registro['ref_ref_cod_serie']);
-          $det_serie = $obj_serie->detalhe();
-          $nm_serie = $det_serie['nm_serie'];
-
-          $obj_cod_instituicao = new clsPmieducarInstituicao($registro['ref_cod_instituicao']);
-          $obj_cod_instituicao_det = $obj_cod_instituicao->detalhe();
-          $nm_instituicao = $obj_cod_instituicao_det['nm_instituicao'];
-
-          $obj_ref_cod_escola = new clsPmieducarEscola($registro['ref_ref_cod_escola']);
-          $det_ref_cod_escola = $obj_ref_cod_escola->detalhe();
-          $nm_escola = $det_ref_cod_escola['nome'];
-
-          $obj_mat_turma = new clsPmieducarMatriculaTurma();
-          $det_mat_turma = $obj_mat_turma->lista($ref_cod_matricula, NULL, NULL,
-            NULL, NULL, NULL, NULL, NULL, 1);
-
-          if ($det_mat_turma) {
-            $det_mat_turma = array_shift($det_mat_turma);
-
-            $obj_turma = new clsPmieducarTurma($det_mat_turma['ref_cod_turma']);
-            $det_turma = $obj_turma->detalhe();
-            $nm_turma  = $det_turma['nm_turma'];
-          }
-          else {
-            $nm_turma = '';
-          }
-
-          $transferencias = array();
-
-          if ($registro['aprovado'] == 1) {
-            $aprovado = 'Aprovado';
-          }
-          elseif ($registro['aprovado'] == 2) {
-            $aprovado = 'Reprovado';
-          }
-          elseif ($registro['aprovado'] == 3) {
-            $aprovado = 'Em Andamento';
-          }
-          elseif ($registro['aprovado'] == 4) {
-            if (is_numeric($registro['cod_matricula'])) {
-              $aprovado = 'Transferido';
-
-              $sql = sprintf('SELECT
-                        ref_cod_matricula_entrada,
-                        ref_cod_matricula_saida,
-                        to_char(data_transferencia, \'DD/MM/YYYY\') AS dt_transferencia
-                      FROM
-                        pmieducar.transferencia_solicitacao
-                      WHERE
-                        (ref_cod_matricula_entrada = %d
-                        OR ref_cod_matricula_saida = %d)
-                        AND ativo = 1',
-                      $registro['cod_matricula'], $registro['cod_matricula']
-              );
-
-              $db2 = new clsBanco();
-              $db2->Consulta($sql);
-
-              if ($db2->Num_Linhas()) {
-                while ($db2->ProximoRegistro()) {
-                  list($ref_cod_matricula_entrada, $ref_cod_matricula_saida,
-                    $dt_transferencia) = $db2->Tupla();
-
-                  if ($ref_cod_matricula_saida == $registro['cod_matricula']) {
-                    $transferencias[] = array(
-                      'data_trans' => $dt_transferencia,
-                      'desc'       => 'Data Transferência Saída'
-                    );
-                  }
-                  elseif ($ref_cod_matricula_entrada == $registro['cod_matricula']) {
-                    $transferencias[] = array(
-                      'data_trans' => $dt_transferencia,
-                      'desc'       => 'Data Transferência Admissão'
-                    );
-                  }
-                }
-              }
-            }
-          }
-          elseif ($registro['aprovado'] == 5) {
-            $aprovado = 'Reclassificado';
-          }
-          elseif ($registro['aprovado'] == 6) {
-            $aprovado = 'Abandono';
-          }
-          elseif ($registro['aprovado'] == 7) {
-            $aprovado = 'Em Exame';
-          }
-
-          $formando = $registro['formando'] == 0 ? 'Não' : 'Sim';
-
-          $table .= sprintf(
-            '<tr class="formlttd"><td>Número da Matrícula</td><td>%s</td></tr>',
-            $registro['cod_matricula']
-          );
-
-          $table .= sprintf(
-            '<tr class="formmdtd"><td>Instituição</td><td>%s</td></tr>',
-            $nm_instituicao
-          );
-
-          $table .= sprintf(
-            '<tr class="formlttd"><td>Escola</td><td>%s</td></tr>',
-            $nm_escola
-          );
-
-          $table .= sprintf(
-            '<tr class="formmdtd"><td>Série</td><td>%s</td></tr>',
-            $nm_serie
-          );
-
-          $table .= sprintf(
-            '<tr class="formlttd"><td>Turma</td><td>%s</td></tr>',
-            $nm_turma
-          );
-
-          $table .= sprintf(
-            '<tr class="formmdtd"><td>Situação</td><td>%s</td></tr>',
-            $aprovado
-          );
-
-          $class = 'formmdtd';
-
-          if (is_array($transferencias)) {
-            asort($transferencias);
-
-            foreach ($transferencias as $trans) {
-              $table .= sprintf(
-                '<tr class="%s"><td>%s</td><td>%s</td></tr>',
-                $class, $trans['desc'], $trans['data_trans']
-              );
-
-              $class = $class == 'formmdtd' ? 'formlttd' : 'formmdtd';
-            }
-          }
-
-          if ($registro['aprovado'] < 4) {
-            if (is_numeric($registro["cod_matricula"])) {
-              $sql = sprintf('SELECT
-                        to_char(data_transferencia, \'DD/MM/YYYY\')
-                      FROM
-                        pmieducar.transferencia_solicitacao
-                      WHERE
-                        ref_cod_matricula_entrada = %d
-                        AND ativo = 1', $registro['cod_matricula']);
-
-              $db2 = new clsBanco();
-              $data_transferencia = $db2->CampoUnico($sql);
-
-              if ($data_transferencia) {
-                $table .= sprintf('
-                  <tr class="%s">
-                    <td>Data Transferência Admissão</td>
-                    <td>%s</td>
-                  </tr>',
-                  $class, $data_transferencia);
-
-                $class = $class == 'formmdtd' ? 'formlttd' : 'formmdtd';
-              }
-            }
-          }
-
-          $table .= sprintf('<tr class="%s"><td>Formando</td><td>%s</td></tr>',
-            $class == 'formmdtd' ? 'formlttd' : 'formmdtd', $formando);
-
-          $table .= '</table>';
-        }
-      }
-    }
-    else {
-      return '<strong>O aluno não está matriculado em nenhuma escola</strong>';
-    }
-
-    return $table;
+    Portabilis_View_Helper_Application::loadStylesheet($this, $styles);
   }
 }
 

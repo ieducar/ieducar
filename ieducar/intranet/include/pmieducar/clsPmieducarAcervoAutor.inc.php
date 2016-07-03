@@ -372,7 +372,8 @@ class clsPmieducarAcervoAutor
 		}
 		if( is_string( $str_nm_autor ) )
 		{
-			$filtros .= "{$whereAnd} nm_autor LIKE '%{$str_nm_autor}%'";
+			$str_nm_autor = addslashes($str_nm_autor);
+			$filtros .= "{$whereAnd} nm_autor ILIKE ('%{$str_nm_autor}%')";
 			$whereAnd = " AND ";
 		}
 		if( is_string( $str_descricao ) )
@@ -554,10 +555,11 @@ class clsPmieducarAcervoAutor
 	 *
 	 * @return null
 	 */
-	function setLimite( $intLimiteQtd, $intLimiteOffset = null )
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
 	{
 		$this->_limite_quantidade = $intLimiteQtd;
-		$this->_limite_offset = $intLimiteOffset;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
 	}
 
 	/**

@@ -319,7 +319,7 @@ class clsPublicBairro
 
       if (is_string($this->nome)) {
         $campos  .= "{$gruda}nome";
-        $valores .= "{$gruda}'{$this->nome}'";
+        $valores .= "{$gruda}'" . addslashes($this->nome) . "'";
         $gruda    = ', ';
       }
 
@@ -407,7 +407,7 @@ class clsPublicBairro
       }
 
       if (is_string($this->nome)) {
-        $set .= "{$gruda}nome = '{$this->nome}'";
+        $set .= "{$gruda}nome = '" . addslashes($this->nome) . "'";
         $gruda = ', ';
       }
 
@@ -522,7 +522,7 @@ class clsPublicBairro
     }
 
     if (is_string($str_nome)) {
-      $filtros .= "{$whereAnd} b.nome LIKE '%{$str_nome}%'";
+      $filtros .= "{$whereAnd} b.nome LIKE E'%" . addslashes($str_nome) . "%'";
       $whereAnd = ' AND ';
     }
 
@@ -712,11 +712,12 @@ class clsPublicBairro
   /**
    * Define limites de retorno para o método Lista().
    */
-  function setLimite($intLimiteQtd, $intLimiteOffset = NULL)
-  {
-    $this->_limite_quantidade = $intLimiteQtd;
-    $this->_limite_offset = $intLimiteOffset;
-  }
+	function setLimite( $intLimiteQtd, $intLimiteOffset = 0 )
+	{
+		$this->_limite_quantidade = $intLimiteQtd;
+		if ($intLimiteOffset > 0)
+			$this->_limite_offset = $intLimiteOffset;
+	}
 
   /**
    * Retorna a string com o trecho da query responsável pelo limite de

@@ -55,8 +55,7 @@ class indice extends clsCadastro
 	var $data_cadastro;
 	var $data_exclusao;
 	var $ativo;
-	var $ref_cod_biblioteca;
-	
+
 	function Inicializar()
 	{
 		$retorno = "Novo";
@@ -98,35 +97,10 @@ class indice extends clsCadastro
 		// primary keys
 		$this->campoOculto( "cod_acervo_assunto", $this->cod_acervo_assunto );
 
-		// foreign keys
-		/*$obj_pessoa_bib = new clsPmieducarBibliotecaUsuario();
-		$lst_pessoa_bib = $obj_pessoa_bib->lista(null, $this->pessoa_logada);
-
-		$opcoes = array("" => "Selecione");
-		if(is_array($lst_pessoa_bib))
-		{
-			foreach ($lst_pessoa_bib as $bib)
-			{
-				$obj_biblioteca = new clsPmieducarBiblioteca($bib['ref_cod_biblioteca']);
-				$det_biblioteca = $obj_biblioteca->detalhe();
-				
-				$opcoes[$det_biblioteca['cod_biblioteca']] = $det_biblioteca['nm_biblioteca'];
-			}
-		}
-		$this->campoLista("ref_cod_biblioteca", "Biblioteca", $opcoes, $this->ref_cod_biblioteca);*/
-		
-		$get_escola     = 1;
-		$escola_obrigatorio = false;
-		$get_biblioteca = 1;
-		$instituicao_obrigatorio = true;
-		$biblioteca_obrigatorio = true;
-		include("include/pmieducar/educar_campo_lista.php");
 
 		// text
 		$this->campoTexto( "nm_assunto", "Assunto", $this->nm_assunto, 30, 255, true );
 		$this->campoMemo( "descricao", "Descri&ccedil;&atilde;o", $this->descricao, 60, 5, false );
-		
-
 	}
 
 	function Novo()
@@ -139,7 +113,7 @@ class indice extends clsCadastro
 		$obj_permissoes->permissao_cadastra( 592, $this->pessoa_logada, 11,  "educar_acervo_assunto_lst.php" );
 
 
-		$obj = new clsPmieducarAcervoAssunto( null, null, $this->pessoa_logada, $this->nm_assunto, $this->descricao, null, null, 1, $this->ref_cod_biblioteca );
+		$obj = new clsPmieducarAcervoAssunto( null, null, $this->pessoa_logada, $this->nm_assunto, $this->descricao, null, null, 1);
 		$cadastrou = $obj->cadastra();
 		if( $cadastrou )
 		{
@@ -164,7 +138,7 @@ class indice extends clsCadastro
 		$obj_permissoes->permissao_cadastra( 592, $this->pessoa_logada, 11,  "educar_acervo_assunto_lst.php" );
 
 
-		$obj = new clsPmieducarAcervoAssunto($this->cod_acervo_assunto, $this->pessoa_logada, null, $this->nm_assunto, $this->descricao, null, null, 1, $this->ref_cod_biblioteca);
+		$obj = new clsPmieducarAcervoAssunto($this->cod_acervo_assunto, $this->pessoa_logada, null, $this->nm_assunto, $this->descricao, null, null, 1);
 		$editou = $obj->edita();
 		if( $editou )
 		{

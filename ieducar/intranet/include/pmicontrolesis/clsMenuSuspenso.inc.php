@@ -521,7 +521,8 @@ class clsMenuSuspenso
     else {
       $menus = '';
       $juncao = '';
-      $db->Consulta("SELECT ref_cod_menu_submenu FROM menu_funcionario WHERE ref_ref_cod_pessoa_fj = '$idpes' UNION SELECT cod_menu_submenu FROM menu_submenu WHERE nivel ='2' UNION SELECT cod_menu_submenu FROM menu_submenu WHERE nivel ='2'");
+      $db->Consulta("SELECT ref_cod_menu_submenu FROM menu_funcionario WHERE ref_ref_cod_pessoa_fj = '$idpes'"); //UNION SELECT cod_menu_submenu FROM menu_submenu WHERE nivel ='2' UNION SELECT cod_menu_submenu FROM menu_submenu WHERE nivel ='2'");
+      //$db->Consulta("SELECT ref_cod_menu_submenu FROM menu_funcionario WHERE ref_ref_cod_pessoa_fj = '$idpes' UNION SELECT cod_menu_submenu FROM menu_submenu WHERE nivel ='2' UNION SELECT cod_menu_submenu FROM menu_submenu WHERE nivel ='2'");
 
       while ($db->ProximoRegistro()) {
         $tupla = $db->Tupla();
@@ -529,97 +530,80 @@ class clsMenuSuspenso
         $juncao = ', ';
       }
 
-      $sql = "
-        SELECT
-          cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ref_cod_ico,
-          ord_menu, caminho, alvo, suprime_menu, ref_cod_tutormenu, 1 AS nivel
-        FROM
-          pmicontrolesis.menu m
-        WHERE
-          ref_cod_menu_pai IS NULL
-          AND ref_cod_tutormenu = '$ref_cod_tutormenu'
-          AND ((ref_cod_menu_submenu IS NULL) OR (ref_cod_menu_submenu IN ($menus)))
-        UNION
-          SELECT
-            cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu,
-            ref_cod_ico, ord_menu, caminho, alvo, suprime_menu,
-            ref_cod_tutormenu, 2 AS nivel
-          FROM
-            pmicontrolesis.menu m
-          WHERE
-            ref_cod_menu_pai IN (
-              SELECT
-                cod_menu
-              FROM
-                pmicontrolesis.menu m
-              WHERE
-                ref_cod_menu_pai IS NULL
-                AND ref_cod_tutormenu = '$ref_cod_tutormenu'
-                AND ((ref_cod_menu_submenu IS NULL) OR (ref_cod_menu_submenu IN ($menus)))
-            )
-            AND ((ref_cod_menu_submenu IS NULL) OR (ref_cod_menu_submenu IN ($menus)))
-        UNION
-          SELECT
-            cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu,
-            ref_cod_ico, ord_menu, caminho, alvo, suprime_menu,
-            ref_cod_tutormenu, 3 AS nivel
-          FROM
-            pmicontrolesis.menu m
-          WHERE
-            ref_cod_menu_pai IN (
-              SELECT
-                cod_menu
-              FROM
-                pmicontrolesis.menu m
-              WHERE
-                ref_cod_menu_pai IN (
-                  SELECT
-                    cod_menu
-                  FROM
-                    pmicontrolesis.menu m
-                  WHERE
-                    ref_cod_menu_pai IS NULL
-                    AND ref_cod_tutormenu = '$ref_cod_tutormenu'
-                    AND ((ref_cod_menu_submenu IS NULL) OR (ref_cod_menu_submenu IN ($menus)))
-                )
-                AND ((ref_cod_menu_submenu IS NULL) OR (ref_cod_menu_submenu IN ($menus)))
-            )
-            AND ((ref_cod_menu_submenu IS NULL) OR (ref_cod_menu_submenu IN ($menus)))
-          UNION
-            SELECT
-              cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu,
-              ref_cod_ico, ord_menu, caminho, alvo, suprime_menu,
-              ref_cod_tutormenu, 4 AS nivel
-            FROM
-              pmicontrolesis.menu m
-            WHERE
-              ref_cod_menu_pai IN (
-                SELECT
-                  cod_menu
-                FROM
-                  pmicontrolesis.menu m
-                WHERE ref_cod_menu_pai IN (
-                  SELECT
-                    cod_menu
-                  FROM
-                    pmicontrolesis.menu m
-                  WHERE
-                    ref_cod_menu_pai IN (
-                      SELECT
-                        cod_menu
-                      FROM
-                        pmicontrolesis.menu m
-                      WHERE
-                        ref_cod_menu_pai IS NULL
-                        AND ref_cod_tutormenu = '$ref_cod_tutormenu'
-                        AND ((ref_cod_menu_submenu IS NULL) OR (ref_cod_menu_submenu IN ($menus)))
-                    )
-                    AND ((ref_cod_menu_submenu IS NULL) OR (ref_cod_menu_submenu IN ($menus)))
-                )
-                AND ((ref_cod_menu_submenu IS NULL) OR (ref_cod_menu_submenu IN ($menus)))
-            )
-            AND ((ref_cod_menu_submenu IS NULL) OR (ref_cod_menu_submenu IN ($menus)))
-            ORDER BY nivel ASC, ord_menu ASC";
+      $sql = "SELECT 
+			  cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ref_cod_ico,
+			  ord_menu, caminho, alvo, suprime_menu, ref_cod_tutormenu, MIN(nivel) AS nivel FROM (
+			        SELECT
+			  m.cod_menu, m.ref_cod_menu_submenu, m.ref_cod_menu_pai, m.tt_menu, m.ref_cod_ico,
+			  m.ord_menu, m.caminho, m.alvo, m.suprime_menu, m.ref_cod_tutormenu, 4 AS nivel 
+			FROM
+			  pmicontrolesis.menu m
+			WHERE
+			  ref_cod_tutormenu = '$ref_cod_tutormenu'
+			  AND m.ref_cod_menu_submenu IN ($menus)
+			UNION
+			SELECT
+			  m.cod_menu, m.ref_cod_menu_submenu, m.ref_cod_menu_pai, m.tt_menu, m.ref_cod_ico,
+			  m.ord_menu, m.caminho, m.alvo, m.suprime_menu, m.ref_cod_tutormenu, 3 AS nivel 
+			FROM
+			  pmicontrolesis.menu m
+			WHERE
+			  m.cod_menu IN (SELECT
+					  m.ref_cod_menu_pai
+					FROM
+					  pmicontrolesis.menu m
+					WHERE
+					  ref_cod_tutormenu = '$ref_cod_tutormenu'
+					  AND m.ref_cod_menu_submenu IN ($menus))
+			UNION
+			SELECT
+			  m.cod_menu, m.ref_cod_menu_submenu, m.ref_cod_menu_pai, m.tt_menu, m.ref_cod_ico,
+			  m.ord_menu, m.caminho, m.alvo, m.suprime_menu, m.ref_cod_tutormenu, 2 AS nivel 
+			FROM
+			  pmicontrolesis.menu m
+			WHERE
+			  m.cod_menu IN (SELECT
+					  m.ref_cod_menu_pai
+					FROM
+					  pmicontrolesis.menu m
+					WHERE
+					  m.cod_menu IN (SELECT
+							  m.ref_cod_menu_pai
+							FROM
+							  pmicontrolesis.menu m
+							WHERE
+							  ref_cod_tutormenu = '$ref_cod_tutormenu'
+							  AND m.ref_cod_menu_submenu IN ($menus)))
+			UNION
+			SELECT
+			  m.cod_menu, m.ref_cod_menu_submenu, m.ref_cod_menu_pai, m.tt_menu, m.ref_cod_ico,
+			  m.ord_menu, m.caminho, m.alvo, m.suprime_menu, m.ref_cod_tutormenu, 1 AS nivel 
+			FROM
+			  pmicontrolesis.menu m
+			WHERE
+			  m.cod_menu IN (SELECT
+					  m.ref_cod_menu_pai
+					FROM
+					  pmicontrolesis.menu m
+					WHERE
+					  m.cod_menu IN (SELECT
+							  m.ref_cod_menu_pai
+							FROM
+							  pmicontrolesis.menu m
+							WHERE
+							  m.cod_menu IN (SELECT
+									  m.ref_cod_menu_pai
+									FROM
+									  pmicontrolesis.menu m
+									WHERE
+									  ref_cod_tutormenu = '$ref_cod_tutormenu'
+									  AND m.ref_cod_menu_submenu IN ($menus))))
+			ORDER BY nivel ASC, ord_menu ASC
+			) AS teste GROUP BY
+			cod_menu, ref_cod_menu_submenu, ref_cod_menu_pai, tt_menu, ref_cod_ico,
+			  ord_menu, caminho, alvo, suprime_menu, ref_cod_tutormenu
+			  ORDER BY nivel ASC, ord_menu ASC
+      ";
     }
 
     $db->Consulta($sql);

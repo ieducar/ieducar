@@ -161,7 +161,7 @@ class clsPessoaFj
       $db2 = new clsBanco();
 
       $sql = sprintf(
-        'SELECT idpes FROM cadastro.fisica WHERE cpf LIKE \'%%%s%%\'', $id_federal
+        'SELECT idpes FROM cadastro.fisica WHERE cpf = %s ', $id_federal
       );
 
       $db2->Consulta();
@@ -174,7 +174,7 @@ class clsPessoaFj
       }
 
       $sql = sprintf(
-        'SELECT idpes FROM cadastro.juridica WHERE cnpj LIKE \'%%%s%%\'', $id_federal
+        'SELECT idpes FROM cadastro.juridica WHERE cnpj = %s ', $id_federal
       );
 
       $db2->Consulta($sql);

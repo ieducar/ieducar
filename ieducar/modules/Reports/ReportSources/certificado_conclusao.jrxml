@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="atestado_matricula" language="groovy" pageWidth="842" pageHeight="595" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" orientation="Landscape" uuid="b58c92c8-60b6-4afb-ae40-52aa24303ab2">
+	<property name="ireport.zoom" value="0.9090909090909092"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="matricula" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new java.lang.Integer(0)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="logo_instituicao" class="java.lang.String"/>
+	<parameter name="data_conclusao" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[
+			SELECT upper(i.nm_instituicao) AS nm_instituicao, 
+					upper(i.nm_responsavel) AS nm_responsavel,
+					upper(c.nm_curso) AS nm_curso,
+					upper(p.nome) AS nome,
+					to_char(pf.data_nasc,'dd/mm/yyyy') AS data_nasc,
+					upper(p2.nome) AS nm_escola,
+					ce.logradouro,
+					ce.bairro,
+					ce.cidade AS municipio,
+					ce.numero,
+					ce.sigla_uf AS uf_municipio,
+					to_char(ce.cep, '99999-999') AS cep,
+					fp.ddd_1 AS fone_ddd,
+					to_char(fp.fone_1, '9999-9999') AS fone,
+					p2.email,
+					to_char(current_date,'dd/mm/yyyy') AS data_atual
+			FROM pmieducar.matricula mt
+			INNER JOIN pmieducar.aluno al ON mt.ref_cod_aluno = al.cod_aluno
+			INNER JOIN cadastro.pessoa p ON al.ref_idpes = p.idpes
+			INNER JOIN cadastro.fisica pf ON al.ref_idpes = pf.idpes
+			INNER JOIN pmieducar.curso c ON mt.ref_cod_curso = c.cod_curso
+			INNER JOIN pmieducar.instituicao i ON i.cod_instituicao = c.ref_cod_instituicao
+			INNER JOIN pmieducar.escola e ON mt.ref_ref_cod_escola = e.cod_escola
+			INNER JOIN cadastro.pessoa p2 ON p2.idpes = e.ref_idpes
+			INNER JOIN cadastro.v_endereco ce ON p2.idpes = ce.idpes
+			INNER JOIN cadastro.v_fone_pessoa fp ON p2.idpes = fp.idpes
+			WHERE mt.cod_matricula = $P{matricula}
+					AND mt.ativo = 1
+					AND mt.ultima_matricula = 1
+		]]>
+	</queryString>
+	<field name="nm_instituicao" class="java.lang.String"/>
+	<field name="nm_responsavel" class="java.lang.String"/>
+	<field name="nm_curso" class="java.lang.String"/>
+	<field name="nome" class="java.lang.String"/>
+	<field name="data_nasc" class="java.lang.String"/>
+	<field name="nm_escola" class="java.lang.String"/>
+	<field name="logradouro" class="java.lang.String"/>
+	<field name="bairro" class="java.lang.String"/>
+	<field name="municipio" class="java.lang.String"/>
+	<field name="numero" class="java.lang.String"/>
+	<field name="uf_municipio" class="java.lang.String"/>
+	<field name="cep" class="java.lang.String"/>
+	<field name="fone_ddd" class="java.lang.String"/>
+	<field name="fone" class="java.lang.String"/>
+	<field name="email" class="java.lang.String"/>
+	<field name="data_atual" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="555" splitType="Stretch">
+			<image>
+				<reportElement uuid="58181b73-1bed-48c6-8004-978d09fbabef" x="16" y="140" width="210" height="240"/>
+				<imageExpression><![CDATA[$P{logo_instituicao}]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement uuid="b9876fdf-e1bd-4510-8eb8-45a6dfceb957" x="240" y="40" width="550" height="28"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nm_instituicao}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b9876fdf-e1bd-4510-8eb8-45a6dfceb957" x="240" y="68" width="550" height="25"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nm_escola}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b9876fdf-e1bd-4510-8eb8-45a6dfceb957" x="240" y="208" width="550" height="14"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Certificamos que"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b9876fdf-e1bd-4510-8eb8-45a6dfceb957" x="240" y="234" width="550" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.2
+					5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nome}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b9876fdf-e1bd-4510-8eb8-45a6dfceb957" x="240" y="268" width="550" height="14"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["concluiu em "+$P{data_conclusao}+" o curso "+$F{nm_curso}+]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b9876fdf-e1bd-4510-8eb8-45a6dfceb957" x="240" y="282" width="550" height="14"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["na escola "+$F{nm_escola}+"."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b9876fdf-e1bd-4510-8eb8-45a6dfceb957" x="240" y="376" width="550" height="14"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[+$F{municipio}+" - "+$F{data_atual}+"."]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="f67cd069-89ac-4181-a3a3-89334b91bc87" x="418" y="440" width="195" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.25"/>
+				</graphicElement>
+			</line>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="0" splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="0" splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band height="0" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="0" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="0" splitType="Stretch"/>
+	</summary>
+</jasperReport>

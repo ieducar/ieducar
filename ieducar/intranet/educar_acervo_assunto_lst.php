@@ -28,6 +28,7 @@ require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/pmieducar/geral.inc.php" );
+require_once ("include/localizacaoSistema.php");
 
 class clsIndexBase extends clsBase
 {
@@ -35,6 +36,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Acervo Assunto" );
 		$this->processoAp = "592";
+                $this->addEstilo( "localizacaoSistema" );
 	}
 }
 
@@ -76,7 +78,6 @@ class indice extends clsListagem
 	var $data_cadastro;
 	var $data_exclusao;
 	var $ativo;
-	var $ref_cod_biblioteca;
 
 	function Gerar()
 	{
@@ -93,17 +94,12 @@ class indice extends clsListagem
 
 		$this->addCabecalhos( array(
 			"Assunto",
-			"Biblioteca"
+			"Descrição"
 		) );
-
-		// Filtros de Foreign Keys
-		$get_escola = true;
-		$get_biblioteca = true;
-		$get_cabecalho = "lista_busca";
-		include("include/pmieducar/educar_campo_lista.php");
 
 		// outros Filtros
 		$this->campoTexto( "nm_assunto", "Assunto", $this->nm_assunto, 30, 255, false );
+		$this->campoTexto( "descricao", "Descrição", $this->descricao, 30, 255, false );
 
 		// Paginador
 		$this->limite = 20;
@@ -124,13 +120,12 @@ class indice extends clsListagem
 			null,
 			null,
 			$this->nm_assunto,
+			$this->descricao,
 			null,
 			null,
 			null,
 			null,
-			null,
-			1,
-			$this->ref_cod_biblioteca
+			1
 		);
 
 		$total = $obj_acervo_assunto->_total;
@@ -140,12 +135,9 @@ class indice extends clsListagem
 		{
 			foreach ( $lista AS $registro )
 			{
-				$obj_biblioteca = new clsPmieducarBiblioteca($registro['ref_cod_biblioteca']);
-				$det_biblioteca = $obj_biblioteca->detalhe();
-				$registro['ref_cod_biblioteca'] = $det_biblioteca['nm_biblioteca'];
 				$this->addLinhas( array(
 					"<a href=\"educar_acervo_assunto_det.php?cod_acervo_assunto={$registro["cod_acervo_assunto"]}\">{$registro["nm_assunto"]}</a>",
-					"<a href=\"educar_acervo_assunto_det.php?cod_acervo_assunto={$registro["cod_acervo_assunto"]}\">{$registro['ref_cod_biblioteca']}</a>"
+					"<a href=\"educar_acervo_assunto_det.php?cod_acervo_assunto={$registro["cod_acervo_assunto"]}\">{$registro['descricao']}</a>"
 				) );
 			}
 		}
@@ -158,6 +150,14 @@ class indice extends clsListagem
 		}
 
 		$this->largura = "100%";
+                
+                $localizacao = new LocalizacaoSistema();
+                $localizacao->entradaCaminhos( array(
+                    $_SERVER['SERVER_NAME']."/intranet" => "i-Educar",
+                    "educar_biblioteca_index.php"                  => "Biblioteca",
+                    ""                                  => "Lista de Assuntos"
+                ));
+                $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 // cria uma extensao da classe base
