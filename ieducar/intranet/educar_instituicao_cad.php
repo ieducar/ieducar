@@ -194,6 +194,13 @@ class indice extends clsCadastro
 		$obj->data_base_remanejamento = Portabilis_Date_Utils::brToPgSQL($this->data_base_remanejamento);
 		$obj->data_base_transferencia = Portabilis_Date_Utils::brToPgSQL($this->data_base_transferencia);
 
+		if ($this->data_base_remanejamento == '')
+			unset($obj->data_base_remanejamento);
+		
+		if ($this->data_base_transferencia == '')
+			unset($obj->data_base_transferencia);	
+
+
 		$cadastrou = $obj->cadastra();
 		if( $cadastrou )
 		{
@@ -217,6 +224,12 @@ class indice extends clsCadastro
 
 		$obj->data_base_remanejamento = Portabilis_Date_Utils::brToPgSQL($this->data_base_remanejamento);
 		$obj->data_base_transferencia = Portabilis_Date_Utils::brToPgSQL($this->data_base_transferencia);
+
+		if ($this->data_base_remanejamento == '')
+			unset($obj->data_base_remanejamento);
+		
+		if ($this->data_base_transferencia == '')
+			unset($obj->data_base_transferencia);	
 
 		$editou = $obj->edita();
 		if( $editou )

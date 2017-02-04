@@ -9,8 +9,8 @@ class AddColumnsTransferidoRemanejado extends AbstractMigration
     {
         $this->execute("ALTER TABLE pmieducar.matricula_turma ADD COLUMN transferido boolean;");
         $this->execute("ALTER TABLE pmieducar.matricula_turma ADD COLUMN remanejado boolean;");
-        $this->execute("ALTER TABLE pmieducar.instituicao ADD COLUMN data_base_remanejamento boolean;");
-        $this->execute("ALTER TABLE pmieducar.instituicao ADD COLUMN data_base_transferencia boolean;");
+        $this->execute("ALTER TABLE pmieducar.instituicao ADD COLUMN data_base_remanejamento date;");
+        $this->execute("ALTER TABLE pmieducar.instituicao ADD COLUMN data_base_transferencia date;");
     }
 
     public function down()
