@@ -8,8 +8,7 @@ environments:
         adapter: pgsql
         host: localhost
         name: ieducar
-        user: ieducar
-        pass: 'ieducar'
-        port: 5433
-        charset: latin1
-
+        user: postgres
+        pass: postgres
+        port: 5432
+        charset: utf8

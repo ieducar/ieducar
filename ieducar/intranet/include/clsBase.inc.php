@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gestão escolar
+ * i-Educar - Sistema de gestÃ£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de Itajaí
+ * Copyright (C) 2006  Prefeitura Municipal de ItajaÃ­
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa é software livre; você pode redistribuí-lo e/ou modificá-lo
- * sob os termos da Licença Pública Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a versão 2 da Licença, como (a seu critério)
- * qualquer versão posterior.
+ * Este programa Ã© software livre; vocÃª pode redistribuÃ­-lo e/ou modificÃ¡-lo
+ * sob os termos da LicenÃ§a PÃºblica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a versÃ£o 2 da LicenÃ§a, como (a seu critÃ©rio)
+ * qualquer versÃ£o posterior.
  *
- * Este programa é distribuí­do na expectativa de que seja útil, porém, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implí­cita de COMERCIABILIDADE OU
- * ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral
+ * Este programa Ã© distribuÃ­Â­do na expectativa de que seja Ãºtil, porÃ©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia implÃ­Â­cita de COMERCIABILIDADE OU
+ * ADEQUAÃ‡ÃƒO A UMA FINALIDADE ESPECÃFICA. Consulte a LicenÃ§a PÃºblica Geral
  * do GNU para mais detalhes.
  *
- * Você deve ter recebido uma cópia da Licença Pública Geral do GNU junto
- * com este programa; se não, escreva para a Free Software Foundation, Inc., no
- * endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * VocÃª deve ter recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral do GNU junto
+ * com este programa; se nÃ£o, escreva para a Free Software Foundation, Inc., no
+ * endereÃ§o 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de ItajaÃ­ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Include
- * @since     Arquivo disponível desde a versão 1.0.0
+ * @since     Arquivo disponÃ­vel desde a versÃ£o 1.0.0
  * @version   $Id: clsBase.inc.php 773 2010-12-19 20:46:49Z eriksencosta@gmail.com $
  */
 
@@ -32,7 +32,7 @@
 //require_once '/home/rafael/ieducar/ieducar/includes/bootstrap.php';
 require_once '../includes/bootstrap.php';
 
-// redireciona requisições, caso configurado
+// redireciona requisiÃ§Ãµes, caso configurado
 if ($GLOBALS['coreExt']['Config']->app->routes &&
     $GLOBALS['coreExt']['Config']->app->routes->redirect_to) {
 
@@ -60,13 +60,13 @@ require_once 'Portabilis/Assets/Version.php';
 /**
  * clsBase class.
  *
- * Provê uma API para criação de páginas HTML programaticamente.
+ * ProvÃª uma API para criaÃ§Ã£o de pÃ¡ginas HTML programaticamente.
  *
- * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de ItajaÃ­ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Include
- * @since     Classe disponível desde a versão 1.0.0
+ * @since     Classe disponÃ­vel desde a versÃ£o 1.0.0
  * @version   @@package_version@@
  */
 class clsBase extends clsConfig
@@ -229,8 +229,8 @@ class clsBase extends clsConfig
         }
 
         // @todo A primeira consulta OK, verifica de forma simples de tem
-        //       permissão de acesso ao processo. Já a segunda, não existe
-        //       sentido para nivel = 2 já que processoAp pode ser de níveis
+        //       permissÃ£o de acesso ao processo. JÃ¡ a segunda, nÃ£o existe
+        //       sentido para nivel = 2 jÃ¡ que processoAp pode ser de nÃ­veis
         //       maiores que 2.
         $this->db()->Consulta("SELECT 1 FROM menu_funcionario WHERE (ref_cod_menu_submenu = {$processo_ap} AND ref_ref_cod_pessoa_fj = {$this->currentUserId()}) OR (SELECT true FROM menu_submenu WHERE cod_menu_submenu = {$processo_ap} AND nivel = 2)");
         if ($this->db()->ProximoRegistro()) {
@@ -287,12 +287,12 @@ class clsBase extends clsConfig
   /**
    * Cria o menu suspenso dos subsistemas Escola e Biblioteca.
    *
-   * @todo Refatorar lógica do primeiro par if/else, duplicação
+   * @todo Refatorar lÃ³gica do primeiro par if/else, duplicaÃ§Ã£o
    * @return bool|string Retorna FALSE em caso de erro
    */
   function makeMenuSuspenso()
   {
-    // Usa helper de Url para pegar o path da requisição
+    // Usa helper de Url para pegar o path da requisiÃ§Ã£o
     require_once 'CoreExt/View/Helper/UrlHelper.php';
 
     $uri = explode('/', CoreExt_View_Helper_UrlHelper::url($_SERVER['REQUEST_URI'],
@@ -322,7 +322,7 @@ class clsBase extends clsConfig
         $menu_tutor = $this->db()->UnicoCampo("SELECT ref_cod_tutormenu FROM pmicontrolesis.menu WHERE $where LIMIT 1 OFFSET 0");
       }
       else {
-        $this->prog_alert .= "O menu pai do processo AP {$this->processoAp} está voltando vazio (cod_menu inexistente?).<br>";
+        $this->prog_alert .= "O menu pai do processo AP {$this->processoAp} estÃ¡ voltando vazio (cod_menu inexistente?).<br>";
       }
     }
     elseif ($_SESSION['menu_atual']) {
@@ -375,8 +375,8 @@ class clsBase extends clsConfig
 
           $alvo = $menu_suspenso['alvo'] ? $menu_suspenso['alvo'] : '_self';
 
-          // Corrige o path usando caminhos relativos para permitir a inclusão
-          // de itens no menu que apontem para um módulo
+          // Corrige o path usando caminhos relativos para permitir a inclusÃ£o
+          // de itens no menu que apontem para um mÃ³dulo
           if ($uri[1] == 'module') {
             if (0 === strpos($menu_suspenso['caminho'], 'module')) {
               $menu_suspenso['caminho'] = '../../' . $menu_suspenso['caminho'];
@@ -518,8 +518,8 @@ class clsBase extends clsConfig
         $saida = $this->OpenTpl("htmlbody");
       }
       /**
-       * @todo Essa segunda condição não se torna verdadeira nunca, já que não
-       *   existe uma condição binária entre $renderBanner e $renderMenu que
+       * @todo Essa segunda condiÃ§Ã£o nÃ£o se torna verdadeira nunca, jÃ¡ que nÃ£o
+       *   existe uma condiÃ§Ã£o binÃ¡ria entre $renderBanner e $renderMenu que
        *   a execute. Ver:
        *   <code>
        *     $ egrep -rn "renderBanner\s?=\s?true" intranet/
@@ -527,10 +527,10 @@ class clsBase extends clsConfig
        *     $  egrep -rn "renderMenu\s?=\s?false" intranet/
        *   </code>
        *
-       *   Para acontecer, seria necessário renderBanner = true (default,
-       *     herança) com renderMenu = false.
+       *   Para acontecer, seria necessÃ¡rio renderBanner = true (default,
+       *     heranÃ§a) com renderMenu = false.
        *
-       *   Caso não ocorra, remover a condicional e apagar o arquivo _sem_menu.
+       *   Caso nÃ£o ocorra, remover a condicional e apagar o arquivo _sem_menu.
        */
       else {
         $saida = $this->OpenTpl("htmlbody_sem_menu");
@@ -588,10 +588,10 @@ class clsBase extends clsConfig
     $saida = str_replace("<!-- #&CORPO&# -->",        $corpo,         $saida);
     $saida = str_replace("<!-- #&ANUNCIO&# -->",      $menu_dinamico, $saida);
 
-    // Pega o endereço IP do host, primeiro com HTTP_X_FORWARDED_FOR (para pegar o IP real
-    // caso o host esteja atrás de um proxy)
+    // Pega o endereÃ§o IP do host, primeiro com HTTP_X_FORWARDED_FOR (para pegar o IP real
+    // caso o host esteja atrÃ¡s de um proxy)
     if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR'] != '') {
-      // No caso de múltiplos IPs, pega o último da lista
+      // No caso de mÃºltiplos IPs, pega o Ãºltimo da lista
       $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
       $ip_maquina = trim(array_pop($ip));
     }
@@ -624,7 +624,7 @@ class clsBase extends clsConfig
   {
     $retorno = '';
     $listaBanners = array();
-    $this->db()->Consulta("SELECT caminho, title, prioridade, link FROM portal_banner WHERE lateral=1 ORDER BY prioridade, title");
+    $this->db()->Consulta("SELECT caminho, title, prioridade, link FROM portal_banner WHERE lateral_=1 ORDER BY prioridade, title");
 
     while ($this->db()->ProximoRegistro()) {
       list($caminho, $title, $prioridade, $link) = $this->db()->Tupla();
