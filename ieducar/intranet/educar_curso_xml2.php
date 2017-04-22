@@ -32,11 +32,7 @@
   require_once 'Portabilis/Utils/DeprecatedXmlApi.php';
   Portabilis_Utils_DeprecatedXmlApi::returnEmptyQueryUnlessUserIsLoggedIn();
 
-<<<<<<< HEAD
-	echo "<?xml version=\"1.0\" encoding=\"ISO-8859-15\"?>\n<query xmlns=\"sugestoes\">\n";
-=======
 	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<query xmlns=\"sugestoes\">\n";
->>>>>>> 89ed328... Corrigido problema ao selecionar curso no cadastro de escola;
 
 	if( is_numeric( $_GET["ins"] ) )
 	{
