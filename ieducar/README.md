@@ -1,7 +1,6 @@
 // $Id$
 
-CONTEÚDO
---------
+## CONTEÚDO
 
  * Requisitos
  * Instalação
@@ -9,9 +8,8 @@ CONTEÚDO
  * Suporte técnico
  * Licença
 
+## REQUISITOS
 
-REQUISITOS
-----------
 
 O i-Educar requer um servidor web, PHP 5.2, PostgreSQL 8.2 e a biblioteca PDFLib
 (versão Lite ou Commercial). O servidor web Apache 2 é recomendado mas qualquer
@@ -23,10 +21,9 @@ uma licença comercial:
 http://www.pdflib.com/products/pdflib-family/pdflib-lite/pdflib-lite-licensing
 
 
-INSTALAÇÃO
-----------
+## INSTALAÇÃO
 
-1. DOWNLOAD DO SOFTWARE
+### DOWNLOAD DO SOFTWARE
 
    Faça o download dos arquivos do sistema antes de prosseguir. A versão atual
    pode ser encontrada em:
@@ -39,8 +36,8 @@ INSTALAÇÃO
       $ tar -xzvf /caminho/pacotes/ieducar-X.X.X.tar.gz
 
 
-2. CRIE O BANCO DE DADOS
 
+### CRIE O BANCO DE DADOS
    Crie o banco de dados ao qual o i-Educar usará para armazenar todos os dados
    digitados através da interface web. Os passos descritos nessa seção irão
    criar:
@@ -91,8 +88,8 @@ INSTALAÇÃO
         pmiacoes, pmicontrolesis, pmidrh, pmieducar, pmiotopic, urbano;
       postgres=# \q;
 
+### EDITE O ARQUIVO DE CONFIGURAÇÃO E CONCEDA PERMISSÕES DE ESCRITA
 
-3. EDITE O ARQUIVO DE CONFIGURAÇÃO E CONCEDA PERMISSÕES DE ESCRITA
 
    O i-Educar armazena algumas configurações necessárias para a aplicação em um
    arquivo chamado ieducar.ini (em configuration/), que possui uma sintaxe bem
@@ -133,7 +130,7 @@ INSTALAÇÃO
    acordo com o usado em seu sistema operacional.
 
 
-4. CONFIGURE O APACHE OU CRIE UM VIRTUAL HOST
+### CONFIGURE O APACHE OU CRIE UM VIRTUAL HOST
 
    A partir da versão 1.1.X, o i-Educar inclui, por padrão, um arquivo chamado
    .htaccess no diretório raiz da aplicação. Esse arquivo contém diretivas de
@@ -190,7 +187,7 @@ INSTALAÇÃO
    pela aplicação fiquem publicamente expostos para leitura através da Internet.
 
 
-5. ACESSE A APLICAÇÃO
+### ACESSE A APLICAÇÃO
 
    Abra o navegador de sua preferência e acesse o endereço
    http://localhost/ieducar ou http://ieducar.local (caso tenha configurado um
@@ -198,7 +195,7 @@ INSTALAÇÃO
    O login e senha para acesso são admin e admin, respectivamente.
 
 
-6. CONFIGURE O PHP
+### CONFIGURE O PHP
 
    Esse passo é opcional caso tenha configurado o Apache (via AllowOverride ou
    VirtualHost). Edite o arquivo php.ini da seguinte forma:
@@ -229,13 +226,12 @@ INSTALAÇÃO
       # /etc/init.d/apache2 restart
 
 
-7. FONTE
+### 7. FONTE
 
    * https://svn.softwarepublico.gov.br/trac/ieducar/wiki/Documentacao/1.1.X/Instalacao
 
 
-DOCUMENTAÇÃO
-------------
+## DOCUMENTAÇÃO
 
 A documentação oficial do i-Educar está disponível em wiki:
 http://svn.softwarepublico.gov.br/trac/ieducar/wiki
@@ -245,16 +241,14 @@ frequentes):
 http://svn.softwarepublico.gov.br/trac/ieducar/wiki/Documentacao/FAQ/1.X
 
 
-SUPORTE TÉCNICO
----------------
+## SUPORTE TÉCNICO
 
 Suporte técnico pode ser encontrado nos fóruns da comunidade i-Educar no Portal
 do Software Público Brasileiro (requer cadastro):
 http://www.softwarepublico.gov.br/dotlrn/clubs/ieducar
 
 
-LICENÇA
--------
+## LICENÇA
 
 O i-Educar é um Software Público Brasileiro (SPB), livre e licenciado pela
 Creative Commons Licença Pública Geral versão 2 traduzida (CC GNU/GPL 2). Uma
