@@ -31,11 +31,11 @@ http://www.pdflib.com/products/pdflib-family/pdflib-lite/pdflib-lite-licensing
    Descompacte o pacote de sua preferência no diretório raiz do seu servidor web
    Apache.
 
-      $ cd /var/www
-      $ mkdir ieducar; cd ieducar
-      $ tar -xzvf /caminho/pacotes/ieducar-X.X.X.tar.gz
-
-
+```
+$ cd /var/www
+$ mkdir ieducar; cd ieducar
+$ tar -xzvf /caminho/pacotes/ieducar-X.X.X.tar.gz
+```
 
 ### CRIE O BANCO DE DADOS
 
@@ -51,29 +51,39 @@ desejar. Esses são apenas nomes padrões que a aplicação usa para conectar-se
 ao banco.
 
 Faça login no servidor de banco de dados PostgreSQL com o cliente psql:
-      $ su
-      # su - postgres
-      # psql
 
+```
+$ su
+# su - postgres
+# psql
+```
 
 Alternativamente, com o sudo:
-      $ sudo -u postgres psql
 
+```
+$ sudo -u postgres psql
+```
 
 Crie o usuário de banco de dados que será utilizado pelo i-Educar:
-      postgres=# CREATE ROLE ieducar;
-      postgres=# ALTER ROLE ieducar WITH SUPERUSER INHERIT NOCREATEROLE \
-         CREATEDB LOGIN PASSWORD 'ieducar';
 
+```
+postgres=# CREATE ROLE ieducar;
+postgres=# ALTER ROLE ieducar WITH SUPERUSER INHERIT NOCREATEROLE \
+  CREATEDB LOGIN PASSWORD 'ieducar';
+```
 
-      postgres=# CREATE DATABASE ieducar WITH TEMPLATE = template0 \
-         OWNER = ieducar ENCODING = 'LATIN1';
-      postgres=# \q
+```
+postgres=# CREATE DATABASE ieducar WITH TEMPLATE = template0 \
+  OWNER = ieducar ENCODING = 'LATIN1';
+postgres=# \q
+```
 
 Execute o arquivo ieducar.sql que vem no i-Educar. O diretório em que esse
 arquivo reside é o misc/database.
 
-      $ psql -d ieducar -f misc/database/ieducar.sql
+```
+$ psql -d ieducar -f misc/database/ieducar.sql
+```
 
 Atenção: em algumas plataformas, o restore do banco pode acabar em um erro
 FATAL. Se isso acontecer, experimente fazer o restore no mesmo diretório em
@@ -81,36 +91,15 @@ que se encontra o arquivo ieducar.sql.
 
 Novamente no psql, execute o seguinte comando para configurar o search_path:
 
-      $ psql ieducar
-      postgres=# ALTER DATABASE ieducar SET search_path TO "$user", public, \
-        portal, cadastro, acesso, alimentos, consistenciacao, historico, \
-        pmiacoes, pmicontrolesis, pmidrh, pmieducar, pmiotopic, urbano;
-      postgres=# \q;
+```
+$ psql ieducar
+postgres=# ALTER DATABASE ieducar SET search_path TO "$user", public, \
+  portal, cadastro, acesso, alimentos, consistenciacao, historico, \
+  pmiacoes, pmicontrolesis, pmidrh, pmieducar, pmiotopic, urbano;
+postgres=# \q;
+```
 
 ### EDITE O ARQUIVO DE CONFIGURAÇÃO E CONCEDA PERMISSÕES DE ESCRITA
-
-
-
-      [production]
-      ; Configurações de banco de dados
-      app.database.dbname   = ieducar
-      app.database.username = ieducar
-      app.database.hostname = localhost
-      app.database.password = ieducar
-      app.database.port     = 5432
-
-
-      [production]
-      ; Configurações de banco de dados
-      app.database.dbname   = ieducar_db
-      app.database.username = ieducar_user
-      app.database.hostname = localhost
-      app.database.password = ieducar_pass
-      app.database.port     = 5432
-
-
-      # chmod 775 intranet/tmp intranet/pdf
-      # chgrp www-data intranet/tmp intranet/pdf
 
 O i-Educar armazena algumas configurações necessárias para a aplicação em um
 arquivo chamado ieducar.ini (em configuration/), que possui uma sintaxe bem
@@ -118,16 +107,44 @@ simples de entender. Caso tenha criado o banco de dados, nome de usuário ou
 senha com um valor diferente de ieducar, basta editar esse arquivo para que
 corresponda as suas escolhas:
 
+```
+[production]
+; Configurações de banco de dados
+app.database.dbname   = ieducar
+app.database.username = ieducar
+app.database.hostname = localhost
+app.database.password = ieducar
+app.database.port     = 5432
+```
+
 Exemplo: caso tenha nomeado seu banco de dados com ieducar_db, o usuário com
 ieducar_user e a senha com ieducar_pass, o ieducar.ini ficaria da seguinte
 forma:
+
+```
+[production]
+; Configurações de banco de dados
+app.database.dbname   = ieducar_db
+app.database.username = ieducar_user
+app.database.hostname = localhost
+app.database.password = ieducar_pass
+app.database.port     = 5432
+```
+
 Depois, conceda permissões de escrita nos diretórios intranet/tmp e
 intranet/pdf. Uma forma prática é dar permissão de escrita para o usuário
 dono do diretório e para usuários de um grupo. Nesse caso, mudaremos o grupo
 desses diretórios para o grupo do usuário Apache.
+
+```
+# chmod 775 intranet/tmp intranet/pdf
+# chgrp www-data intranet/tmp intranet/pdf
+```
+
 Observação: www-data é o nome do grupo Apache padrão em sistemas Debian.
 Em outros sistemas, esse nome pode ser httpd, apache ou _www. Substitua de
 acordo com o usado em seu sistema operacional.
+
 
 ### CONFIGURE O APACHE OU CRIE UM VIRTUAL HOST
 
@@ -143,40 +160,50 @@ Virtual Host. A primeira opção requer a edição do arquivo
 /etc/apache2/site-available/default. A única diretiva a ser alterada é
 AllowOverride (linha 11) para All:
 
-        9         <Directory /var/www/>
-       10                 Options Indexes FollowSymLinks MultiViews
-       11                 AllowOverride All
-       12                 Order allow,deny
-       13                 allow from all
-       14         </Directory>
+```
+9         <Directory /var/www/>
+10                 Options Indexes FollowSymLinks MultiViews
+11                 AllowOverride All
+12                 Order allow,deny
+13                 allow from all
+14         </Directory>
+```
 
 Reinicie o servidor Apache:
 
-      $ /etc/init.d/apache2 restart
+```
+$ /etc/init.d/apache2 restart
+```
 
 A segunda opção requer a criação de um novo arquivo em
 /etc/apache2/sites-available/. Crie um arquivo chamado ieducar.local com o
 seguinte conteúdo:
 
-      <VirtualHost *:80>
-        ServerName ieducar.local
-        DocumentRoot /var/www/ieducar
+```
+<VirtualHost *:80>
+ServerName ieducar.local
+DocumentRoot /var/www/ieducar
 
-        <Directory /var/www/ieducar>
-          AllowOverride all
-          Order deny,allow
-          Allow from all
-        </Directory>
-      </VirtualHost>
+<Directory /var/www/ieducar>
+  AllowOverride all
+  Order deny,allow
+  Allow from all
+</Directory>
+</VirtualHost>
+```
 
 Edite o arquivo /etc/hosts (no Windows esse arquivo fica em
 C:\WINDOWS\system32\drivers\etc\hosts) e adicione a seguinte linha:
 
-      127.0.0.1      ieducar.local
+```
+127.0.0.1      ieducar.local
+```
 
 Reinicie o servidor Apache:
 
-      $ /etc/init.d/apache2 restart
+```
+$ /etc/init.d/apache2 restart
+```
 
 Pronto. Agora, acesse o endereço http://ieducar.local em seu navegador.
 
@@ -221,8 +248,10 @@ descobrir onde o arquivo fica em seu sistema operacional, acesse o endereço
 http://localhost/ieducar/info.php e procure por Loaded Configuration File.
 
 Após qualquer alteração no arquivo php.ini, reinicie seu servidor web:
-      # /etc/init.d/apache2 restart
 
+```
+# /etc/init.d/apache2 restart
+```
 
 ### 7. FONTE
 
