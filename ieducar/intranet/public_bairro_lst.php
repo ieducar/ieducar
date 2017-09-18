@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+ * com este programa; se n√£o, escreva para a Free Software Foundation, Inc., no
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package   Ied_Public
- * @since     Arquivo disponÌvel desde a vers„o 1.0.0
+ * @since     Arquivo dispon√≠vel desde a vers√£o 1.0.0
  * @version   $Id$
  */
 
@@ -35,15 +35,16 @@ require_once 'include/public/geral.inc.php';
 
 require_once 'App/Model/ZonaLocalizacao.php';
 require_once 'CoreExt/View/Helper/UrlHelper.php';
+require_once 'include/localizacaoSistema.php';
 
 /**
  * clsIndexBase class.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Public
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class clsIndexBase extends clsBase
@@ -52,17 +53,18 @@ class clsIndexBase extends clsBase
   {
     $this->SetTitulo($this->_instituicao . ' Bairro');
     $this->processoAp = 756;
+    $this->addEstilo('localizacaoSistema');
   }
 }
 
 /**
  * indice class.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Public
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class indice extends clsListagem
@@ -106,8 +108,8 @@ class indice extends clsListagem
 
     $this->addCabecalhos(array(
       'Nome',
-      'Zona LocalizaÁ„o',
-      'MunicÌpio',
+      'Zona Localiza√ß√£o',
+      'Munic√≠pio',
       'Estado',
       'Pais'
     ));
@@ -127,7 +129,7 @@ class indice extends clsListagem
     }
     else {
       echo "<!--\nErro\nClasse clsPais nao encontrada\n-->";
-      $opcoes = array('' => 'Erro na geraÁ„o');
+      $opcoes = array('' => 'Erro na gera√ß√£o');
     }
 
     $this->campoLista('idpais', 'Pais', $opcoes, $this->idpais, '', FALSE, '',
@@ -150,7 +152,7 @@ class indice extends clsListagem
     }
     else {
       echo "<!--\nErro\nClasse clsUf nao encontrada\n-->";
-      $opcoes = array('' => 'Erro na geraÁ„o');
+      $opcoes = array('' => 'Erro na gera√ß√£o');
     }
 
     $this->campoLista('sigla_uf', 'Estado', $opcoes, $this->sigla_uf, '', FALSE,
@@ -173,10 +175,10 @@ class indice extends clsListagem
     }
     else {
       echo "<!--\nErro\nClasse clsMunicipio nao encontrada\n-->";
-      $opcoes = array('' => 'Erro na geraÁ„o');
+      $opcoes = array('' => 'Erro na gera√ß√£o');
     }
 
-    $this->campoLista('idmun', 'MunicÌpio', $opcoes, $this->idmun, '', FALSE,
+    $this->campoLista('idmun', 'Munic√≠pio', $opcoes, $this->idmun, '', FALSE,
       '', '', FALSE, FALSE);
 
     // Outros filtros
@@ -211,7 +213,7 @@ class indice extends clsListagem
 
     $total = $obj_bairro->_total;
 
-    // Zona LocalizaÁ„o.
+    // Zona Localiza√ß√£o.
     $zona = App_Model_ZonaLocalizacao::getInstance();
 
     // UrlHelper.
@@ -240,19 +242,26 @@ class indice extends clsListagem
     $this->nome_acao = 'Novo';
 
     $this->largura = '100%';
+
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         ""                                  => "Listagem de bairros"
+    ));
+    $this->enviaLocalizacao($localizacao->montar());
   }
 }
 
-// Instancia objeto de p·gina
+// Instancia objeto de p√°gina
 $pagina = new clsIndexBase();
 
-// Instancia objeto de conte˙do
+// Instancia objeto de conte√∫do
 $miolo = new indice();
 
-// Atribui o conte˙do ‡ p·gina
+// Atribui o conte√∫do √† p√°gina
 $pagina->addForm($miolo);
 
-// Gera o cÛdigo HTML
+// Gera o c√≥digo HTML
 $pagina->MakeAll();
 ?>
 <script type="text/javascript">
@@ -287,7 +296,7 @@ function getUf(xml_uf)
     }
   }
   else {
-    campoUf.options[0].text = 'O pais n„o possui nenhum estado';
+    campoUf.options[0].text = 'O pais n√£o possui nenhum estado';
   }
 }
 
@@ -299,7 +308,7 @@ document.getElementById('sigla_uf').onchange = function()
   campoMunicipio.length   = 1;
   campoMunicipio.disabled = true;
 
-  campoMunicipio.options[0].text = 'Carregando municÌpio...';
+  campoMunicipio.options[0].text = 'Carregando munic√≠pio...';
 
   var xml_municipio = new ajax(getMunicipio);
   xml_municipio.envia('public_municipio_xml.php?uf=' + campoUf);
@@ -312,7 +321,7 @@ function getMunicipio(xml_municipio)
 
   if (DOM_array.length) {
     campoMunicipio.length          = 1;
-    campoMunicipio.options[0].text = 'Selecione um municÌpio';
+    campoMunicipio.options[0].text = 'Selecione um munic√≠pio';
     campoMunicipio.disabled        = false;
 
     for (var i = 0; i < DOM_array.length; i++) {
@@ -323,7 +332,7 @@ function getMunicipio(xml_municipio)
     }
   }
   else {
-    campoMunicipio.options[0].text = 'O estado n„o possui nenhum municÌpio';
+    campoMunicipio.options[0].text = 'O estado n√£o possui nenhum munic√≠pio';
   }
 }
 </script>

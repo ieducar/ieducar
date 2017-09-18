@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+ * com este programa; se n√£o, escreva para a Free Software Foundation, Inc., no
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Arquivo disponÌvel desde a vers„o 1.0.0
+ * @since     Arquivo dispon√≠vel desde a vers√£o 1.0.0
  * @version   $Id$
  */
 
@@ -32,15 +32,16 @@ require_once 'include/clsBase.inc.php';
 require_once 'include/clsCadastro.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
+require_once 'Portabilis/Date/Utils.php';
 
 /**
  * clsIndexBase class.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class clsIndexBase extends clsBase
@@ -49,17 +50,18 @@ class clsIndexBase extends clsBase
   {
     $this->SetTitulo($this->_instituicao . ' i-Educar - Falta Atraso');
     $this->processoAp = 635;
+    $this->addEstilo("localizacaoSistema");    
   }
 }
 
 /**
  * indice class.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class indice extends clsCadastro
@@ -102,7 +104,7 @@ class indice extends clsCadastro
       $registro  = $obj->detalhe();
 
       if ($registro) {
-        // passa todos os valores obtidos no registro para atributos do objeto
+        // passa to$this->data_falta_atraso = Portabilis_Date_Utils::brToPgSQL($this->data_falta_atraso);dos os valores obtidos no registro para atributos do objeto
         foreach ($registro as $campo => $val) {
           $this->$campo = $val;
         }
@@ -124,6 +126,16 @@ class indice extends clsCadastro
       sprintf('educar_falta_atraso_lst.php?ref_cod_servidor=%d&ref_cod_instituicao=%d', $this->ref_cod_servidor, $this->ref_cod_instituicao);
 
     $this->nome_url_cancelar = 'Cancelar';
+
+    $nomeMenu = $retorno == "Editar" ? $retorno : "Cadastrar";
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         "educar_index.php"                  => "i-Educar - Escola",
+         ""        => "{$nomeMenu} falta/atraso do servidor"             
+    ));
+    $this->enviaLocalizacao($localizacao->montar());
+
     return $retorno;
   }
 
@@ -155,7 +167,7 @@ class indice extends clsCadastro
     $opcoes = array(
       '' => 'Selecione',
       0  => 'Sim',
-      1  => 'N„o'
+      1  => 'N√£o'
     );
 
     $this->campoLista('justificada', 'Justificada', $opcoes, $this->justificada);
@@ -170,6 +182,8 @@ class indice extends clsCadastro
     $this->pessoa_logada = $_SESSION['id_pessoa'];
     @session_write_close();
 
+    $this->data_falta_atraso = Portabilis_Date_Utils::brToPgSQL($this->data_falta_atraso);
+
     $obj_permissoes = new clsPermissoes();
     $obj_permissoes->permissao_cadastra(635, $this->pessoa_logada, 7,
       sprintf('educar_falta_atraso_lst.php?ref_cod_servidor=%d&ref_cod_instituicao=%d',
@@ -183,7 +197,7 @@ class indice extends clsCadastro
     }
     elseif ($this->tipo == 2) {
       $db = new clsBanco();
-      $dia_semana = $db->CampoUnico(sprintf('SELECT EXTRACT (DOW FROM (date "%s") + 1 )', dataToBanco($this->data_falta_atraso)));
+      $dia_semana = $db->CampoUnico(sprintf('(SELECT EXTRACT (DOW FROM date \'%s\') + 1 )', $this->data_falta_atraso));
 
       $obj_ser = new clsPmieducarServidor();
       $horas   = $obj_ser->qtdhoras( $this->ref_cod_servidor, $this->ref_cod_escola, $this->ref_cod_instituicao, $dia_semana );
@@ -205,8 +219,8 @@ class indice extends clsCadastro
       die();
     }
 
-    $this->mensagem = 'Cadastro n„o realizado.<br />';
-    echo "<!--\nErro ao cadastrar clsPmieducarFaltaAtraso\nvalores obrigatÛrios\nis_numeric( $this->ref_cod_escola ) && is_numeric($this->ref_ref_cod_instituicao) && is_numeric($this->ref_usuario_exc) && is_numeric($this->ref_usuario_cad) && is_numeric($this->ref_cod_servidor) && is_numeric($this->tipo) && is_string($this->data_falta_atraso) && is_numeric($this->justificada)\n-->";
+    $this->mensagem = 'Cadastro n√£o realizado.<br />';
+    echo "<!--\nErro ao cadastrar clsPmieducarFaltaAtraso\nvalores obrigat√≥rios\nis_numeric( $this->ref_cod_escola ) && is_numeric($this->ref_ref_cod_instituicao) && is_numeric($this->ref_usuario_exc) && is_numeric($this->ref_usuario_cad) && is_numeric($this->ref_cod_servidor) && is_numeric($this->tipo) && is_string($this->data_falta_atraso) && is_numeric($this->justificada)\n-->";
     return FALSE;
   }
 
@@ -242,14 +256,14 @@ class indice extends clsCadastro
 
     $editou = $obj->edita();
     if ($editou) {
-      $this->mensagem .= 'EdiÁ„o efetuada com sucesso.<br />';
+      $this->mensagem .= 'Edi√ß√£o efetuada com sucesso.<br />';
       header('Location: ' . sprintf('educar_falta_atraso_lst.php?ref_cod_servidor=%d&ref_cod_instituicao=%d',
         $this->ref_cod_servidor, $this->ref_cod_instituicao));
       die();
     }
 
-    $this->mensagem = 'EdiÁ„o n„o realizada.<br />';
-    echo "<!--\nErro ao editar clsPmieducarFaltaAtraso\nvalores obrigatÛrios\nif(is_numeric($this->cod_falta_atraso) && is_numeric($this->ref_usuario_exc))\n-->";
+    $this->mensagem = 'Edi√ß√£o n√£o realizada.<br />';
+    echo "<!--\nErro ao editar clsPmieducarFaltaAtraso\nvalores obrigat√≥rios\nif(is_numeric($this->cod_falta_atraso) && is_numeric($this->ref_usuario_exc))\n-->";
     return FALSE;
   }
 
@@ -270,28 +284,28 @@ class indice extends clsCadastro
       $this->qtd_min, $this->justificada, $this->data_cadastro, $this->data_exclusao, 0);
     $excluiu = $obj->excluir();
     if ($excluiu) {
-      $this->mensagem .= 'Exclus„o efetuada com sucesso.<br />';
+      $this->mensagem .= 'Exclus√£o efetuada com sucesso.<br />';
       header('Location: ' . sprintf('educar_falta_atraso_lst.php?ref_cod_servidor=%d&ref_cod_instituicao=%d',
         $this->ref_cod_servidor, $this->ref_cod_instituicao));
       die();
     }
 
-    $this->mensagem = "Exclus„o n„o realizada.<br>";
-    echo "<!--\nErro ao excluir clsPmieducarFaltaAtraso\nvalores obrigatÛrios\nif( is_numeric( $this->cod_falta_atraso ) && is_numeric( $this->ref_usuario_exc ) )\n-->";
+    $this->mensagem = "Exclus√£o n√£o realizada.<br>";
+    echo "<!--\nErro ao excluir clsPmieducarFaltaAtraso\nvalores obrigat√≥rios\nif( is_numeric( $this->cod_falta_atraso ) && is_numeric( $this->ref_usuario_exc ) )\n-->";
     return FALSE;
   }
 }
 
-// Instancia objeto de p·gina
+// Instancia objeto de p√°gina
 $pagina = new clsIndexBase();
 
-// Instancia objeto de conte˙do
+// Instancia objeto de conte√∫do
 $miolo = new indice();
 
-// Atribui o conte˙do ‡  p·gina
+// Atribui o conte√∫do √†  p√°gina
 $pagina->addForm($miolo);
 
-// Gera o cÛdigo HTML
+// Gera o c√≥digo HTML
 $pagina->MakeAll();
 ?>
 <script type="text/javascript">

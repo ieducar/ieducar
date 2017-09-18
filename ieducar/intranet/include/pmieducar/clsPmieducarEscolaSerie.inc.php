@@ -1,31 +1,31 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *																	     *
-*	@author Prefeitura Municipal de Itajaí								 *
+*	@author Prefeitura Municipal de ItajaÃ­								 *
 *	@updated 29/03/2007													 *
-*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 *																		 *
-*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 *						ctima@itajai.sc.gov.br					    	 *
 *																		 *
-*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 *																		 *
-*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 *																		 *
-*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 *	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 *	02111-1307, USA.													 *
 *																		 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /**
-* @author Prefeitura Municipal de Itajaí
+* @author Prefeitura Municipal de ItajaÃ­
 *
 * Criado em 01/08/2006 11:40 pelo gerador automatico de classes
 */
@@ -45,6 +45,8 @@ class clsPmieducarEscolaSerie
 	var $ativo;
 	var $hora_inicio_intervalo;
 	var $hora_fim_intervalo;
+  var $bloquear_enturmacao_sem_vagas;
+  var $bloquear_cadastro_turma_para_serie_com_vagas;
 
 	// propriedades padrao
 
@@ -110,13 +112,13 @@ class clsPmieducarEscolaSerie
 	 *
 	 * @return object
 	 */
-	function clsPmieducarEscolaSerie( $ref_cod_escola = null, $ref_cod_serie = null, $ref_usuario_exc = null, $ref_usuario_cad = null, $hora_inicial = null, $hora_final = null, $data_cadastro = null, $data_exclusao = null, $ativo = null, $hora_inicio_intervalo = null, $hora_fim_intervalo = null )
+	function clsPmieducarEscolaSerie( $ref_cod_escola = null, $ref_cod_serie = null, $ref_usuario_exc = null, $ref_usuario_cad = null, $hora_inicial = null, $hora_final = null, $data_cadastro = null, $data_exclusao = null, $ativo = null, $hora_inicio_intervalo = null, $hora_fim_intervalo = null, $bloquear_enturmacao_sem_vagas = null, $bloquear_cadastro_turma_para_serie_com_vagas = null )
 	{
 		$db = new clsBanco();
 		$this->_schema = "pmieducar.";
 		$this->_tabela = "{$this->_schema}escola_serie";
 
-		$this->_campos_lista = $this->_todos_campos = "es.ref_cod_escola, es.ref_cod_serie, es.ref_usuario_exc, es.ref_usuario_cad, es.hora_inicial, es.hora_final, es.data_cadastro, es.data_exclusao, es.ativo, es.hora_inicio_intervalo, es.hora_fim_intervalo";
+		$this->_campos_lista = $this->_todos_campos = "es.ref_cod_escola, es.ref_cod_serie, es.ref_usuario_exc, es.ref_usuario_cad, es.hora_inicial, es.hora_final, es.data_cadastro, es.data_exclusao, es.ativo, es.hora_inicio_intervalo, es.hora_fim_intervalo, es.bloquear_enturmacao_sem_vagas, es.bloquear_cadastro_turma_para_serie_com_vagas";
 
 		if( is_numeric( $ref_usuario_cad ) )
 		{
@@ -261,6 +263,8 @@ class clsPmieducarEscolaSerie
 			$this->hora_fim_intervalo = $hora_fim_intervalo;
 		}
 
+    $this->bloquear_enturmacao_sem_vagas = $bloquear_enturmacao_sem_vagas;
+    $this->bloquear_cadastro_turma_para_serie_com_vagas = $bloquear_cadastro_turma_para_serie_com_vagas;
 	}
 
 	/**
@@ -270,7 +274,7 @@ class clsPmieducarEscolaSerie
 	 */
 	function cadastra()
 	{
-		if( is_numeric( $this->ref_cod_escola ) && is_numeric( $this->ref_cod_serie ) && is_numeric( $this->ref_usuario_cad ) && ( $this->hora_inicial ) && ( $this->hora_final ) && ( $this->hora_inicio_intervalo ) && ( $this->hora_fim_intervalo ) )
+		if( is_numeric( $this->ref_cod_escola ) && is_numeric( $this->ref_cod_serie ) && is_numeric( $this->ref_usuario_cad ) )
 		{
 			$db = new clsBanco();
 
@@ -327,6 +331,17 @@ class clsPmieducarEscolaSerie
 				$gruda = ", ";
 			}
 
+			if(is_numeric($this->bloquear_enturmacao_sem_vagas)) {
+				$campos .= "{$gruda}bloquear_enturmacao_sem_vagas";
+				$valores .= "{$gruda}'{$this->bloquear_enturmacao_sem_vagas}'";
+				$gruda = ", ";
+			}
+
+			if(is_numeric($this->bloquear_cadastro_turma_para_serie_com_vagas)) {
+				$campos .= "{$gruda}bloquear_cadastro_turma_para_serie_com_vagas";
+				$valores .= "{$gruda}'{$this->bloquear_cadastro_turma_para_serie_com_vagas}'";
+				$gruda = ", ";
+			}
 
 			$db->Consulta( "INSERT INTO {$this->_tabela} ( $campos ) VALUES( $valores )" );
 			return true;
@@ -390,6 +405,15 @@ class clsPmieducarEscolaSerie
 				$gruda = ", ";
 			}
 
+			if(is_numeric( $this->bloquear_enturmacao_sem_vagas)) {
+				$set .= "{$gruda}bloquear_enturmacao_sem_vagas = '{$this->bloquear_enturmacao_sem_vagas}'";
+				$gruda = ", ";
+			}
+
+			if(is_numeric( $this->bloquear_cadastro_turma_para_serie_com_vagas)) {
+				$set .= "{$gruda}bloquear_cadastro_turma_para_serie_com_vagas = '{$this->bloquear_cadastro_turma_para_serie_com_vagas}'";
+				$gruda = ", ";
+			}
 
 			if( $set )
 			{
@@ -405,7 +429,7 @@ class clsPmieducarEscolaSerie
 	 *
 	 * @return array
 	 */
-	function lista( $int_ref_cod_escola = null, $int_ref_cod_serie = null, $int_ref_usuario_exc = null, $int_ref_usuario_cad = null, $time_hora_inicial_ini = null, $time_hora_inicial_fim = null, $time_hora_final_ini = null, $time_hora_final_fim = null, $date_data_cadastro_ini = null, $date_data_cadastro_fim = null, $date_data_exclusao_ini = null, $date_data_exclusao_fim = null, $int_ativo = null, $time_hora_inicio_intervalo_ini = null, $time_hora_inicio_intervalo_fim = null, $time_hora_fim_intervalo_ini = null, $time_hora_fim_intervalo_fim = null, $int_ref_cod_instituicao = null, $int_ref_cod_curso = null )
+	function lista( $int_ref_cod_escola = null, $int_ref_cod_serie = null, $int_ref_usuario_exc = null, $int_ref_usuario_cad = null, $time_hora_inicial_ini = null, $time_hora_inicial_fim = null, $time_hora_final_ini = null, $time_hora_final_fim = null, $date_data_cadastro_ini = null, $date_data_cadastro_fim = null, $date_data_exclusao_ini = null, $date_data_exclusao_fim = null, $int_ativo = null, $time_hora_inicio_intervalo_ini = null, $time_hora_inicio_intervalo_fim = null, $time_hora_fim_intervalo_ini = null, $time_hora_fim_intervalo_fim = null, $int_ref_cod_instituicao = null, $int_ref_cod_curso = null, $bloquear_enturmacao_sem_vagas = null, $bloquear_cadastro_turma_para_serie_com_vagas = null )
 	{
 		$sql = "SELECT {$this->_campos_lista}, c.ref_cod_instituicao, s.ref_cod_curso, s.nm_serie FROM {$this->_tabela} es, {$this->_schema}serie s, {$this->_schema}curso c";
 
@@ -513,6 +537,15 @@ class clsPmieducarEscolaSerie
 			$whereAnd = " AND ";
 		}
 
+		if(is_numeric($bloquear_enturmacao_sem_vagas)) {
+			$filtros .= "{$whereAnd} s.bloquear_enturmacao_sem_vagas = '{$bloquear_enturmacao_sem_vagas}'";
+			$whereAnd = " AND ";
+		}
+
+		if(is_numeric($bloquear_cadastro_turma_para_serie_com_vagas)) {
+			$filtros .= "{$whereAnd} s.bloquear_cadastro_turma_para_serie_com_vagas = '{$bloquear_cadastro_turma_para_serie_com_vagas}'";
+			$whereAnd = " AND ";
+		}
 
 		$db = new clsBanco();
 		$countCampos = count( explode( ",", $this->_campos_lista ) );

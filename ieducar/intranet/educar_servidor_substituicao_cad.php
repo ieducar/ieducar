@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gestão escolar
+ * i-Educar - Sistema de gestÃ£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de Itajaí
+ * Copyright (C) 2006  Prefeitura Municipal de ItajaÃ­
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa é software livre; você pode redistribuí-lo e/ou modificá-lo
- * sob os termos da Licença Pública Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a versão 2 da Licença, como (a seu critério)
- * qualquer versão posterior.
+ * Este programa Ã© software livre; vocÃª pode redistribuÃ­-lo e/ou modificÃ¡-lo
+ * sob os termos da LicenÃ§a PÃºblica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a versÃ£o 2 da LicenÃ§a, como (a seu critÃ©rio)
+ * qualquer versÃ£o posterior.
  *
- * Este programa é distribuí­do na expectativa de que seja útil, porém, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implí­cita de COMERCIABILIDADE OU
- * ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral
+ * Este programa Ã© distribuÃ­Â­do na expectativa de que seja Ãºtil, porÃ©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia implÃ­Â­cita de COMERCIABILIDADE OU
+ * ADEQUAÃ‡ÃƒO A UMA FINALIDADE ESPECÃFICA. Consulte a LicenÃ§a PÃºblica Geral
  * do GNU para mais detalhes.
  *
- * Você deve ter recebido uma cópia da Licença Pública Geral do GNU junto
- * com este programa; se não, escreva para a Free Software Foundation, Inc., no
- * endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * VocÃª deve ter recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral do GNU junto
+ * com este programa; se nÃ£o, escreva para a Free Software Foundation, Inc., no
+ * endereÃ§o 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de ItajaÃ­ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Arquivo disponível desde a versão 1.0.0
+ * @since     Arquivo disponÃ­vel desde a versÃ£o 1.0.0
  * @version   $Id$
  */
 
@@ -36,30 +36,31 @@ require_once 'include/pmieducar/geral.inc.php';
 /**
  * clsIndexBase class.
  *
- * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de ItajaÃ­ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponível desde a versão 1.0.0
+ * @since     Classe disponÃ­vel desde a versÃ£o 1.0.0
  * @version   @@package_version@@
  */
 class clsIndexBase extends clsBase
 {
   function Formular()
   {
-    $this->SetTitulo($this->_instituicao . ' i-Educar - Servidor Substituição');
+    $this->SetTitulo($this->_instituicao . ' i-Educar - Servidor SubstituiÃ§Ã£o');
     $this->processoAp = 635;
+    $this->addEstilo('localizacaoSistema');
   }
 }
 
 /**
  * indice class.
  *
- * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de ItajaÃ­ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponível desde a versão 1.0.0
+ * @since     Classe disponÃ­vel desde a versÃ£o 1.0.0
  * @version   @@package_version@@
  */
 class indice extends clsCadastro
@@ -105,7 +106,7 @@ class indice extends clsCadastro
         NULL, NULL, NULL, NULL, NULL, NULL, $this->ref_ref_cod_instituicao);
       $det_servidor = $obj_servidor->detalhe();
 
-      // Nenhum servidor com o código de servidor e instituição
+      // Nenhum servidor com o cÃ³digo de servidor e instituiÃ§Ã£o
       if (!$det_servidor) {
         header('Location: educar_servidor_lst.php');
         die;
@@ -144,6 +145,14 @@ class indice extends clsCadastro
       $this->ref_cod_servidor, $this->ref_ref_cod_instituicao);
     $this->nome_url_cancelar = 'Cancelar';
 
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         "educar_index.php"                  => "i-Educar - Escola",
+         ""        => "Substituir servidor"             
+    ));
+    $this->enviaLocalizacao($localizacao->montar());     
+
     return $retorno;
   }
 
@@ -152,7 +161,7 @@ class indice extends clsCadastro
     $obj_inst = new clsPmieducarInstituicao($this->ref_ref_cod_instituicao);
     $inst_det = $obj_inst->detalhe();
 
-    $this->campoRotulo('nm_instituicao', 'Instituição', $inst_det['nm_instituicao']);
+    $this->campoRotulo('nm_instituicao', 'InstituiÃ§Ã£o', $inst_det['nm_instituicao']);
     $this->campoOculto('ref_ref_cod_instituicao', $this->ref_ref_cod_instituicao);
 
     $opcoes = array('' => 'Selecione');
@@ -216,7 +225,7 @@ class indice extends clsCadastro
     }
 
     if ($this->alocacao_array) {
-      // Substitui todas as alocações
+      // Substitui todas as alocaÃ§Ãµes
       foreach ($this->alocacao_array as $key => $alocacao) {
         $obj = new clsPmieducarServidorAlocacao(NULL, $this->ref_ref_cod_instituicao,
           $this->pessoa_logada, $this->pessoa_logada, $alocacao['ref_cod_escola'],
@@ -237,7 +246,7 @@ class indice extends clsCadastro
         }
       }
 
-      // Substituição do servidor no quadro de horários (caso seja professor)
+      // SubstituiÃ§Ã£o do servidor no quadro de horÃ¡rios (caso seja professor)
       if ('true' == $professor) {
         $quadroHorarios = new clsPmieducarQuadroHorarioHorarios(NULL, NULL, NULL,
           NULL, NULL, NULL, $this->ref_ref_cod_instituicao, NULL, $this->ref_cod_servidor,
@@ -265,16 +274,16 @@ class indice extends clsCadastro
   }
 }
 
-// Instancia objeto de página
+// Instancia objeto de pÃ¡gina
 $pagina = new clsIndexBase();
 
-// Instancia objeto de conteúdo
+// Instancia objeto de conteÃºdo
 $miolo = new indice();
 
-// Atribui o conteúdo à  página
+// Atribui o conteÃºdo Ã   pÃ¡gina
 $pagina->addForm($miolo);
 
-// Gera o código HTML
+// Gera o cÃ³digo HTML
 $pagina->MakeAll();
 ?>
 <script type="text/javascript">

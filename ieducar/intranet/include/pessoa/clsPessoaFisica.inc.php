@@ -153,13 +153,17 @@ class clsPessoaFisica extends clsPessoaFj
     $where    = '';
 
     if (is_string($str_nome) && $str_nome != '') {
+      $str_nome = addslashes($str_nome);
       $str_nome = str_replace(' ', '%', $str_nome);
-      $where   .= "{$whereAnd} nome ILIKE '%{$str_nome}%' ";
+
+      $where   .= "{$whereAnd} nome ILIKE E'%{$str_nome}%' ";
       $whereAnd = ' AND ';
     }
 
     if (is_string($numeric_cpf)) {
-      $where   .= "{$whereAnd} cpf ILIKE '%{$numeric_cpf}%' ";
+      $numeric_cpf = addslashes($numeric_cpf);
+
+      $where   .= "{$whereAnd} cpf ILIKE E'%{$numeric_cpf}%' ";
       $whereAnd = ' AND ';
     }
 
@@ -292,6 +296,8 @@ class clsPessoaFisica extends clsPessoaFj
         $this->justificativa_provisorio = $detalhe_fisica['justificativa_provisorio'];
         $this->cpf                      = $detalhe_fisica['cpf'];
         $this->ref_cod_religiao         = $detalhe_fisica['ref_cod_religiao'];
+        $this->sus                      = $detalhe_fisica['sus'];
+        $this->nis_pis_pasep            = $detalhe_fisica['nis_pis_pasep'];
 
         $tupla['idpes'] = $this->idpes;
         $tupla[]        = & $tupla['idpes'];

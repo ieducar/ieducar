@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -35,6 +35,7 @@ class clsIndex extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} Empresas!" );
 		$this->processoAp = array("41", "649");
+		$this->addEstilo('localizacaoSistema');
 	}
 }
 
@@ -66,7 +67,7 @@ class indice extends clsCadastro
 		$ddd_telefone_fax,
 		$telefone_fax;
 
-	// Variáveis relativas ao endereco
+	// VariÃ¡veis relativas ao endereco
 	var  $bairro,
 		 $idbai,
 		 $cidade,
@@ -142,6 +143,14 @@ class indice extends clsCadastro
 
 		$this->nome_url_cancelar = "Cancelar";
 
+    $nomeMenu = $this->retorno == "Editar" ? $this->retorno : "Cadastrar";
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         ""                                  => "$nomeMenu pessoa jur&iacute;dica"
+    ));
+    $this->enviaLocalizacao($localizacao->montar());    		
+
 		return $this->retorno;
 	}
 
@@ -175,7 +184,7 @@ class indice extends clsCadastro
 			
 
 
-			// Detalhes do Endereço da empresa
+			// Detalhes do EndereÃ§o da empresa
 			$objTipoLog = new clsTipoLogradouro();
 			$listaTipoLog = $objTipoLog->lista();
 			$lista = array(""=>"Selecione");
@@ -209,7 +218,7 @@ class indice extends clsCadastro
 				$this->campoTextoInv( "cidade", "Cidade",  $this->cidade, "50", "255", false );
 				$this->campoTextoInv( "bairro", "Bairro",  $this->bairro, "50", "255", false );
 				$this->campoTexto( "complemento", "Complemento",  $this->complemento, "50", "255", false );
-				$this->campoTexto( "numero", "Número",  $this->numero, "10", "10", false );
+				$this->campoTexto( "numero", "NÃºmero",  $this->numero, "10", "10", false );
 				$this->campoTexto( "letra", "Letra",  $this->letra, "1", "1", false );
 				$this->campoLista("sigla_uf","Estado",$listaEstado,$this->sigla_uf,false,false,false,false,true);
 			}
@@ -221,7 +230,7 @@ class indice extends clsCadastro
 				$this->campoTexto( "cidade", "Cidade",  $this->cidade, "50", "255", false );
 				$this->campoTexto( "bairro", "Bairro",  $this->bairro, "50", "255", false );
 				$this->campoTexto( "complemento", "Complemento",  $this->complemento, "50", "255", false );
-				$this->campoTexto( "numero", "Número",  $this->numero, "10", "10", false );
+				$this->campoTexto( "numero", "NÃºmero",  $this->numero, "10", "10", false );
 				$this->campoTexto( "letra", "Letra",  $this->letra, "1", "1", false );
 				$this->campoLista("sigla_uf","Estado",$listaEstado,$this->sigla_uf);
 
@@ -234,7 +243,7 @@ class indice extends clsCadastro
 				$this->campoTextoInv( "cidade", "Cidade",  $this->cidade, "50", "255", true );
 				$this->campoTextoInv( "bairro", "Bairro",  $this->bairro, "50", "255", true );
 				$this->campoTexto( "complemento", "Complemento",  $this->complemento, "50", "255", false );
-				$this->campoTexto( "numero", "Número",  $this->numero, "10", "10", false );
+				$this->campoTexto( "numero", "NÃºmero",  $this->numero, "10", "10", false );
 				$this->campoTexto( "letra", "Letra",  $this->letra, "1", "1", false );
 				$this->campoLista("sigla_uf","Estado",$listaEstado,$this->sigla_uf,false,false,false,false,true);
 			}
@@ -243,14 +252,11 @@ class indice extends clsCadastro
 
 			// Telefones
 
-			$this->campoTexto( "ddd_telefone_1", "DDD Telefone 1",  $this->ddd_telefone_1, "3", "2", false );
-			$this->campoTexto( "telefone_1", "Telefone 1",  $this->telefone_1, "10", "15", false );
-			$this->campoTexto( "ddd_telefone_2", "DDD Telefone 2",  $this->ddd_telefone_2, "3", "2", false );
-			$this->campoTexto( "telefone_2", "Telefone",  $this->telefone_2, "10", "15", false );
-			$this->campoTexto( "ddd_telefone_mov", "DDD Celular",  $this->ddd_telefone_mov, "3", "2", false );
-			$this->campoTexto( "telefone_mov", "Celular",  $this->telefone_mov, "10", "15", false );
-			$this->campoTexto( "ddd_telefone_fax", "DDD Fax",  $this->ddd_telefone_fax, "3", "2", false );
-			$this->campoTexto( "telefone_fax", "Fax",  $this->telefone_fax, "10", "15", false );
+
+		    $this->inputTelefone('1', 'Telefone 1');
+            $this->inputTelefone('2', 'Telefone 2');
+            $this->inputTelefone('mov', 'Celular');
+            $this->inputTelefone('fax', 'Fax');
 
 			// Dados da Empresa
 
@@ -437,6 +443,31 @@ class indice extends clsCadastro
 		return true;
 	}
 
+  	protected function inputTelefone($type, $typeLabel = '') {
+	    if (! $typeLabel)
+	      $typeLabel = "Telefone {$type}";	 
+	    // ddd	 
+	    $options = array(
+	      'required'    => false,
+	      'label'       => "(ddd) / {$typeLabel}",
+	      'placeholder' => 'ddd',
+	      'value'       => $this->{"ddd_telefone_{$type}"},
+	      'max_length'  => 3,
+	      'size'        => 3,
+	      'inline'      => true
+	    );	 
+	    $this->inputsHelper()->integer("ddd_telefone_{$type}", $options);	 	 
+	   // telefone	 
+	    $options = array(
+	      'required'    => false,
+	      'label'       => '',
+	      'placeholder' => $typeLabel,
+	      'value'       => $this->{"telefone_{$type}"},
+	      'max_length'  => 11
+	    );	 
+	    $this->inputsHelper()->integer("telefone_{$type}", $options);
+   }
+ 
 }
 
 

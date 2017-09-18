@@ -1,25 +1,29 @@
 <?php
+
+#error_reporting(E_ALL);
+#ini_set("display_errors", 1);
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -83,8 +87,8 @@ class indice extends clsListagem
 		if ($cidade && $logradouro)
 		{
 			$obj_mun = new clsMunicipio();
-			$lista = $obj_mun->lista( $cidade );			
-				
+			$lista = $obj_mun->lista( $cidade );
+
 			$obj_logradouro    = new clsLogradouro();
 			$lista_logradouros = $obj_logradouro->lista( false, $logradouro, $lista[0]['idmun'], false, false );
 			if ( $lista_logradouros ) {
@@ -116,21 +120,27 @@ class indice extends clsListagem
 
 			if ( $lst_cepLogBai ) {
 				foreach ( $lst_cepLogBai as $juncao ) {
-					$det_bai 	   = $juncao['idbai']->detalhe();
-					$det_mun 	   = $det_bai['idmun']->detalhe();
-					$det_uf 	   = $det_mun['sigla_uf']->detalhe();
-					$det_cepLog    = $juncao['idlog']->detalhe();
-					$det_log	   = $det_cepLog['idlog']->detalhe();
-					$det_TLog 	   = $det_log['idtlog']->detalhe();
-					$cep_formatado = int2CEP( $det_cepLog["cep"] );
-					//$funcao 	   = "set_campo_pesquisa( 'cidade', '".$det_mun["nome"]."', 'bairro', '".$det_bai["nome"]."', 'idbai', '".$det_bai["idbai"]."', 'logradouro', '".$det_log["nome"]."', 'idlog', '".$det_log["idlog"]."', 'cep', '".$det_cepLog["cep"]."', 'cep_', '".$cep_formatado."', 'sigla_uf', '".$det_uf["sigla_uf"]."', 'idtlog', '".$det_TLog["idtlog"]."' )";
-					$funcao		   = "enviar( '{$det_cepLog["cep"]}', '{$det_bai["idbai"]}', '{$det_log["idlog"]}', '{$det_mun["nome"]}', '{$det_bai["nome"]}', '{$det_log["nome"]}', '{$det_uf["sigla_uf"]}', '{$det_TLog["idtlog"]}' )";
-					$this->addLinhas( array( "<a href='javascript:void( 0 );' onclick=\"javascript:{$funcao}\">{$cep_formatado}</a>", "<a href='javascript:void( 0 );' onclick=\"javascript:{$funcao}\">{$det_log["nome"]}</a>", "<a href='javascript:void( 0 );' onclick=\"javascript:{$funcao}\">{$det_bai["nome"]}</a>", "<a href='javascript:void( 0 );' onclick=\"javascript:{$funcao}\">{$det_mun["nome"]}</a>" ) );
+					$det_bai   	   = $juncao['idbai']->detalhe();
+					$det_mun 	     = $det_bai['idmun']->detalhe();
+					$det_uf 	     = $det_mun['sigla_uf']->detalhe();
+
+					$cepLogradouro = $juncao['idlog'];
+          $_logradouro   = $cepLogradouro->detalhe();
+
+          if(! is_null($_logradouro['idlog']))
+            $_logradouro['idlog']->detalhe();
+
+          $_logradouro   = $_logradouro['idlog'];
+					$cepFormatado  = int2CEP( $cepLogradouro->cep );
+
+					$funcao		   = "enviar( '{$cepLogradouro->cep}', '{$det_bai["idbai"]}', '{$cepLogradouro->idlog}', '{$det_mun["nome"]}', '{$det_bai["nome"]}', '{$_logradouro->nome}', '{$det_uf["sigla_uf"]}', '{$_logradouro->idtlog}' )";
+
+					$this->addLinhas( array( "<a href='javascript:void( 0 );' onclick=\"javascript:{$funcao}\">{$cepFormatado}</a>", "<a href='javascript:void( 0 );' onclick=\"javascript:{$funcao}\">{$_logradouro->nome}</a>", "<a href='javascript:void( 0 );' onclick=\"javascript:{$funcao}\">{$det_bai["nome"]}</a>", "<a href='javascript:void( 0 );' onclick=\"javascript:{$funcao}\">{$det_mun["nome"]}</a>" ) );
 					$total 		   = $juncao['total'];
 				}
 			}
 			else {
-				$this->addLinhas( array( "Não existe nenhum resultado a ser apresentado." ) );
+				$this->addLinhas( array( "NÃ£o existe nenhum resultado a ser apresentado." ) );
 			}
 		}
 		elseif ( $logradouro ) {
@@ -199,7 +209,7 @@ class indice extends clsListagem
 				}
 			}
 		}
-		
+
 
 		// Paginador
 		$this->addPaginador2( "pesquisa_cep_lst.php", $total, $_GET, $this->nome, $limite );
@@ -214,7 +224,7 @@ class indice extends clsListagem
 						</tr>
 						</table>";
 
-		// Define Largura da Página
+		// Define Largura da PÃ¡gina
 		$this->largura = "100%";
 	}
 }

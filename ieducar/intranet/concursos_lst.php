@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -31,10 +31,10 @@ require_once ("include/clsBanco.inc.php");
 
 class clsIndex extends clsBase
 {
-	
+
 	function Formular()
 	{
-		$this->SetTitulo( "{$this->_instituicao} Publicações!" );
+		$this->SetTitulo( "{$this->_instituicao} PublicaÃ§Ãµes!" );
 		$this->processoAp = "209";
 	}
 }
@@ -44,10 +44,10 @@ class indice extends clsListagem
 	function Gerar()
 	{
 		$this->titulo = "Concursos";
-		$this->addBanner( "http://ieducar.dccobra.com.br/intranet/imagens/nvp_top_intranet.jpg", "http://ieducar.dccobra.com.br/intranet/imagens/nvp_vert_intranet.jpg", "Intranet" );
-	
-		$this->addCabecalhos( array( "Concurso", "Descrição" ) );
-		
+		$this->addBanner( "/intranet/imagens/nvp_top_intranet.jpg", "/intranet/imagens/nvp_vert_intranet.jpg", "Intranet" );
+
+		$this->addCabecalhos( array( "Concurso", "DescriÃ§Ã£o" ) );
+
 		$db = new clsBanco();
 		$dba = new clsBanco();
 
@@ -55,18 +55,18 @@ class indice extends clsListagem
 		$this->limite = 10;
 		$this->offset = ( $_GET["pagina_{$this->nome}"] ) ? $_GET["pagina_{$this->nome}"]*$this->limite-$this->limite: 0;
 
-		
+
 		$total = $dba->UnicoCampo( "SELECT count(0) FROM portal_concurso" );
-		
+
 		$db->Consulta( "SELECT cod_portal_concurso, nm_concurso, descricao FROM portal_concurso ORDER BY data_hora DESC limit $this->limite offset $this->offset " );
 		while ($db->ProximoRegistro())
 		{
 			list ( $cod, $nm_concurso, $descricao ) = $db->Tupla();
 			$this->addLinhas( array( "<a href='concursos_det.php?cod_portal_concurso={$cod}'><img src='imagens/noticia.jpg' border=0>$nm_concurso</a>", $descricao ) );
 		}
-		
+
 		$this->addPaginador2( "concursos_lst.php", $total, $_GET, $this->nome, $this->limite );
-		
+
 		$this->acao = "go(\"concursos_cad.php\")";
 		$this->nome_acao = "Novo";
 

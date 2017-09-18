@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+ * com este programa; se n√£o, escreva para a Free Software Foundation, Inc., no
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Arquivo disponÌvel desde a vers„o 1.0.0
+ * @since     Arquivo dispon√≠vel desde a vers√£o 1.0.0
  * @version   $Id$
  */
 
@@ -35,33 +35,36 @@ require_once 'include/pmieducar/geral.inc.php';
 
 require_once 'App/Date/Utils.php';
 
+require_once 'ComponenteCurricular/Model/TurmaDataMapper.php';
+
 /**
  * clsIndexBase class.
  *
- * @author    Prefeitura Municipal de ItajaÌ
+ * @author    Prefeitura Municipal de Itaja√≠
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class clsIndexBase extends clsBase
 {
   function Formular()
   {
-    $this->SetTitulo($this->_instituicao . ' i-Educar - Ano Letivo MÛdulo');
+    $this->SetTitulo($this->_instituicao . ' i-Educar - Ano Letivo M√≥dulo');
     $this->processoAp = 561;
+    $this->addEstilo("localizacaoSistema");
   }
 }
 
 /**
  * indice class.
  *
- * @author    Prefeitura Municipal de ItajaÌ
+ * @author    Prefeitura Municipal de Itaja√≠
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class indice extends clsCadastro
@@ -114,6 +117,15 @@ class indice extends clsCadastro
 
     $this->nome_url_cancelar = 'Cancelar';
 
+    $nomeMenu = $retorno == "Editar" ? $retorno : "Cadastrar";
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         "educar_index.php"                  => "i-Educar - Escola",
+         ""        => "{$nomeMenu} m&oacute;dulos do ano letivo"
+    ));
+    $this->enviaLocalizacao($localizacao->montar());
+
     return $retorno;
   }
 
@@ -133,19 +145,45 @@ class indice extends clsCadastro
     $det_escola = $obj_escola->detalhe();
     $ref_cod_instituicao = $det_escola['ref_cod_instituicao'];
 
+    $obj = new clsPmieducarAnoLetivoModulo();
+    $obj->setOrderBy('sequencial ASC');
+    $registros = $obj->lista($this->ref_ano - 1, $this->ref_ref_cod_escola);
+    $cont = 0;
+    $modulosAnoAnterior = "";
+    if ($registros) {
+
+      $tabela = "<table border=0 style='' cellpadding=2 width='100%'>";
+      $tabela .= "<tr bgcolor=$cor><td colspan='2'><b>M&oacute;dulos do ano anterior (".($this->ref_ano - 1).")</b></td></tr><tr><td>";
+      $tabela .= "<table cellpadding=\"2\" cellspacing=\"2\" border=\"0\" align=\"left\" width='300px'>";
+      $tabela .= "<tr bgcolor='#A1B3BD'><th width='100px'>Etapa<a name='ano_letivo'/></th><th width='200px'>Per√≠odo</th></tr>";
+
+     foreach ($registros as $campo) {
+      $cor = "#E3E8EF"; #$cor == "#FFFFFF" ? "#E3E8EF" : "#FFFFFF";
+      $cont++;
+      $tabela .= "<tr bgcolor='$cor'><td align='center'>{$cont}</td><td align='center'>".dataFromPgToBr($campo['data_inicio'])." √† ".dataFromPgToBr($campo['data_fim'])."</td></tr>";
+      //$modulosAnoAnterior .= ++$cont."¬™ Etapa: De ".dataFromPgToBr($campo['data_inicio'])." √† ".dataFromPgToBr($campo['data_fim']);
+     }
+
+     $tabela .="</table>";
+     $tabela .= "<tr><td colspan='2'><b> Adicione os m√≥dulos abaixo para {$this->ref_ano} semelhante ao exemplo do ano anterior: </b></td></tr><tr><td>";
+     $tabela .= "</table>";
+    }
+
     $ref_ano_ = $this->ref_ano;
     $this->campoTexto('ref_ano_', 'Ano', $ref_ano_, 4, 4, FALSE, FALSE, FALSE,
       '', '', '', '', TRUE);
 
     $this->campoQuebra();
+    if ($tabela)
+      $this->campoRotulo('modulosAnoAnterior', '-', $tabela);
 
-    // MÛdulos do ano letivo
+    // M√≥dulos do ano letivo
     if ($_POST['ano_letivo_modulo']) {
       $this->ano_letivo_modulo = unserialize(urldecode($_POST['ano_letivo_modulo']));
     }
 
     $qtd_modulo = count($this->ano_letivo_modulo) == 0 ?
-      1 : count($this->ano_letivo_modulo) + 1;
+      0 : count($this->ano_letivo_modulo) + 1;
 
     if (is_numeric($this->ref_ano) &&
       is_numeric($this->ref_ref_cod_escola) &&
@@ -167,6 +205,7 @@ class indice extends clsCadastro
     }
 
     if ($_POST['ref_cod_modulo'] && $_POST['data_inicio'] && $_POST['data_fim']) {
+      $qtd_modulo = ($qtd_modulo==0 ? 1 : $qtd_modulo);
       $this->ano_letivo_modulo[$qtd_modulo]['sequencial_']     = $qtd_modulo;
       $this->ano_letivo_modulo[$qtd_modulo]['ref_cod_modulo_'] = $_POST['ref_cod_modulo'];
       $this->ano_letivo_modulo[$qtd_modulo]['data_inicio_']    = $_POST['data_inicio'];
@@ -242,27 +281,27 @@ class indice extends clsCadastro
       }
     }
     else {
-      $opcoes = array('' => 'Erro na geraÁ„o');
+      $opcoes = array('' => 'Erro na gera√ß√£o');
     }
 
     // data
     if ($qtd_modulo > 1) {
-      $this->campoLista('ref_cod_modulo', 'MÛdulo', $opcoes,
+      $this->campoLista('ref_cod_modulo', 'M√≥dulo', $opcoes,
         $this->ref_cod_modulo, NULL, NULL, NULL, NULL, NULL, FALSE);
 
-      $this->campoData('data_inicio', 'Data InÌcio', $this->data_inicio);
+      $this->campoData('data_inicio', 'Data In√≠cio', $this->data_inicio);
 
       $this->campoData('data_fim', 'Data Fim', $this->data_fim);
     }
     else {
-      $this->campoLista('ref_cod_modulo', 'MÛdulo', $opcoes, $this->ref_cod_modulo);
-      $this->campoData('data_inicio', 'Data InÌcio', $this->data_inicio, TRUE);
+      $this->campoLista('ref_cod_modulo', 'M√≥dulo', $opcoes, $this->ref_cod_modulo);
+      $this->campoData('data_inicio', 'Data In√≠cio', $this->data_inicio, TRUE);
       $this->campoData('data_fim', 'Data Fim', $this->data_fim, TRUE);
     }
 
     $this->campoOculto('incluir_modulo', '');
-    $this->campoRotulo('bt_incluir_modulo', 'MÛdulo',
-     '<a href="#" onclick="incluir();"><img src="imagens/nvp_bot_adiciona.gif" title="Incluir" border="0" /></a>'
+    $this->campoRotulo('bt_incluir_modulo', 'M√≥dulo',
+     '<a href="#" id="add_module"><img src="imagens/nvp_bot_adiciona.gif" title="Incluir" border="0" /></a>'
     );
 
     $this->campoQuebra();
@@ -281,8 +320,11 @@ class indice extends clsCadastro
     $this->ano_letivo_modulo = unserialize(urldecode($this->ano_letivo_modulo));
 
     if ($this->ano_letivo_modulo) {
+
+      $this->copiarTurmasUltimoAno($this->ref_ref_cod_escola, $this->ref_ano);
+
       $obj = new clsPmieducarEscolaAnoLetivo($this->ref_ref_cod_escola,
-        $this->ref_ano, $this->pessoa_logada, NULL, 0, NULL, NULL, 1
+        $this->ref_ano, $this->pessoa_logada, NULL, 0, NULL, NULL, 1, 1
       );
 
       $cadastrou = $obj->cadastra();
@@ -305,7 +347,7 @@ class indice extends clsCadastro
           $cadastrou1 = $obj->cadastra();
 
           if (! $cadastrou1) {
-            $this->mensagem = 'Cadastro n„o realizado.<br />';
+            $this->mensagem = 'Cadastro n√£o realizado.<br />';
             return FALSE;
           }
         }
@@ -316,12 +358,12 @@ class indice extends clsCadastro
         die();
       }
 
-      $this->mensagem = 'Cadastro n„o realizado. <br />';
+      $this->mensagem = 'Cadastro n√£o realizado. <br />';
       return FALSE;
     }
 
-    echo '<script>alert("… necess·rio adicionar pelo menos um mÛdulo!")</script>';
-    $this->mensagem = 'Cadastro n„o realizado.<br />';
+    echo '<script>alert("√â necess√°rio adicionar pelo menos um m√≥dulo!")</script>';
+    $this->mensagem = 'Cadastro n√£o realizado.<br />';
     return FALSE;
   }
 
@@ -359,19 +401,19 @@ class indice extends clsCadastro
           $cadastrou = $obj->cadastra();
 
           if (! $cadastrou) {
-            $this->mensagem = 'EdiÁ„o n„o realizada.<br />';
+            $this->mensagem = 'Edi√ß√£o n√£o realizada.<br />';
             return FALSE;
           }
         }
 
-        $this->mensagem .= 'EdiÁ„o efetuada com sucesso.<br />';
+        $this->mensagem .= 'Edi√ß√£o efetuada com sucesso.<br />';
         header('Location: educar_escola_lst.php');
         die();
       }
     }
 
-    echo "<script>alert('… necess·rio adicionar pelo menos um mÛdulo!')</script>";
-    $this->mensagem = 'EdiÁ„o n„o realizada.<br />';
+    echo "<script>alert('√â necess√°rio adicionar pelo menos um m√≥dulo!')</script>";
+    $this->mensagem = 'Edi√ß√£o n√£o realizada.<br />';
     return FALSE;
   }
 
@@ -395,26 +437,26 @@ class indice extends clsCadastro
       $excluiu1 = $obj->excluirTodos();
 
       if ($excluiu1) {
-        $this->mensagem .= 'Exclus„o efetuada com sucesso.<br />';
+        $this->mensagem .= 'Exclus√£o efetuada com sucesso.<br />';
         header('Location: educar_escola_lst.php');
         die();
       }
 
-      $this->mensagem = 'Exclus„o n„o realizada.<br />';
+      $this->mensagem = 'Exclus√£o n√£o realizada.<br />';
       return FALSE;
     }
 
-    $this->mensagem = 'Exclus„o n„o realizada.<br />';
+    $this->mensagem = 'Exclus√£o n√£o realizada.<br />';
     return FALSE;
   }
 
   /**
-   * Verifica se ao menos uma das datas as datas de inÌcio dos mÛdulos È do
+   * Verifica se ao menos uma das datas as datas de in√≠cio dos m√≥dulos √© do
    * mesmo ano letivo da escola. Em caso de erro, configura a mensagem de
-   * erro que È retornado pelo formul·rio.
+   * erro que √© retornado pelo formul√°rio.
    *
    * @access private
-   * @param  array $modulos O array associativo recebido via POST pelo formul·rio.
+   * @param  array $modulos O array associativo recebido via POST pelo formul√°rio.
    * @return bool  FALSE caso nenhuma das datas esteja no mesmo ano letivo da escola.
    */
   function _verificaModuloDatas(array $modulos)
@@ -434,23 +476,139 @@ class indice extends clsCadastro
 
     return TRUE;
   }
+
+  function copiarTurmasUltimoAno($escolaId, $anoDestino) {
+    $sql       = 'select ano, turmas_por_ano from pmieducar.escola_ano_letivo where ref_cod_escola = $1 ' .
+                 'and ativo = 1 and ano in (select max(ano) from pmieducar.escola_ano_letivo where ' .
+                 'ref_cod_escola = $1 and ativo = 1)';
+
+    $ultimoAnoLetivo = Portabilis_Utils_Database::selectRow($sql, $escolaId);
+
+    $anoTurmasPorAno = $ultimoAnoLetivo['turmas_por_ano'] == 1 ? $ultimoAnoLetivo['ano'] : null;
+
+    $turmasEscola    = new clsPmieducarTurma();
+    $turmasEscola    = $turmasEscola->lista(null, null, null, null, $escolaId, null, null, null,
+                                            null, null, null, null, null, null, 1, null, null,
+                                            null, null, null, null, null, null, null, null, null,
+                                            null, null, null, null, null, false, null, true, null,
+                                            null, $anoTurmasPorAno);
+
+    foreach ($turmasEscola as $turma)
+      $this->copiarTurma($turma, $ultimoAnoLetivo['ano'], $anoDestino);
+  }
+
+  function copiarTurma($turmaOrigem, $anoOrigem, $anoDestino) {
+    $sql = "select 1 from turma where ativo = 1 and visivel = true
+            and ref_ref_cod_escola = $1 and nm_turma = $2 and ref_ref_cod_serie = $3 and ano = $4 limit 1";
+
+    $params = array(
+      $turmaOrigem['ref_ref_cod_escola'],
+      $turmaOrigem['nm_turma'],
+      $turmaOrigem['ref_ref_cod_serie'],
+      $anoDestino
+    );
+
+    $existe = Portabilis_Utils_Database::selectField($sql, $params);
+
+    if ($existe != 1) {
+      $fields = array('ref_usuario_exc', 'ref_usuario_cad', 'ref_ref_cod_serie', 'ref_ref_cod_escola',
+                      'ref_cod_infra_predio_comodo', 'nm_turma', 'sgl_turma', 'max_aluno', 'multiseriada',
+                      'data_cadastro', 'data_exclusao', 'ativo', 'ref_cod_turma_tipo', 'hora_inicial', 'hora_final',
+                      'hora_inicio_intervalo', 'hora_fim_intervalo', 'ref_cod_regente', 'ref_cod_instituicao_regente',
+                      'ref_cod_instituicao',  'ref_cod_curso', 'ref_ref_cod_serie_mult', 'ref_ref_cod_escola_mult',
+                      'visivel', 'turma_turno_id', 'tipo_boletim', 'ano');
+
+      $turmaDestino = new clsPmieducarTurma();
+
+      foreach ($fields as $fieldName)
+        $turmaDestino->$fieldName = $turmaOrigem[$fieldName];
+
+      $turmaDestino->ano = $anoDestino;
+      $turmaDestinoId    = $turmaDestino->cadastra();
+
+      $this->copiarComponenteCurricularTurma($turmaOrigem['cod_turma'], $turmaDestinoId);
+      $this->copiarModulosTurma($turmaOrigem['cod_turma'], $turmaDestinoId, $anoOrigem, $anoDestino);
+      $this->copiarDiasSemanaTurma($turmaOrigem['cod_turma'], $turmaDestinoId);
+    }
+  }
+
+  function copiarComponenteCurricularTurma($turmaOrigemId, $turmaDestinoId) {
+    $dataMapper             = new ComponenteCurricular_Model_TurmaDataMapper();
+    $componentesTurmaOrigem = $dataMapper->findAll(array(), array('turma' => $turmaOrigemId));
+
+    foreach ($componentesTurmaOrigem as $componenteTurmaOrigem) {
+      $data = array(
+        'componenteCurricular' => $componenteTurmaOrigem->get('componenteCurricular'),
+        'escola'               => $componenteTurmaOrigem->get('escola'),
+        'cargaHoraria'         => $componenteTurmaOrigem->get('cargaHoraria'),
+        'turma'                => $turmaDestinoId,
+
+        // est√° sendo mantido o mesmo ano_escolar_id, uma vez que n√£o foi
+        // foi encontrado de onde o valor deste campo √© obtido.
+        'anoEscolar'           => $componenteTurmaOrigem->get('anoEscolar')
+      );
+
+      $componenteTurmaDestino = $dataMapper->createNewEntityInstance($data);
+      $dataMapper->save($componenteTurmaDestino);
+    }
+  }
+
+  function copiarModulosTurma($turmaOrigemId, $turmaDestinoId, $anoOrigem, $anoDestino) {
+    $modulosTurmaOrigem = new clsPmieducarTurmaModulo();
+    $modulosTurmaOrigem = $modulosTurmaOrigem->lista($turmaOrigemId);
+
+    foreach ($modulosTurmaOrigem as $moduloOrigem) {
+      $moduloDestino = new clsPmieducarTurmaModulo();
+
+      $moduloDestino->ref_cod_modulo = $moduloOrigem['ref_cod_modulo'];
+      $moduloDestino->sequencial     = $moduloOrigem['sequencial'];
+      $moduloDestino->ref_cod_turma  = $turmaDestinoId;
+
+      $moduloDestino->data_inicio    = str_replace(
+        $anoOrigem, $anoDestino, $moduloOrigem['data_inicio']
+      );
+
+      $moduloDestino->data_fim       = str_replace(
+        $anoOrigem, $anoDestino, $moduloOrigem['data_fim']
+      );
+
+      $moduloDestino->cadastra();
+    }
+  }
+
+  function copiarDiasSemanaTurma($turmaOrigemId, $turmaDestinoId) {
+    $diasSemanaTurmaOrigem = new clsPmieducarTurmaDiaSemana();
+    $diasSemanaTurmaOrigem = $diasSemanaTurmaOrigem->lista(null, $turmaOrigemId);
+
+    $fields = array('dia_semana', 'hora_inicial', 'hora_final');
+
+    foreach ($diasSemanaTurmaOrigem as $diaSemanaOrigem) {
+      $diaSemanaDestino = new clsPmieducarTurmaDiaSemana();
+
+      foreach ($fields as $fieldName)
+        $diaSemanaDestino->$fieldName = $diaSemanaOrigem[$fieldName];
+
+      $diaSemanaDestino->ref_cod_turma = $turmaDestinoId;
+      $diaSemanaDestino->cadastra();
+    }
+  }
 }
 
-// Instancia objeto de p·gina
+// Instancia objeto de p√°gina
 $pagina = new clsIndexBase();
 
-// Instancia objeto de conte˙do
+// Instancia objeto de conte√∫do
 $miolo = new indice();
 
-// Atribui o conte˙do ‡  p·gina
+// Atribui o conte√∫do √†  p√°gina
 $pagina->addForm($miolo);
 
-// Gera o cÛdigo HTML
+// Gera o c√≥digo HTML
 $pagina->MakeAll();
 ?>
 <script type="text/javascript">
 /**
- * Realiza validaÁ„o client-side do formul·rio.
+ * Realiza valida√ß√£o client-side do forComponenteCurricular_Model_TurmaDataMappermul√°rio.
  */
 function incluir()
 {
@@ -462,13 +620,13 @@ function incluir()
   endDate   = document.getElementById('data_fim').value.split('/');
 
   if ('' === document.getElementById('ref_cod_modulo').value) {
-    alert('… necess·rio selecionar um "mÛdulo".');
+    alert('√â necess√°rio selecionar um "m√≥dulo".');
     return false;
   }
 
   if (!phpjs.checkdate(startDate[1], startDate[0], startDate[2])) {
     document.getElementById('data_inicio').className = 'formdestaque';
-    alert('Preencha o campo "Data InÌcio" corretamente!');
+    alert('Preencha o campo "Data In√≠cio" corretamente!');
     document.getElementById('data_inicio').focus();
     return false;
   }
@@ -484,7 +642,7 @@ function incluir()
   endDate   = new Date(parseInt(endDate[2], 10), parseInt(endDate[1], 10) - 1, parseInt(endDate[0], 10));
 
   if (endDate < startDate) {
-    alert('"Data InÌcio" n„o pode ser posterior a "Data Fim".');
+    alert('"Data In√≠cio" n√£o pode ser posterior a "Data Fim".');
     return false;
   }
 
@@ -492,4 +650,8 @@ function incluir()
   document.getElementById('tipoacao').value = '';
   acao();
 }
+
+// Fixup para erro "Refused to execute a JavaScript script. Source code of script found within request."
+// que ocorre no navegador chrome.
+document.getElementById('add_module').onclick = incluir;
 </script>

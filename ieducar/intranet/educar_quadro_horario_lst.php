@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+ * com este programa; se n√£o, escreva para a Free Software Foundation, Inc., no
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
  * @author    Adriano Erik Weiguert Nagasava <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Arquivo disponÌvel desde a vers„o 1.0.0
+ * @since     Arquivo dispon√≠vel desde a vers√£o 1.0.0
  * @version   $Id$
  */
 
@@ -33,6 +33,7 @@ require_once 'include/clsListagem.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
 require_once 'ComponenteCurricular/Model/ComponenteDataMapper.php';
+require_once 'include/localizacaoSistema.php';
 
 /**
  * clsIndexBase class.
@@ -41,15 +42,16 @@ require_once 'ComponenteCurricular/Model/ComponenteDataMapper.php';
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class clsIndexBase extends clsBase
 {
   function Formular()
   {
-    $this->SetTitulo($this->_instituicao . ' i-Educar - Quadro de Hor·rio');
+    $this->SetTitulo($this->_instituicao . ' i-Educar - Quadro de Hor√°rio');
     $this->processoAp = "641";
+    $this->addEstilo('localizacaoSistema');
   }
 }
 
@@ -60,7 +62,7 @@ class clsIndexBase extends clsBase
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class indice extends clsConfig
@@ -99,7 +101,7 @@ class indice extends clsConfig
           <tbody>
             <tr>
               <td colspan="2" valig="center" height="50">
-                <center class="formdktd">Usu·rio sem permiss„o para acessar esta p·gina</center>
+                <center class="formdktd">Usu√°rio sem permiss√£o para acessar esta p√°gina</center>
               </td>
             </tr>
           </tbody>
@@ -107,6 +109,27 @@ class indice extends clsConfig
 
       return $retorno;
     }
+
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         "educar_index.php"                  => "i-Educar - Escola",
+         ""                                  => "Listagem de quadro de hor&aacute;rios"
+    ));
+    $this->locale = $localizacao->montar();    
+
+
+    if ($this->locale){
+
+      $retorno .=  "
+        <table class='tablelistagem' width='100%' border='0'  cellpadding='0' cellspacing='0'>";
+
+      $retorno .=  "<tr height='10px'>
+                      <td class='fundoLocalizacao' colspan='5'>{$this->locale}</td>
+                    </tr>";
+
+      $retorno .= "</table>";
+    }    
 
     $retorno .= '
       <table width="100%" cellspacing="1" cellpadding="2" border="0" class="tablelistagem">
@@ -180,7 +203,7 @@ class indice extends clsConfig
 
                 $det_servidor = array_shift($obj_servidor->lista(
                   $registro['ref_servidor'], NULL, NULL, NULL, NULL, NULL, NULL,
-                  NULL, NULL, NULL, NULL,†NULL, NULL, NULL, NULL, NULL, TRUE));
+                  NULL, NULL, NULL, NULL,¬†NULL, NULL, NULL, NULL, NULL, TRUE));
 
                 $det_servidor['nome'] = array_shift(explode(' ',$det_servidor['nome']));
 
@@ -235,16 +258,16 @@ class indice extends clsConfig
   }
 }
 
-// Instancia objeto de p·gina
+// Instancia objeto de p√°gina
 $pagina = new clsIndexBase();
 
-// Instancia objeto de conte˙do
+// Instancia objeto de conte√∫do
 $miolo = new indice();
 
-// Atribui o conte˙do ‡† p·gina
+// Atribui o conte√∫do √†¬† p√°gina
 $pagina->addForm($miolo);
 
-// Gera o cÛdigo HTML
+// Gera o c√≥digo HTML
 $pagina->MakeAll();
 ?>
 <script type="text/javascript">
@@ -272,7 +295,7 @@ campoInstituicao.onchange = function()
 
   campoTurma.length = 1;
   campoTurma.disabled = true;
-  campoTurma.options[0].text = 'Selecione uma SÈrie antes';
+  campoTurma.options[0].text = 'Selecione uma S√©rie antes';
 
   var xml_escola = new ajax(getEscola);
   xml_escola.envia('educar_escola_xml2.php?ins=' + campoInstituicao_);
@@ -292,7 +315,7 @@ campoEscola.onchange = function()
 
   campoTurma.length = 1;
   campoTurma.disabled = true;
-  campoTurma.options[0].text = 'Selecione uma sÈrie antes';
+  campoTurma.options[0].text = 'Selecione uma s√©rie antes';
 
   var xml_curso = new ajax(getCurso);
   xml_curso.envia('educar_curso_xml.php?esc=' + campoEscola_);
@@ -305,11 +328,11 @@ campoCurso.onchange = function()
 
   campoSerie.length = 1;
   campoSerie.disabled = true;
-  campoSerie.options[0].text = 'Carregando sÈrie';
+  campoSerie.options[0].text = 'Carregando s√©rie';
 
   campoTurma.length = 1;
   campoTurma.disabled = true;
-  campoTurma.options[0].text = 'Selecione uma SÈrie antes';
+  campoTurma.options[0].text = 'Selecione uma S√©rie antes';
 
   var xml_serie = ajax(getSerie);
   xml_serie.envia('educar_escola_curso_serie_xml.php?esc=' + campoEscola_ + '&cur=' + campoCurso_);

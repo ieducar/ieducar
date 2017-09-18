@@ -1,33 +1,35 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
 	* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-require_once ("include/clsBase.inc.php");
-require_once ("include/clsListagem.inc.php");
-require_once ("include/clsBanco.inc.php");
-require_once( "include/pmieducar/geral.inc.php" );
+require_once 'include/clsBase.inc.php';
+require_once 'include/clsListagem.inc.php';
+require_once 'include/clsBanco.inc.php';
+require_once 'include/pmieducar/geral.inc.php';
+require_once 'Educacenso/Model/AlunoDataMapper.php';
+require_once 'include/localizacaoSistema.php';
 
 class clsIndexBase extends clsBase
 {
@@ -35,7 +37,8 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Aluno" );
 		$this->processoAp = "578";
-	}
+                $this->addEstilo( "localizacaoSistema" );
+        }
 }
 
 class indice extends clsListagem
@@ -85,11 +88,11 @@ class indice extends clsListagem
 	var $inativado;
 	var $nome_responsavel;
 	var $cpf_responsavel;
-	
+
 	var $nome_pai;
 	var $nome_mae;
 	var $data_nascimento;
-	
+
 	function Gerar()
 	{
 		@session_start();
@@ -101,18 +104,19 @@ class indice extends clsListagem
 		foreach( $_GET AS $var => $val ) // passa todos os valores obtidos no GET para atributos do objeto
 			$this->$var = ( $val === "" ) ? null: $val;
 
-		$this->addBanner( "imagens/nvp_top_intranet.jpg", "imagens/nvp_vert_intranet.jpg", "Intranet" );
+		
 
-		$this->campoNumero("cod_aluno","C&oacute;digo Aluno",$this->cod_aluno,20,255,false);
-		$this->campoTexto("nome_aluno","Nome do aluno",$this->nome_aluno,50,255,false);
-//		if ($this->pessoa_logada == 184580) {
-			$this->campoData("data_nascimento", "Data de Nascimento", $this->data_nascimento);
-			$this->campoTexto("nome_pai", "Nome do Pai", $this->nome_pai, 50, 255);
-			$this->campoTexto("nome_mae", "Nome da Mãe", $this->nome_mae, 50, 255);
-			$this->campoTexto("nome_responsavel", "Nome do Responsável", $this->nome_responsavel, 50, 255);
-//		}
+		$this->campoNumero("cod_aluno","C&oacute;digo Aluno",$this->cod_aluno,20,9,false);
+		$this->campoNumero("cod_inep","C&oacute;digo INEP",$this->cod_inep,20,12,false);
+		$this->campoTexto("nome_aluno","Nome do aluno", $this->nome_aluno,50,255,false);
+		$this->campoData("data_nascimento", "Data de Nascimento", $this->data_nascimento);
+		$this->campoTexto("nome_pai", "Nome do Pai", $this->nome_pai, 50, 255);
+		$this->campoTexto("nome_mae", "Nome da MÃ£e", $this->nome_mae, 50, 255);
+		$this->campoTexto("nome_responsavel", "Nome do ResponsÃ¡vel", $this->nome_responsavel, 50, 255);
 
-		$obj_permissoes = new clsPermissoes();
+		
+                
+                $obj_permissoes = new clsPermissoes();
 		$cod_escola = $obj_permissoes->getEscola( $this->pessoa_logada );
 		if ($cod_escola)
 		{
@@ -131,7 +135,9 @@ class indice extends clsListagem
 
 		$this->addCabecalhos( array(
 			"C&oacute;digo Aluno",
+                        "CÃ³digo INEP",
 			"Nome do Aluno",
+			"Nome da MÃ£e",
 			"Nome do Respons&aacute;vel",
 			"CPF Respons&aacute;vel",
 		) );
@@ -140,196 +146,116 @@ class indice extends clsListagem
 		$this->limite = 20;
 		$this->offset = ( $_GET["pagina_{$this->nome}"] ) ? $_GET["pagina_{$this->nome}"]*$this->limite-$this->limite: 0;
 
-		$obj_aluno = new clsPmieducarAluno();
-//		$obj_aluno->setOrderby( "cod_aluno DESC" );
-		$obj_aluno->setLimite( $this->limite, $this->offset );
+		$aluno = new clsPmieducarAluno();
+		$aluno->setLimite( $this->limite, $this->offset );
 
-		/*$lista = $obj_aluno->lista(
-					$this->cod_aluno,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					1,
-					null,
-					$this->nome_aluno,
-					$this->nome_responsavel,
-					idFederal2int($this->cpf_responsavel),
-					null,
-					$this->nome_pai,
-					$this->nome_mae,
-					$ref_cod_escola
-				);*/
-//		if ($this->pessoa_logada == 184580) {
-			$lista = $obj_aluno->lista2(
-						$this->cod_aluno,
-						null,
-						null,
-						null,
-						null,
-						null,
-						null,
-						null,
-						null,
-						null,
-						1,
-						null,
-						$this->nome_aluno,
-						null,
-						idFederal2int($this->cpf_responsavel),
-						null,
-						null,
-						null,
-						$ref_cod_escola,
-						null,
-						$this->data_nascimento,
-						$this->nome_pai,
-						$this->nome_mae,
-						$this->nome_responsavel
-					);
-		/*} else {
-			$lista = $obj_aluno->lista(
-					$this->cod_aluno,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					1,
-					null,
-					$this->nome_aluno,
-					null,
-					idFederal2int($this->cpf_responsavel),
-					null,
-					null,
-					null,
-					$ref_cod_escola
-				);
-		}*/
-		
-		$total = $obj_aluno->_total;
+		$alunos = $aluno->lista2(
+			$this->cod_aluno,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			1,
+			null,
+			$this->nome_aluno,
+			null,
+			idFederal2int($this->cpf_responsavel),
+			null,
+			null,
+			null,
+			$ref_cod_escola,
+			null,
+			$this->data_nascimento,
+			$this->nome_pai,
+			$this->nome_mae,
+			$this->nome_responsavel,
+                        $this->cod_inep
+		);
 
-		// monta a lista
-		if( is_array( $lista ) && count( $lista ) ) 
-		{
-			foreach ( $lista AS $registro )
-			{
+		$total = $aluno->_total;
 
-				$registro["nome_responsavel"] = null;
-				$det_fisica_aluno = null;
+		foreach ( $alunos AS $registro ) {
+	    $alunoInepId      = $this->tryLoadAlunoInepId($registro["cod_aluno"]);
+	    $nomeAluno        = strtoupper($registro["nome_aluno"]);
+	    $nomeMae          = strtoupper($this->loadNomeMae($registro));
 
-				if($registro['tipo_responsavel'] == 'p'  || (!$registro["nome_responsavel"] && $registro['tipo_responsavel'] == null))
-				{
-					$obj_fisica= new clsFisica($registro["ref_idpes"]);
-					$det_fisica_aluno = $obj_fisica->detalhe();
-					if($det_fisica_aluno["idpes_pai"] )
-					{
-						$obj_ref_idpes = new clsPessoa_( $det_fisica_aluno["idpes_pai"] );
-						$det_ref_idpes = $obj_ref_idpes->detalhe();
-						$obj_fisica= new clsFisica($det_fisica_aluno["idpes_pai"]);
-						$det_fisica = $obj_fisica->detalhe();
-						$registro["nome_responsavel"] = $det_ref_idpes['nome'];
+	    // responsavel
+			$aluno->cod_aluno = $registro["cod_aluno"];
+	    $responsavel      = $aluno->getResponsavelAluno();
+	    $nomeResponsavel  = strtoupper($responsavel["nome_responsavel"]);
 
-						if( $det_fisica["cpf"] )
-							$registro["cpf_responsavel"] = int2CPF($det_fisica["cpf"]);
-					}
-
-				}
-
-				if($registro['tipo_responsavel'] == 'm' || ($registro["nome_responsavel"] == null && $registro['tipo_responsavel'] == null))
-				{
-					if(!$det_fisica_aluno)
-					{
-						$obj_fisica= new clsFisica($registro["ref_idpes"]);
-						$det_fisica_aluno = $obj_fisica->detalhe();
-					}
-
-					if($det_fisica_aluno["idpes_mae"] )
-					{
-						$obj_ref_idpes = new clsPessoa_( $det_fisica_aluno["idpes_mae"] );
-						$det_ref_idpes = $obj_ref_idpes->detalhe();
-						$obj_fisica= new clsFisica($det_fisica_aluno["idpes_mae"]);
-						$det_fisica = $obj_fisica->detalhe();
-						$registro["nome_responsavel"] = $det_ref_idpes["nome"];
-
-						if($det_fisica["cpf"])
-							$registro["cpf_responsavel"] = int2CPF($det_fisica["cpf"]);
-					}
-				}
-
-				if($registro['tipo_responsavel'] == 'r' || ($registro["nome_responsavel"] == null && $registro['tipo_responsavel'] == null))
-				{
-					if(!$det_fisica_aluno)
-					{
-						$obj_fisica= new clsFisica($registro["ref_idpes"]);
-						$det_fisica_aluno = $obj_fisica->detalhe();
-					}
-
-					if( $det_fisica_aluno["idpes_responsavel"] )
-					{
-						$obj_ref_idpes = new clsPessoa_( $det_fisica_aluno["idpes_responsavel"] );
-						$obj_fisica = new clsFisica( $det_fisica_aluno["idpes_responsavel"] );
-						$det_ref_idpes = $obj_ref_idpes->detalhe();
-						$det_fisica = $obj_fisica->detalhe();
-						$registro["nome_responsavel"] = $det_ref_idpes["nome"];
-						if($det_fisica["cpf"])
-							$registro["cpf_responsavel"] = int2CPF($det_fisica["cpf"]);
-					}
-				}
-
-				if(!$registro["nome_responsavel"])
-				{
-					if($registro['tipo_responsavel'] != null)
-					{
-						if($registro['tipo_responsavel'] == 'p')
-							$registro["nome_responsavel"] = $registro["nm_pai"];
-						else
-							$registro["nome_responsavel"] = $registro["nm_mae"];
-					}
-					else
-					{
-						if($registro["nm_pai"])
-							$registro["nome_responsavel"] = $registro["nm_pai"];
-						else
-							$registro["nome_responsavel"] = $registro["nm_mae"];
-					}
-				}
-
-
-				$this->addLinhas( array(
-					"<a href=\"educar_aluno_det.php?cod_aluno={$registro["cod_aluno"]}\">{$registro["cod_aluno"]}</a>",
-					"<a href=\"educar_aluno_det.php?cod_aluno={$registro["cod_aluno"]}\">{$registro["nome_aluno"]}</a>",
-					"<a href=\"educar_aluno_det.php?cod_aluno={$registro["cod_aluno"]}\">{$registro["nome_responsavel"]}</a>",
-					"<a href=\"educar_aluno_det.php?cod_aluno={$registro["cod_aluno"]}\">{$registro["cpf_responsavel"]}</a>"
-				) );
-			}
+			$this->addLinhas( array(
+				"<a href=\"educar_aluno_det.php?cod_aluno={$registro["cod_aluno"]}\">{$registro["cod_aluno"]}</a>",
+				"<a href=\"educar_aluno_det.php?cod_aluno={$registro["cod_aluno"]}\">{$alunoInepId}</a>",
+				"<a href=\"educar_aluno_det.php?cod_aluno={$registro["cod_aluno"]}\">{$nomeAluno}</a>",
+				"<a href=\"educar_aluno_det.php?cod_aluno={$registro["cod_aluno"]}\">{$nomeMae}</a>",
+				"<a href=\"educar_aluno_det.php?cod_aluno={$registro["cod_aluno"]}\">{$nomeResponsavel}</a>",
+				"<a href=\"educar_aluno_det.php?cod_aluno={$registro["cod_aluno"]}\">{$responsavel["cpf_responsavel"]}</a>"
+			) );
 		}
-		
+
 		$this->addPaginador2( "educar_aluno_lst.php", $total, $_GET, $this->nome, $this->limite );
 
 
 		//** Verificacao de permissao para cadastro
 		if($obj_permissoes->permissao_cadastra(578, $this->pessoa_logada,7))
 		{
-			$this->acao = "go(\"educar_aluno_cad.php\")";
+			$this->acao = "go(\"/module/Cadastro/aluno\")";
 			$this->nome_acao = "Novo";
 
-			$this->array_botao = array("Ficha do Aluno (em branco)");
-			$this->array_botao_script = array( "showExpansivelImprimir(400, 200,  \"educar_relatorio_aluno_dados.php\",\"\", \"Relatório i-Educar\" )" );
+			/*$this->array_botao = array("Ficha do Aluno (em branco)");
+			$this->array_botao_script = array( "showExpansivelImprimir(400, 200,  \"educar_relatorio_aluno_dados.php\",\"\", \"RelatÃ³rio i-Educar\" )" );*/
 		}
 		//**
 		$this->largura = "100%";
+
+	    $localizacao = new LocalizacaoSistema();
+	    $localizacao->entradaCaminhos( array(
+	         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+	         "educar_index.php"                  => "i-Educar - Escola",
+	         ""                                  => "Listagem de alunos"
+	    ));
+	    $this->enviaLocalizacao($localizacao->montar());
 	}
-}
+
+	protected function loadNomeMae($aluno) {
+		$nome        = $aluno['nm_mae'];
+
+  	$pessoaAluno = new clsFisica($aluno['ref_idpes']);
+  	$pessoaAluno = $pessoaAluno->detalhe();
+
+  	if ($pessoaAluno['idpes_mae']) {
+    	$pessoaMae   = new clsPessoaFj($pessoaAluno['idpes_mae']);
+    	$pessoaMae   = $pessoaMae->detalhe();
+    	$nome        = $pessoaMae['nome'];
+         }
+         
+    return $nome;
+	}
+
+	protected function tryLoadAlunoInepId($alunoId) {
+    $dataMapper  = new Educacenso_Model_AlunoDataMapper();
+
+    try {
+      $alunoInep = $dataMapper->find(array('cod_aluno' => $alunoId));
+	    $id        = $alunoInep->alunoInep;
+    }
+    catch(Exception $e) {
+    	$id = '';
+    }
+                
+    return $id;
+      
+    }
+
+        
+    }
+      
 // cria uma extensao da classe base
 $pagina = new clsIndexBase();
 // cria o conteudo

@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -36,6 +36,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Acervo Assunto" );
 		$this->processoAp = "592";
+		$this->addEstilo('localizacaoSistema');
 	}
 }
 
@@ -64,17 +65,80 @@ class indice extends clsDetalhe
 		session_write_close();
 
 		$this->titulo = "Acervo Assunto - Detalhe";
-		$this->addBanner( "imagens/nvp_top_intranet.jpg", "imagens/nvp_vert_intranet.jpg", "Intranet" );
+		
 
 		$this->cod_acervo_assunto=$_GET["cod_acervo_assunto"];
 
 		$tmp_obj = new clsPmieducarAcervoAssunto( $this->cod_acervo_assunto );
 		$registro = $tmp_obj->detalhe();
+                
+                if( class_exists( "clsPmieducarBiblioteca" ) )
+		{
+			$obj_ref_cod_biblioteca = new clsPmieducarBiblioteca( $registro["ref_cod_biblioteca"] );
+			$det_ref_cod_biblioteca = $obj_ref_cod_biblioteca->detalhe();
+			$registro["ref_cod_biblioteca"] = $det_ref_cod_biblioteca["nm_biblioteca"];
+			if( class_exists( "clsPmieducarInstituicao" ) )
+			{
+				$registro["ref_cod_instituicao"] = $det_ref_cod_biblioteca["ref_cod_instituicao"];
+				$obj_ref_cod_instituicao = new clsPmieducarInstituicao( $registro["ref_cod_instituicao"] );
+				$det_ref_cod_instituicao = $obj_ref_cod_instituicao->detalhe();
+				$registro["ref_cod_instituicao"] = $det_ref_cod_instituicao["nm_instituicao"];
+			}
+			else
+			{
+				$registro["ref_cod_instituicao"] = "Erro na geracao";
+				echo "<!--\nErro\nClasse nao existente: clsPmieducarInstituicao\n-->";
+			}
+                }
+                
+               if( class_exists( "clsPmieducarEscola" ) )
+	       {
+				$registro["ref_cod_escola"] = $det_ref_cod_biblioteca["ref_cod_escola"];
+				$obj_ref_cod_escola = new clsPmieducarEscola( $registro["ref_cod_escola"] );
+				$det_ref_cod_escola = $obj_ref_cod_escola->detalhe();
+				$idpes = $det_ref_cod_escola["ref_idpes"];
+			if ($idpes)
+			{
+					$obj_escola = new clsPessoaJuridica( $idpes );
+					$obj_escola_det = $obj_escola->detalhe();
+					$registro["ref_cod_escola"] = $obj_escola_det["fantasia"];
+			}
+			else
+			{
+					$obj_escola = new clsPmieducarEscolaComplemento( $registro["ref_cod_escola"] );
+					$obj_escola_det = $obj_escola->detalhe();
+					$registro["ref_cod_escola"] = $obj_escola_det["nm_escola"];
+			}
+		}
 
+                $obj_permissoes = new clsPermissoes();
+		$nivel_usuario = $obj_permissoes->nivel_acesso($this->pessoa_logada);
+                
 		if( ! $registro )
 		{
 			header( "location: educar_acervo_assunto_lst.php" );
 			die();
+		}
+                
+                if ($nivel_usuario == 1)
+		{
+			if( $registro["ref_cod_instituicao"] )
+			{
+				$this->addDetalhe( array( "Institui&ccedil;&atilde;o", "{$registro["ref_cod_instituicao"]}") );
+			}
+		}
+                
+                if ($nivel_usuario == 1 || $nivel_usuario == 2)
+		{
+			if( $registro["ref_cod_escola"] )
+			{
+				$this->addDetalhe( array( "Escola", "{$registro["ref_cod_escola"]}") );
+			}
+		}
+
+                   if( $registro["ref_cod_biblioteca"] )
+		{
+				$this->addDetalhe( array( "Biblioteca", "{$registro["ref_cod_biblioteca"]}") );
 		}
 
 		if( $registro["nm_assunto"] )
@@ -95,6 +159,14 @@ class indice extends clsDetalhe
 
 		$this->url_cancelar = "educar_acervo_assunto_lst.php";
 		$this->largura = "100%";
+
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         "educar_biblioteca_index.php"                  => "i-Educar - Biblioteca",
+         ""        => "Listagem de assuntos"             
+    ));
+    $this->enviaLocalizacao($localizacao->montar());		
 	}
 }
 

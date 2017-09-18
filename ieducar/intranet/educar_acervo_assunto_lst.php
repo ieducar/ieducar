@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -28,6 +28,7 @@ require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/pmieducar/geral.inc.php" );
+require_once ("include/localizacaoSistema.php");
 
 class clsIndexBase extends clsBase
 {
@@ -35,6 +36,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Acervo Assunto" );
 		$this->processoAp = "592";
+		$this->addEstilo('localizacaoSistema');
 	}
 }
 
@@ -76,7 +78,6 @@ class indice extends clsListagem
 	var $data_cadastro;
 	var $data_exclusao;
 	var $ativo;
-	var $ref_cod_biblioteca;
 
 	function Gerar()
 	{
@@ -89,21 +90,16 @@ class indice extends clsListagem
 		foreach( $_GET AS $var => $val ) // passa todos os valores obtidos no GET para atributos do objeto
 			$this->$var = ( $val === "" ) ? null: $val;
 
-		$this->addBanner( "imagens/nvp_top_intranet.jpg", "imagens/nvp_vert_intranet.jpg", "Intranet" );
+		
 
 		$this->addCabecalhos( array(
 			"Assunto",
-			"Biblioteca"
+			"DescriÃ§Ã£o"
 		) );
-
-		// Filtros de Foreign Keys
-		$get_escola = true;
-		$get_biblioteca = true;
-		$get_cabecalho = "lista_busca";
-		include("include/pmieducar/educar_campo_lista.php");
 
 		// outros Filtros
 		$this->campoTexto( "nm_assunto", "Assunto", $this->nm_assunto, 30, 255, false );
+		$this->campoTexto( "descricao", "DescriÃ§Ã£o", $this->descricao, 30, 255, false );
 
 		// Paginador
 		$this->limite = 20;
@@ -124,13 +120,12 @@ class indice extends clsListagem
 			null,
 			null,
 			$this->nm_assunto,
+			$this->descricao,
 			null,
 			null,
 			null,
 			null,
-			null,
-			1,
-			$this->ref_cod_biblioteca
+			1
 		);
 
 		$total = $obj_acervo_assunto->_total;
@@ -140,12 +135,9 @@ class indice extends clsListagem
 		{
 			foreach ( $lista AS $registro )
 			{
-				$obj_biblioteca = new clsPmieducarBiblioteca($registro['ref_cod_biblioteca']);
-				$det_biblioteca = $obj_biblioteca->detalhe();
-				$registro['ref_cod_biblioteca'] = $det_biblioteca['nm_biblioteca'];
 				$this->addLinhas( array(
 					"<a href=\"educar_acervo_assunto_det.php?cod_acervo_assunto={$registro["cod_acervo_assunto"]}\">{$registro["nm_assunto"]}</a>",
-					"<a href=\"educar_acervo_assunto_det.php?cod_acervo_assunto={$registro["cod_acervo_assunto"]}\">{$registro['ref_cod_biblioteca']}</a>"
+					"<a href=\"educar_acervo_assunto_det.php?cod_acervo_assunto={$registro["cod_acervo_assunto"]}\">{$registro['descricao']}</a>"
 				) );
 			}
 		}
@@ -158,6 +150,14 @@ class indice extends clsListagem
 		}
 
 		$this->largura = "100%";
+
+	    $localizacao = new LocalizacaoSistema();
+	    $localizacao->entradaCaminhos( array(
+	         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+	         "educar_biblioteca_index.php"                  => "i-Educar - Biblioteca",
+	         ""        => "Listagem de assuntos"
+	    ));
+	    $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 // cria uma extensao da classe base

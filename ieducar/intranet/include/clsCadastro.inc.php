@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+ * com este programa; se n√£o, escreva para a Free Software Foundation, Inc., no
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Include
- * @since     Arquivo disponÌvel desde a vers„o 1.0.0
+ * @since     Arquivo dispon√≠vel desde a vers√£o 1.0.0
  * @version   $Id$
  */
 
@@ -34,14 +34,20 @@ if (class_exists('clsPmiajudaPagina')) {
   require_once 'include/pmiajuda/clsPmiajudaPagina.inc.php';
 }
 
+require_once 'Portabilis/View/Helper/Application.php';
+require_once 'Portabilis/View/Helper/Inputs.php';
+require_once 'Portabilis/Utils/User.php';
+
+require_once 'include/localizacaoSistema.php';
+
 /**
  * clsCadastro class.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Include
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class clsCadastro extends clsCampos
@@ -80,6 +86,7 @@ class clsCadastro extends clsCampos
   var $nome_url_alt;
   var $url_alt;
   var $help_images = FALSE;
+  var $locale = null;
 
   var $array_botao;
   var $array_botao_url;
@@ -112,6 +119,11 @@ class clsCadastro extends clsCampos
   {
     parent::__construct();
     $this->tipoacao = @$_POST['tipoacao'];
+  }
+
+  function enviaLocalizacao($localizao){
+    if($localizao)
+      $this->locale = $localizao;
   }
 
   function PreCadastrar()
@@ -217,6 +229,14 @@ class clsCadastro extends clsCampos
     return FALSE;
   }
 
+  protected function flashMessage() {
+    if (empty($this->mensagem) && isset($_GET['mensagem']) && $_GET['mensagem'] == 'sucesso') {
+      $this->mensagem = 'Registro incluido com sucesso!';
+    }
+
+    return empty($this->mensagem) ? "" : "<p class='form_erro error'>$this->mensagem</p>";
+  }
+
   function RenderHTML()
   {
     $this->_preRender();
@@ -258,14 +278,26 @@ class clsCadastro extends clsCampos
       }
     }
 
+    if ($this->locale){
+
+      $retorno .=  "
+        <table class='tableDetalhe' $width border='0'  cellpadding='0' cellspacing='0'>";
+
+      $retorno .=  "<tr height='10px'>
+                      <td class='fundoLocalizacao' colspan='2'>{$this->locale}</td>
+                    </tr>";
+
+      $retorno .= "</table>";
+    }
+
     $retorno .= "<center>\n<table class='tablecadastro' $width border='0' cellpadding='2' cellspacing='0'>\n";
-    $titulo = "<b>{$this->tipoacao} {$this->titulo_aplication}</b>";
+    $titulo = $this->titulo ? $this->titulo : "<b>{$this->tipoacao} {$this->titulo_aplication}</b>";
 
     /**
      * Adiciona os botoes de help para a pagina atual
      */
     $url = parse_url($_SERVER['REQUEST_URI']);
-    $url = ereg_replace('^/', '', $url['path']);
+    $url = preg_match('^/', '', $url['path']);
     if (strpos($url, '_det.php') !== FALSE) {
       $tipo = 'det';
     }
@@ -278,10 +310,9 @@ class clsCadastro extends clsCampos
     else {
       $tipo = 'cad';
     }
-
     $barra = $titulo;
 
-    // @todo Remover cÛdigo, funcionalidade n„o existente.
+    // @todo Remover c√≥digo, funcionalidade n√£o existente.
     if (class_exists('clsPmiajudaPagina')) {
       $ajudaPagina = new clsPmiajudaPagina();
       $lista = $ajudaPagina->lista(null,null,$url);
@@ -290,9 +321,9 @@ class clsCadastro extends clsCampos
         <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">
           <tr>
           <script type=\"text/javascript\">document.help_page_index = 0;</script>
-          <td width=\"20\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"Bot„o de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta p·gina\"></a></td>
+          <td width=\"20\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"Bot√£o de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta p√°gina\"></a></td>
           <td>{$titulo}</td>
-          <td align=\"right\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"Bot„o de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta p·gina\"></a></td>
+          <td align=\"right\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"Bot√£o de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta p√°gina\"></a></td>
           </tr>
         </table>";
       }
@@ -300,18 +331,10 @@ class clsCadastro extends clsCampos
 
     $retorno .= "<tr><td class='formdktd' colspan='2' height='24'>{$barra}</td></tr>";
 
-    if (empty($this->mensagem)) {
-      $this->mensagem = $_GET['mensagem'];
-      if ($this->mensagem == 'sucesso') {
-        $this->mensagem = 'Registro incluido com sucesso!';
-      }
-      else {
-        $this->mensagem = '';
-      }
-    }
+    $flashMessage = $this->flashMessage();
 
-    if (!empty($this->mensagem)) {
-      $retorno .=  "<tr><td class='formmdtd' colspan='2' height='24'><span class='form_erro'><b>$this->mensagem</b></span></td></tr>";
+    if (! empty($flashMessage)) {
+      $retorno .=  "<tr><td class='formmdtd' colspan='2' height='24'><div id='flash-container'>{$flashMessage}</div></td></tr>";
     }
 
     if (empty($this->campos)) {
@@ -363,7 +386,7 @@ class clsCadastro extends clsCampos
       $nomeCampo = $componente[0];
       $validador = $componente[2];
 
-      if (empty($validador) && $nomeCampo == 'cpf' && ereg("^(tab_add_[0-9])", $nome) !== 1) {
+      if (empty($validador) && $nomeCampo == 'cpf' && preg_match("^(tab_add_[0-9])", $nome) !== 1) {
         $retorno .=
         "if( document.getElementById('$nome').value != \"\")
         {
@@ -382,7 +405,7 @@ class clsCadastro extends clsCampos
       /**
        * Campo tabela
        */
-      if (ereg("^(tab_add_[0-9])", $nome) === 1) {
+      if (preg_match("^(tab_add_[0-9])", $nome) === 1) {
         $nome_campos = $componente['cabecalho'];
         $componente = array_shift($componente);
 
@@ -518,7 +541,7 @@ class clsCadastro extends clsCampos
             $retorno .=  " return false; } ";
           }
           else {
-            //substituito referencia a elementos por padr„o W3C document.getElementById()
+            //substituito referencia a elementos por padr√£o W3C document.getElementById()
             //quando se referenciava um nome de elemento como um array ex: cadastro[aluno]
             //nao funcionava na referencia por nome
             //16-08-2006
@@ -656,6 +679,8 @@ class clsCadastro extends clsCampos
       $retorno .= "<script type=\"text/javascript\">{$this->executa_script}</script>";
     }
 
+    Portabilis_View_Helper_Application::embedJavascriptToFixupFieldsWidth($this);
+
     return $retorno;
   }
 
@@ -684,8 +709,8 @@ class clsCadastro extends clsCampos
   }
 
   /**
-   * Retorna uma lista formatada de erros que possam ter sido lanÁadas pela
-   * integraÁ„o CoreExt_Controller_Page_Interface com CoreExt_DataMapper e
+   * Retorna uma lista formatada de erros que possam ter sido lan√ßadas pela
+   * integra√ß√£o CoreExt_Controller_Page_Interface com CoreExt_DataMapper e
    * CoreExt_Entity.
    *
    * @return string|NULL
@@ -703,7 +728,7 @@ class clsCadastro extends clsCampos
     if ($hasErrors) {
       $htmlError = '
         <div class="form error">
-          <p>Por favor, verifique a lista de erros e corrija as informaÁıes necess·rias no formul·rio.</p>
+          <p>Por favor, verifique a lista de erros e corrija as informa√ß√µes necess√°rias no formul√°rio.</p>
           <ul>%s</ul>
         </div>
         ';
@@ -718,5 +743,17 @@ class clsCadastro extends clsCampos
       return sprintf($htmlError, $errors);
     }
     return NULL;
+  }
+
+
+  protected function inputsHelper() {
+    if (! isset($this->_inputsHelper))
+      $this->_inputsHelper = new Portabilis_View_Helper_Inputs($this);
+
+    return $this->_inputsHelper;
+  }
+
+  protected function currentUserId() {
+    return Portabilis_Utils_User::currentUserId();
   }
 }

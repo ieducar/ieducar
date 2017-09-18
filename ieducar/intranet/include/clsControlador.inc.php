@@ -1,37 +1,40 @@
 <?php
 
 /*
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+ * com este programa; se n√£o, escreva para a Free Software Foundation, Inc., no
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  */
 
 require_once 'include/clsBanco.inc.php';
-
+require_once 'Portabilis/Messenger.php';
+require_once 'Portabilis/Mailer.php';
+require_once 'Portabilis/Utils/User.php';
+require_once 'Portabilis/Utils/ReCaptcha.php';
 
 /**
  * clsControlador class.
  *
- * @author   Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author   Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @license  http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package  Core
- * @since    Classe disponÌvel desde a vers„o 1.0.0
- * @version  $Id$
+ * @since    Classe dispon√≠vel desde a vers√£o 1.0.0
+ * @version  $Id: /ieducar/branches/1.1.0-avaliacao/ieducar/intranet/include/clsControlador.inc.php 662 2009-11-17T18:28:48.404882Z eriksen  $
  */
 class clsControlador
 {
@@ -52,7 +55,12 @@ class clsControlador
    */
   public function clsControlador()
   {
-    @session_set_cookie_params(1200);
+
+    /*
+      Desabilitado esta linha para usar o valor setado no php.ini > session.cookie_lifetime
+      @session_set_cookie_params(200);
+    */
+
     @session_start();
 
     if ('logado' == $_SESSION['itj_controle']) {
@@ -70,7 +78,7 @@ class clsControlador
         $_SESSION['menu_atual'] = $_GET['categoria'];
       }
       else {
-        // Est· apagando vari·vel session com o Ìndice dado por $_GET
+        // Est√° apagando vari√°vel session com o √≠ndice dado por $_GET
         unset($_SESSION['menu_opt'][$_GET['categoria']]);
         if ($_SESSION['menu_atual'] == $_GET['categoria']) {
           unset($_SESSION['menu_atual']);
@@ -84,10 +92,14 @@ class clsControlador
     }
 
     session_write_close();
+
+    $this->_maximoTentativasFalhas = 7;
+    $this->messenger = new Portabilis_Messenger();
   }
 
+
   /**
-   * Retorna TRUE para usu·rio logado
+   * Retorna TRUE para usu√°rio logado
    * @return  boolean
    */
   public function Logado()
@@ -95,193 +107,255 @@ class clsControlador
     return $this->logado;
   }
 
-  /**
-   * Faz o login do usu·rio.
-   * @param  mixed  $acao
-   */
-  public function Logar($acao)
-  {
-    if ($acao)
-    {
-      $login = @$_POST['login'];
-      $senha = md5(@$_POST['senha']);
-      $db    = new clsBanco();
-
-      $db->Consulta("SELECT ref_cod_pessoa_fj FROM funcionario WHERE matricula = '{$login}'");
-      if ($db->ProximoRegistro())
-      {
-        list($idpes) = $db->Tupla();
-
-        // Padr„o: meia hora atr·s
-        $intervalo = date("Y-m-d H:i", time() - (60 * 1 ));
-
-        // Se o ˙ltimo login bem sucedido foi em menos de meia hora, conta somente dali para a frente
-        $db->consulta("SELECT data_hora FROM acesso WHERE cod_pessoa = '{$idpes}' AND data_hora > '{$intervalo}' AND sucesso = 't' ORDER BY data_hora DESC LIMIT 1" );
-        if ($db->Num_Linhas()) {
-          $db->ProximoRegistro();
-          list($intervalo) = $db->Tupla();
-        }
-
-        // Trava usu·rio se tentar login mais de 5 vezes
-        $tentativas = $db->CampoUnico("SELECT COUNT(0) FROM acesso WHERE cod_pessoa = '{$idpes}' AND data_hora > '{$intervalo}' AND sucesso = 'f'" );
-        if ($tentativas > 5)
-        {
-          $hora_ultima_tentativa = $db->CampoUnico("SELECT data_hora FROM acesso WHERE cod_pessoa = '{$idpes}' ORDER BY data_hora DESC LIMIT 1 OFFSET 4" );
-          $hora_ultima_tentativa = explode(".",$hora_ultima_tentativa);
-          $hora_ultima_tentativa = $hora_ultima_tentativa[0];
-
-          $data_libera = date("d/m/Y H:i",
-            strtotime($hora_ultima_tentativa) + (60 * 30));
-
-          die("<html><body></body><script>alert('Houveram mais de 5 tentativas frustradas de acessar a sua conta na ˙ltima meia hora.\\nPor seguranÁa, sua conta ficar· interditada atÈ: {$data_libera}');document.location.href='/intranet';</script></html>");
-        }
-
-        $db->Consulta( "SELECT ref_cod_pessoa_fj, opcao_menu, ativo, tempo_expira_senha, tempo_expira_conta, data_troca_senha, data_reativa_conta, proibido, ref_cod_setor_new, tipo_menu FROM funcionario WHERE ref_cod_pessoa_fj = '{$idpes}' AND senha = '{$senha}'" );
-        if ($db->ProximoRegistro())
-        {
-          list($id_pessoa, $opcaomenu, $ativo, $tempo_senha,
-            $tempo_conta, $data_senha, $data_conta, $proibido,
-            $setor_new, $tipo_menu) = $db->Tupla();
-
-          if (!$proibido)
-          {
-            if ($ativo)
-            {
-              // Usu·rio ativo, verifica se a conta expirou
-              $expirada = FALSE;
-              if (!empty($tempo_conta) && !empty($data_conta))
-              {
-                if (time() - strtotime($data_conta) > $tempo_conta * 60 * 60 * 24) {
-                  // Conta expirada
-                  $db->Consulta("UPDATE funcionario SET ativo='0' WHERE ref_cod_pessoa_fj = '$id_pessoa'");
-                  die("<html><body></body><script>alert( 'Sua conta na intranet expirou.\nContacte um administrador para reativa-la.' );document.location.href='/intranet';</script></html>");
-                }
-              }
-
-              // Vendo se a senha n„o expirou
-              if (!empty($tempo_senha) && ! empty($data_senha)) {
-                if (time() - strtotime($data_senha) > $tempo_senha * 60 * 60 * 24) {
-                  // Senha expirada, pede que mude a senha
-                  die("<html><body><form id='reenvio' name='reenvio' action='usuario_trocasenha.php' method='POST'><input type='hidden' name='cod_pessoa' value='{$id_pessoa}'></form></body><script>document.getElementById('reenvio').submit();</script></html>");
-                }
-              }
-
-              // Pega o endereÁo IP do host, primeiro com HTTP_X_FORWARDED_FOR (para pegar o IP real
-              // caso o host esteja atr·s de um proxy)
-              if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR'] != '') {
-                // No caso de m˙ltiplos IPs, pega o ˙ltimo da lista
-                $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-                $ip_maquina = trim(array_pop($ip));
-              }
-              else {
-                $ip_maquina = $_SERVER['REMOTE_ADDR'];
-              }
-
-              $sql = "SELECT ip_logado, data_login FROM funcionario WHERE ref_cod_pessoa_fj = {$id_pessoa}";
-              $db2 = new clsBanco();
-              $db2->Consulta($sql);
-              while ($db2->ProximoRegistro())
-              {
-                list($ip_banco, $data_login) = $db2->Tupla();
-                if ($ip_banco)
-                {
-                  if (abs(time() - strftime("now") - strtotime($data_login)) <= 10 * 60
-                    && $ip_banco != $ip_maquina) {
-                    die("<html><body></body><script>alert('Conta j· em uso.\\nTente novamente mais tarde');document.location.href='/intranet';</script></html>");
-                  }
-                  else {
-                    $sql = "UPDATE funcionario SET data_login = NOW() WHERE ref_cod_pessoa_fj = {$id_pessoa}";
-                    $db2->Consulta($sql);
-                  }
-                }
-                else {
-                  $sql = "UPDATE funcionario SET ip_logado = '{$ip_maquina}', data_login = NOW() WHERE ref_cod_pessoa_fj = {$id_pessoa}";
-                  $db2->Consulta($sql);
-                }
-              }
-
-              // Login do usu·rio, grava dados na sess„o
-              @session_start();
-              $_SESSION = array();
-              $_SESSION['itj_controle'] = 'logado';
-              $_SESSION['id_pessoa']    = $id_pessoa;
-              $_SESSION['pessoa_setor'] = $setor_new;
-              $_SESSION['menu_opt']     = unserialize( $opcaomenu );
-              $_SESSION['tipo_menu']    = $tipo_menu;
-              @session_write_close();
-
-              $this->logado = TRUE;
-            }
-            else
-            {
-              if (!empty($tempo_conta) && !empty($data_conta))
-              {
-                if (time() - strtotime( $data_conta ) > $tempo_conta * 60 * 60 * 24) {
-                  $this->erroMsg = "Sua conta expirou. Contacte o administrador para reativ·-la.";
-                  $expirada = 1;
-                }
-                else {
-                  $this->erroMsg = "Sua conta n&atilde;o est&aacute; ativa. Use a op&ccedil;&atilde;o 'Nunca usei a intrenet'.";
-                  $expirada = 0;
-                }
-              }
-            }
-          }
-          else
-          {
-            $this->erroMsg = "Imposs&iacute;vel realizar login.";
-            $this->logado  = FALSE;
-          }
-        }
-        else
-        {
-          if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR'] != '') {
-            // No caso de m˙ltiplos IPs, pega o ˙ltimo da lista
-            $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-            $ip_de_rede = trim(array_pop($ip));
-          }
-
-          $ip = empty($_SERVER['REMOTE_ADDR']) ? 'NULL' : $_SERVER['REMOTE_ADDR'];
-          $ip_de_rede = empty($ip_de_rede) ? 'NULL' : $ip_de_rede;
-
-          $db->Consulta("INSERT INTO acesso (data_hora, ip_externo, ip_interno, cod_pessoa, sucesso) VALUES (now(), '{$ip}', '{$ip_de_rede}',  {$idpes}, 'f')");
-
-          $this->erroMsg = 'Login ou Senha incorretos.';
-          $this->logado  = FALSE;
-        }
-      }
-      else {
-        $this->erroMsg = "Login ou Senha incorretos.";
-        $this->logado  = FALSE;
-      }
-    }
-    else
-    {
-      $arquivo = 'templates/nvp_htmlloginintranet.tpl';
-      $ptrTpl  = fopen($arquivo, "r");
-      $strArquivo = fread($ptrTpl, filesize($arquivo));
-
-      if ($this->erroMsg) {
-        $strArquivo = str_replace( "<!-- #&ERROLOGIN&# -->", $this->erroMsg, $strArquivo );
-      }
-
-      fclose($ptrTpl);
-      die($strArquivo);
-      // @todo
-      #throw new Exception($strArquivo);
-    }
-  }
 
   /**
-   * Executa o login do usu·rio.
+   * Executa o login do usu√°rio.
    */
   public function obriga_Login()
   {
-    if ($_POST['login'] && $_POST['senha']) {
-      $this->logar(TRUE);
+    if (! $this->logado)
+      $validateUserCredentials = false;
+
+    elseif ($_POST['login'] && $_POST['senha'])
+      $validateUserCredentials = true;
+
+    $this->logar($validateUserCredentials);
+  }
+
+
+  // novo metodo login, logica quebrada em metodos menores
+  public function Logar($validateUserCredentials) {
+    if ($validateUserCredentials) {
+      $user = $this->validateUserCredentials($username = @$_POST['login'], $password = md5(@$_POST['senha']));
+
+      if ($this->canStartLoginSession($user)) {
+        $this->startLoginSession($user);
+        return null;
+      }
     }
-    if (!$this->logado) {
-      $this->logar(FALSE);
+
+    $this->renderLoginPage();
+  }
+
+
+  // valida se o usu√°rio e senha informados, existem no banco de dados.
+  protected function validateUserCredentials($username, $password) {
+    if (! $this->validateHumanAccess()) {
+      $msg = "Voc√™ errou a senha muitas vezes, por favor, preencha o campo de " .
+             "confirma√ß√£o visual ou <a class='light decorated' href='/module/Usuario/Rede" .
+             "finirSenha'>redefina sua senha</a>.";
+      $this->messenger->append($msg, "error", false, "error");
+    }
+
+    else {
+      $user = Portabilis_Utils_User::loadUsingCredentials($username, $password);
+
+      if (is_null($user)) {
+        $this->messenger->append("Usu√°rio ou senha incorreta.", "error");
+        $this->incrementTentativasLogin();
+      }
+      else {
+        $this->unsetTentativasLogin();
+        return $user;
+      }
+    }
+
+    return false;
+  }
+
+
+  public function startLoginSession($user, $redirectTo = '') {
+    // unsetting login attempts here, because when the password is recovered the login attempts should be reseted.
+    $this->unsetTentativasLogin();
+
+    @session_start();
+    $_SESSION                 = array();
+    $_SESSION['itj_controle'] = 'logado';
+    $_SESSION['id_pessoa']    = $user['id'];
+    $_SESSION['pessoa_setor'] = $user['ref_cod_setor_new'];
+    $_SESSION['menu_opt']     = unserialize($user['opcao_menu']);
+    $_SESSION['tipo_menu']    = $user['tipo_menu'];
+    @session_write_close();
+
+    Portabilis_Utils_User::logAccessFor($user['id'], $this->getClientIP());
+    Portabilis_Utils_User::destroyStatusTokenFor($user['id'], 'redefinir_senha');
+
+    $this->logado = true;
+    $this->messenger->append("Usu√°rio logado com sucesso.", "success");
+
+    // solicita email para recupera√ß√£o de senha, caso usu√°rio ainda n√£o tenha informado.
+    if (! filter_var($user['email'], FILTER_VALIDATE_EMAIL))
+      header("Location: /module/Usuario/AlterarEmail");
+
+    elseif($user['expired_password'])
+      header("Location: /module/Usuario/AlterarSenha");
+
+    elseif(! empty($redirectTo))
+      header("Location: $redirectTo");
+  }
+
+
+  public function canStartLoginSession($user) {
+    if (! $this->messenger->hasMsgWithType("error")) {
+      $this->checkForDisabledAccount($user);
+      $this->checkForBannedAccount($user);
+      $this->checkForExpiredAccount($user);
+      $this->checkForMultipleAccess($user);
+      // #TODO verificar se conta nunca usada (exibir "Sua conta n&atilde;o est&aacute; ativa. Use a op&ccedil;&atilde;o 'Nunca usei a intrenet'." ?)
+    }
+
+    return ! $this->messenger->hasMsgWithType("error");
+  }
+
+
+  // renderiza o template de login, com as mensagens adicionadas durante valida√ß√µes
+  protected function renderLoginPage() {
+    $this->destroyLoginSession();
+
+    $templateName = 'templates/nvp_htmlloginintranet.tpl';
+    $templateFile = fopen($templateName, "r");
+    $templateText = fread($templateFile, filesize($templateName));
+    $templateText = str_replace( "<!-- #&ERROLOGIN&# -->", $this->messenger->toHtml('p'), $templateText);
+
+    $requiresHumanAccessValidation = isset($_SESSION['tentativas_login_falhas']) &&
+                                     is_numeric($_SESSION['tentativas_login_falhas']) &&
+                                     $_SESSION['tentativas_login_falhas'] >= $this->_maximoTentativasFalhas;
+
+    if ($requiresHumanAccessValidation)
+      $templateText = str_replace( "<!-- #&RECAPTCHA&# -->", Portabilis_Utils_ReCaptcha::getWidget(), $templateText);
+
+    fclose($templateFile);
+    die($templateText);
+  }
+
+
+  protected function destroyLoginSession($addMsg = false) {
+    $tentativasLoginFalhas = $_SESSION['tentativas_login_falhas'];
+
+    @session_start();
+    $_SESSION = array();
+    @session_destroy();
+
+    //mantem tentativas_login_falhas, at√© que senha senha informada corretamente
+    @session_start();
+    $_SESSION['tentativas_login_falhas'] = $tentativasLoginFalhas;
+    @session_write_close();
+
+    if ($addMsg)
+      $this->messenger->append("Usu√°rio deslogado com sucesso.", "success");
+  }
+
+
+  protected function getClientIP() {
+    if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR'] != '') {
+      // pega o (ultimo) IP real caso o host esteja atr√°s de um proxy
+      $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+      $ip = trim(array_pop($ip));
+    }
+    else
+      $ip = $_SERVER['REMOTE_ADDR'];
+
+    return $ip;
+  }
+
+
+  protected function validateHumanAccess() {
+    $result = false;
+
+    if (! $this->atingiuTentativasLogin())
+      $result = true;
+
+    elseif (Portabilis_Utils_ReCaptcha::getWidget()->validate()) {
+      $this->unsetTentativasLogin();
+      $result = true;
+    }
+
+    return $result;
+  }
+
+
+  protected function atingiuTentativasLogin() {
+    return isset($_SESSION['tentativas_login_falhas']) &&
+                 is_numeric($_SESSION['tentativas_login_falhas']) &&
+                 $_SESSION['tentativas_login_falhas'] >= $this->_maximoTentativasFalhas;
+  }
+
+
+  protected function incrementTentativasLogin() {
+    @session_start();
+    if (! isset($_SESSION['tentativas_login_falhas']) or ! is_numeric($_SESSION['tentativas_login_falhas']))
+      $_SESSION['tentativas_login_falhas'] = 1;
+    else
+      $_SESSION['tentativas_login_falhas'] += 1;
+    @session_write_close();
+  }
+
+
+  protected function unsetTentativasLogin() {
+    @session_start();
+    unset($_SESSION['tentativas_login_falhas']);
+    @session_write_close();
+  }
+
+
+  protected function checkForDisabledAccount($user) {
+    if ($user['ativo'] != '1') {
+      $this->messenger->append("Sua conta de usu√°rio foi desativada ou expirou, por favor, " .
+                              "entre em contato com o respons√°vel pelo sistema do seu munic√≠pio.", "error", false, "error");
+    }
+  }
+
+
+  protected function checkForBannedAccount($user) {
+    if ($user['proibido'] != '0') {
+      $this->messenger->append("Sua conta de usu√°rio n√£o pode mais acessar o sistema, " .
+                              "por favor, entre em contato com o respons√°vel pelo sistema do seu munic√≠pio.",
+                              "error", false, "error");
+    }
+  }
+
+
+  protected function checkForExpiredAccount($user) {
+    if($user['expired_account']) {
+
+      if ($user['ativo'] == 1)
+        Portabilis_Utils_User::disableAccount($user['id']);
+
+      $this->messenger->append("Sua conta de usu√°rio expirou, por favor, " .
+                              "entre em contato com o respons√°vel pelo sistema do seu munic√≠pio.", "error", false, "error");
+    }
+  }
+
+
+  protected function checkForMultipleAccess($user) {
+    // considera como acesso multiplo, acesso em diferentes IPs em menos de $tempoMultiploAcesso minutos
+    $tempoMultiploAcesso = 10;
+    $tempoEmEspera       = abs(time() - strftime("now") - strtotime($user['data_login'])) / 60;
+
+    $multiploAcesso = $tempoEmEspera <= $tempoMultiploAcesso &&
+                      $user['ip_ultimo_acesso'] != $this->getClientIP();
+
+    if ($multiploAcesso and $user['super']) {
+
+      // #TODO mover l√≥gica email, para mailer especifico
+
+      $subject = "Conta do super usu√°rio {$_SERVER['HTTP_HOST']} acessada em mais de um local";
+
+      $message = ("Aparentemente a conta do super usu√°rio {$user['matricula']} foi acessada em " .
+                  "outro computador nos √∫ltimos $tempoMultiploAcesso " .
+                  "minutos, caso n√£o tenha sido voc√™, por favor, altere sua senha.\n\n" .
+                  "Endere√ßo IP √∫ltimo acesso: {$user['ip_ultimo_acesso']}\n".
+                  "Endere√ßo IP acesso atual: {$this->getClientIP()}");
+
+      $mailer = new Portabilis_Mailer();
+      $mailer->sendMail($user['email'], $subject, $message);
+    }
+    elseif ($multiploAcesso) {
+      $minutosEmEspera = round($tempoMultiploAcesso - $tempoEmEspera) + 1;
+      $this->messenger->append("Aparentemente sua conta foi acessada em outro computador nos √∫ltimos " .
+                              "$tempoMultiploAcesso minutos, caso n√£o tenha sido voc√™, " .
+                              "por favor, altere sua senha ou tente novamente em $minutosEmEspera minutos",
+                              "error", false, "error");
     }
   }
 

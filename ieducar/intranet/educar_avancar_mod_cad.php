@@ -1,33 +1,33 @@
 <?php
 
 /**
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+ * com este programa; se n√£o, escreva para a Free Software Foundation, Inc., no
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author      Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author      Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @license     http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package     Core
  * @subpackage  pmieducar
  * @subpackage  Matricula
  * @subpackage  Rematricula
- * @since       Arquivo disponÌvel desde a vers„o 1.0.0
- * @todo        Refatorar a lÛgica de indice::Novo() para uma classe na camada de domÌnio
+ * @since       Arquivo dispon√≠vel desde a vers√£o 1.0.0
+ * @todo        Refatorar a l√≥gica de indice::Novo() para uma classe na camada de dom√≠nio
  * @version     $Id$
  */
 
@@ -35,6 +35,7 @@ require_once 'include/clsBase.inc.php';
 require_once 'include/clsCadastro.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
+require_once 'lib/Portabilis/Date/Utils.php';
 
 class clsIndexBase extends clsBase
 {
@@ -42,12 +43,14 @@ class clsIndexBase extends clsBase
   {
     $this->SetTitulo($this->_instituicao . ' i-Educar');
     $this->processoAp = '561';
+    $this->addEstilo('localizacaoSistema');
   }
 }
 
 class indice extends clsCadastro
 {
   var $pessoa_logada;
+  var $data_matricula;
 
   function Inicializar()
   {
@@ -56,27 +59,31 @@ class indice extends clsCadastro
     $this->pessoa_logada = $_SESSION['id_pessoa'];
     session_write_close();
 
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         "educar_index.php"                  => "i-Educar - Escola",
+         ""        => "Rematr&iacute;cula autom&aacute;tica"             
+    ));
+    $this->enviaLocalizacao($localizacao->montar());    
+
     return $retorno;
   }
 
-  function Gerar()
-  {
-    $instituicao_obrigatorio        = TRUE;
-    $escola_obrigatorio             = TRUE;
-    $curso_obrigatorio              = TRUE;
-    $escola_curso_serie_obrigatorio = TRUE;
-    $turma_obrigatorio              = TRUE;
-    $get_escola                     = TRUE;
-    $get_curso                      = TRUE;
-    $get_escola_curso_serie         = TRUE;
-    $get_turma                      = TRUE;
-    $get_cursos_nao_padrao          = FALSE;
+  function Gerar() {
+    // inputs
 
-    include 'include/pmieducar/educar_campo_lista.php';
+    $anoLetivoHelperOptions = array('situacoes' => array('em_andamento', 'nao_iniciado'));
+
+    $this->inputsHelper()->dynamic(array('instituicao', 'escola', 'curso', 'serie'));
+    $this->inputsHelper()->dynamic('turma', array('label' => 'Selecione a turma do ano anterior'));
+    $this->inputsHelper()->dynamic('anoLetivo', array('label' => 'Ano destino'), $anoLetivoHelperOptions);
+    $this->inputsHelper()->date('data_matricula', array('label' => 'Data da matr√≠cula', 'placeholder' => 'dd/mm/yyyy'));
+    $this->inputsHelper()->hidden('nao_filtrar_ano', array('value' => '1'));
   }
 
   /**
-   * @todo Refatorar a lÛgica para uma classe na camada de domÌnio.
+   * @todo Refatorar a l√≥gica para uma classe na camada de dom√≠nio.
    */
   function Novo()
   {
@@ -84,122 +91,142 @@ class indice extends clsCadastro
     $this->pessoa_logada = $_SESSION['id_pessoa'];
     session_write_close();
 
-    $db  = new clsBanco();
-    $db2 = new clsBanco();
+    $this->db  = new clsBanco();
+    $this->db2 = new clsBanco();
 
-    // Seleciona o maior ano letivo da escola em andamento
-    $ano = $db2->CampoUnico(sprintf("
-      SELECT MAX(ano) FROM pmieducar.escola_ano_letivo
-      WHERE ref_cod_escola = '%d' AND andamento = 1", $this->ref_cod_escola)
-    );
+    $this->data_matricula = Portabilis_Date_Utils::brToPgSQL($this->data_matricula);
 
-    // Caso a escola n„o tenha um ano letivo, usa o ano da data do servidor web
-    if (! is_numeric($ano)) {
-      $ano = date('Y');
-    }
+    $result = $this->rematricularALunos($this->ref_cod_escola, $this->ref_cod_curso,
+                                        $this->ref_cod_serie, $this->ref_cod_turma, $_POST['ano']);
 
-    // Seleciona todos os alunos que foram aprovados na turma/sÈrie/curso/escola informados
-    $db->Consulta(sprintf("
-      SELECT
-        cod_matricula, ref_cod_aluno
-      FROM
-        pmieducar.matricula m, pmieducar.matricula_turma
-      WHERE
-        aprovado = '1' AND m.ativo = '1' AND ref_ref_cod_escola = '%d' AND
-        ref_ref_cod_serie='%d' AND ref_cod_curso = '%d' AND
-        cod_matricula = ref_cod_matricula AND ref_cod_turma = '%d'",
-      $this->ref_cod_escola, $this->ref_ref_cod_serie, $this->ref_cod_curso, $this->ref_cod_turma)
-    );
-
-    while ($db->ProximoRegistro()) {
-      list($cod_matricula, $ref_cod_aluno) = $db->Tupla();
-
-      // Seleciona a sÈrie da sequÍncia de sÈries
-      $prox_mod = $db2->campoUnico(sprintf(
-        "SELECT
-          ref_serie_destino
-        FROM
-          pmieducar.sequencia_serie
-        WHERE
-          ref_serie_origem = '%d' AND ativo = '1'", $this->ref_ref_cod_serie)
-      );
-
-      // Seleciona o cÛdigo do curso da sÈrie de sequÍncia
-      $ref_cod_curso = $db2->CampoUnico(sprintf("SELECT ref_cod_curso FROM pmieducar.serie WHERE cod_serie = %d", $prox_mod));
-
-      if (is_numeric($prox_mod)) {
-        // Atualiza a matrÌcula atual do aluno, para evitar que seja listada no cadastro deste
-        $db2->Consulta(sprintf("UPDATE pmieducar.matricula SET ultima_matricula = '0' WHERE cod_matricula = '%d'", $cod_matricula));
-
-        // Cria uma nova matrÌcula
-        $db2->Consulta(sprintf("
-          INSERT INTO pmieducar.matricula
-            (ref_ref_cod_escola, ref_ref_cod_serie, ref_usuario_cad, ref_cod_aluno, aprovado, data_cadastro, ano, ref_cod_curso, ultima_matricula)
-          VALUES
-            ('%d', '%d', '%d', '%d', '3', 'NOW()', '%d', '%d', '1')",
-          $this->ref_cod_escola, $prox_mod, $this->pessoa_logada, $ref_cod_aluno, $ano, $ref_cod_curso)
-        );
-      }
-    }
-
-    // Seleciona todos os alunos que foram reprovados na turma/sÈrie/curso/escola informados
-    $db->Consulta(sprintf("
-      SELECT
-        cod_matricula, ref_cod_aluno, ref_ref_cod_serie
-      FROM
-        pmieducar.matricula, pmieducar.matricula_turma
-      WHERE
-        aprovado = '2' AND ref_ref_cod_escola = '%d' AND ref_ref_cod_serie='%d' AND cod_matricula = ref_cod_matricula AND ref_cod_turma = '%d'",
-      $this->ref_cod_escola, $this->ref_ref_cod_serie, $this->ref_cod_turma)
-    );
-
-    // Cria uma nova matrÌcula para cada aluno reprovado na mesma sÈrie/curso/escola informados
-    while ($db->ProximoRegistro()) {
-      list($cod_matricula, $ref_cod_aluno, $ref_cod_serie) = $db->Tupla();
-
-      $db2->Consulta(sprintf("UPDATE pmieducar.matricula SET ultima_matricula = '0'
-        WHERE cod_matricula = '%d'", $cod_matricula));
-
-      $db2->Consulta(
-        sprintf("INSERT INTO pmieducar.matricula
-          (ref_ref_cod_escola, ref_ref_cod_serie, ref_usuario_cad, ref_cod_aluno, aprovado, data_cadastro, ano, ref_cod_curso, ultima_matricula)
-        VALUES
-          ('%d', '%d', '%d', '%d', '3', 'NOW()', '%d', '%d', '1')",
-        $this->ref_cod_escola, $ref_cod_serie, $this->pessoa_logada, $ref_cod_aluno, $ano, $this->ref_cod_curso)
-      );
-    }
-
-    $this->mensagem = "RematrÌcula efetuada com sucesso!";
-    return TRUE;
+    return $result;
   }
+
 
   function Editar() {
     return TRUE;
   }
+
+
+  protected function rematricularALunos($escolaId, $cursoId, $serieId, $turmaId, $ano) {
+    $result = $this->selectMatriculas($escolaId, $cursoId, $serieId, $turmaId, $ano);
+    $count = 0;
+    $nomesAlunos;
+
+    while ($result && $this->db->ProximoRegistro()) {
+      list($matriculaId, $alunoId, $situacao, $nomeAluno) = $this->db->Tupla();
+      $nomesAlunos[] = $nomeAluno;
+
+      $this->db2->Consulta("UPDATE pmieducar.matricula SET ultima_matricula = '0' WHERE cod_matricula = $matriculaId");
+
+      if ($result && $situacao == 1)
+        $result = $this->rematricularAlunoAprovado($escolaId, $serieId, $ano, $alunoId);
+      elseif ($result && $situacao == 2)
+        $result = $this->rematricularAlunoReprovado($escolaId, $cursoId, $serieId, $ano, $alunoId);
+
+      if (! $result)
+        break;
+
+      $count += 1;
+    }
+
+    if ($result && empty($this->mensagem)){
+      if ($count > 0){
+        $mensagem = "<span class='success'>Rematriculado os seguinte(s) $count aluno(s) com sucesso em $ano: </br></br>";
+        foreach ($nomesAlunos as $nome) {
+          $mensagem .= "{$nome} </br>";
+        }
+        $mensagem .= "</br> As enturma√ß√µes podem ser realizadas em: Movimenta√ß√£o > Enturma√ß√£o.</span>";
+        $this->mensagem = $mensagem;
+      }else{
+        $this->mensagem = "<span class='notice'>Nenhum aluno rematriculado. Certifique-se que a turma possui alunos aprovados ou reprovados n√£o matriculados em ".($ano-1).".</span>";
+      }
+    }elseif(empty($this->mensagem))
+      $this->mensagem = "Ocorreu algum erro inesperado durante as rematr√≠culas, por favor, tente novamente.";
+
+    return $result;
+  }
+
+
+  protected function selectMatriculas($escolaId, $cursoId, $serieId, $turmaId, $ano) {
+    try {
+      $anoAnterior = $ano - 1;
+
+      $this->db->Consulta("SELECT cod_matricula, ref_cod_aluno, aprovado, 
+                                      (SELECT upper(nome) 
+                                            FROM cadastro.pessoa, pmieducar.aluno 
+                                                WHERE pessoa.idpes = aluno.ref_idpes AND 
+                                                          aluno.cod_aluno = ref_cod_aluno) as nome
+                   FROM
+                     pmieducar.matricula m, pmieducar.matricula_turma
+                   WHERE aprovado in (1, 2) AND m.ativo = 1 AND ref_ref_cod_escola = $escolaId AND
+                     ref_ref_cod_serie = $serieId AND ref_cod_curso = $cursoId AND
+                     cod_matricula = ref_cod_matricula AND ref_cod_turma = $turmaId AND
+                     matricula_turma.ativo = 1 AND
+                     ano  = $anoAnterior AND
+                     NOT EXISTS(select 1 from pmieducar.matricula m2 where
+    			           m2.ref_cod_aluno = m.ref_cod_aluno AND
+     			           m2.ano = $ano AND
+     			           m2.ativo = 1 AND
+     			           m2.ref_ref_cod_escola = m.ref_ref_cod_escola)");
+    }
+    catch (Exception $e) {
+      $this->mensagem = "Erro ao selecionar matr√≠culas ano anterior: $anoAnterior";
+      error_log("Erro ao selecionar matr√≠culas ano anterior, no processo rematr√≠cula autom√°tica:" . $e->getMessage());
+      return false;
+    }
+
+    return true;
+  }
+
+
+  protected function rematricularAlunoAprovado($escolaId, $serieId, $ano, $alunoId) {
+    $nextSerieId = $this->db2->campoUnico("SELECT ref_serie_destino FROM pmieducar.sequencia_serie
+                                           WHERE ref_serie_origem = $serieId AND ativo = 1");
+
+    if (is_numeric($nextSerieId)) {
+      $nextCursoId = $this->db2->CampoUnico("SELECT ref_cod_curso FROM pmieducar.serie
+                                            WHERE cod_serie = $nextSerieId");
+
+      return $this->matricularAluno($escolaId, $nextCursoId, $nextSerieId, $ano, $alunoId);
+    }
+    else
+      $this->mensagem = "N√£o foi poss√≠vel obter a pr√≥xima s√©rie da sequ√™ncia de enturma√ß√£o";
+
+    return false;
+  }
+
+
+  protected function rematricularAlunoReprovado($escolaId, $cursoId, $serieId, $ano, $alunoId) {
+    return $this->matricularAluno($escolaId, $cursoId, $serieId, $ano, $alunoId);
+  }
+
+
+  protected function matricularAluno($escolaId, $cursoId, $serieId, $ano, $alunoId) {
+    try {
+      $this->db2->Consulta(sprintf("INSERT INTO pmieducar.matricula
+        (ref_ref_cod_escola, ref_ref_cod_serie, ref_usuario_cad, ref_cod_aluno, aprovado, data_cadastro, ano, ref_cod_curso, ultima_matricula, data_matricula) VALUES ('%d', '%d', '%d', '%d', '3', 'NOW()', '%d', '%d', '1','{$this->data_matricula}')",
+      $escolaId, $serieId, $this->pessoa_logada, $alunoId, $ano, $cursoId));
+    }
+    catch (Exception $e) {
+      $this->mensagem = "Erro durante matr√≠cula do aluno: $alunoId";
+      error_log("Erro durante a matr√≠cula do aluno $alunoId, no processo de rematr√≠cula autom√°tica:" . $e->getMessage());
+      return false;
+    }
+
+    return true;
+  }
 }
 
-// Instancia objeto de p·gina
+// Instancia objeto de p√°gina
 $pagina = new clsIndexBase();
 
-// Instancia objeto de conte˙do
+// Instancia objeto de conte√∫do
 $miolo = new indice();
 
-// Atribui o conte˙do ‡  p·gina
+// Atribui o conte√∫do √†  p√°gina
 $pagina->addForm($miolo);
 
-// Gera o cÛdigo HTML
+// Gera o c√≥digo HTML
 $pagina->MakeAll();
 ?>
-<script type="text/javascript">
-document.getElementById('ref_cod_escola').onchange = function() {
-  getEscolaCurso();
-}
-
-document.getElementById('ref_cod_curso').onchange = function() {
-  getEscolaCursoSerie();
-}
-
-document.getElementById('ref_ref_cod_serie').onchange = function() {
-  getTurma();
-}
-</script>

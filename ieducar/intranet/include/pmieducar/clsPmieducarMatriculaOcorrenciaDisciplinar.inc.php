@@ -2,25 +2,25 @@
 /**
  *
  * @version SVN: $Id$
- * @author  Prefeitura Municipal de Itajaí
+ * @author  Prefeitura Municipal de ItajaÃ­
  * @updated 29/03/2007
- * Pacote: i-PLB Software Público Livre e Brasileiro
+ * Pacote: i-PLB Software PÃºblico Livre e Brasileiro
  *
- * Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí
+ * Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­
  *					ctima@itajai.sc.gov.br
  *
- * Este  programa  é  software livre, você pode redistribuí-lo e/ou
- * modificá-lo sob os termos da Licença Pública Geral GNU, conforme
- * publicada pela Free  Software  Foundation,  tanto  a versão 2 da
- * Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.
+ * Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou
+ * modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme
+ * publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da
+ * LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.
  *
- * Este programa  é distribuído na expectativa de ser útil, mas SEM
- * QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-
- * ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-
- * sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.
+ * Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM
+ * QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-
+ * ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-
+ * sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.
  *
- * Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU
- * junto  com  este  programa. Se não, escreva para a Free Software
+ * VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU
+ * junto  com  este  programa. Se nÃ£o, escreva para a Free Software
  * Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA
  * 02111-1307, USA.
  *
@@ -104,13 +104,13 @@ class clsPmieducarMatriculaOcorrenciaDisciplinar
 	 *
 	 * @return object
 	 */
-	function clsPmieducarMatriculaOcorrenciaDisciplinar( $ref_cod_matricula = null, $ref_cod_tipo_ocorrencia_disciplinar = null, $sequencial = null, $ref_usuario_exc = null, $ref_usuario_cad = null, $observacao = null, $data_cadastro = null, $data_exclusao = null, $ativo = null )
+	function clsPmieducarMatriculaOcorrenciaDisciplinar( $ref_cod_matricula = null, $ref_cod_tipo_ocorrencia_disciplinar = null, $sequencial = null, $ref_usuario_exc = null, $ref_usuario_cad = null, $observacao = null, $data_cadastro = null, $data_exclusao = null, $ativo = null, $visivel_pais = null )
 	{
 		$db = new clsBanco();
 		$this->_schema = "pmieducar.";
 		$this->_tabela = "{$this->_schema}matricula_ocorrencia_disciplinar";
 
-		$this->_campos_lista = $this->_todos_campos = "ref_cod_matricula, ref_cod_tipo_ocorrencia_disciplinar, sequencial, ref_usuario_exc, ref_usuario_cad, observacao, data_cadastro, data_exclusao, ativo";
+		$this->_campos_lista = $this->_todos_campos = "ref_cod_matricula, ref_cod_tipo_ocorrencia_disciplinar, sequencial, ref_usuario_exc, ref_usuario_cad, observacao, data_cadastro, data_exclusao, ativo, visivel_pais";
 
 		if( is_numeric( $ref_usuario_exc ) )
 		{
@@ -247,6 +247,7 @@ class clsPmieducarMatriculaOcorrenciaDisciplinar
 			$this->ativo = $ativo;
 		}
 
+		$this->visivel_pais = $visivel_pais;
 	}
 
 	/**
@@ -303,6 +304,12 @@ class clsPmieducarMatriculaOcorrenciaDisciplinar
 				$valores .= "{$gruda}NOW()";
 				$gruda = ", ";
 			}
+
+			if (is_numeric($this->visivel_pais)) {
+	        	$campos .= "{$gruda}visivel_pais";
+	        	$valores .= "{$gruda}'{$this->visivel_pais}'";
+	        	$gruda = ", ";
+	        }
 
 			$sequencial = $this->getSequencialAluno($this->ref_cod_matricula,$this->ref_cod_tipo_ocorrencia_disciplinar);
 
@@ -362,6 +369,10 @@ class clsPmieducarMatriculaOcorrenciaDisciplinar
 				$gruda = ", ";
 			}
 
+            if (is_numeric($this->visivel_pais)) {
+		        $set .= "{$gruda}visivel_pais = '{$this->visivel_pais}'";
+		        $gruda = ", ";
+		    }
 
 			if( $set )
 			{
@@ -377,7 +388,7 @@ class clsPmieducarMatriculaOcorrenciaDisciplinar
 	 *
 	 * @return array
 	 */
-	function lista( $int_ref_cod_matricula = null, $int_ref_cod_tipo_ocorrencia_disciplinar = null, $int_sequencial = null, $int_ref_usuario_exc = null, $int_ref_usuario_cad = null, $str_observacao = null, $date_data_cadastro_ini = null, $date_data_cadastro_fim = null, $date_data_exclusao_ini = null, $date_data_exclusao_fim = null, $int_ativo = null )
+	function lista( $int_ref_cod_matricula = null, $int_ref_cod_tipo_ocorrencia_disciplinar = null, $int_sequencial = null, $int_ref_usuario_exc = null, $int_ref_usuario_cad = null, $str_observacao = null, $date_data_cadastro_ini = null, $date_data_cadastro_fim = null, $date_data_exclusao_ini = null, $date_data_exclusao_fim = null, $int_ativo = null, $visivel_pais = null )
 	{
 		$sql = "SELECT {$this->_campos_lista} FROM {$this->_tabela}";
 		$filtros = "";
@@ -442,6 +453,11 @@ class clsPmieducarMatriculaOcorrenciaDisciplinar
 		else
 		{
 			$filtros .= "{$whereAnd} ativo = '0'";
+			$whereAnd = " AND ";
+		}
+
+		if(is_numeric($visivel_pais)) {
+			$filtros .= "{$whereAnd} visivel_pais = '{$visivel_pais}'";
 			$whereAnd = " AND ";
 		}
 

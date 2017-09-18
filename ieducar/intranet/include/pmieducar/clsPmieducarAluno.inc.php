@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gestão escolar
+ * i-Educar - Sistema de gest×“o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de Itajaí
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja×
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa é software livre; você pode redistribuí-lo e/ou modificá-lo
- * sob os termos da Licença Pública Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a versão 2 da Licença, como (a seu critério)
- * qualquer versão posterior.
+ * Este programa ×™ software livre; voc×š pode redistribu×-lo e/ou modific×‘-lo
+ * sob os termos da Licen×—a P×ªblica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers×“o 2 da Licen×—a, como (a seu crit×™rio)
+ * qualquer vers×“o posterior.
  *
- * Este programa é distribuí­do na expectativa de que seja útil, porém, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implí­cita de COMERCIABILIDADE OU
- * ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral
+ * Este programa ×™ distribu×Â­do na expectativa de que seja ×ªtil, por×™m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl×Â­cita de COMERCIABILIDADE OU
+ * ADEQUAÖ·Ö³O A UMA FINALIDADE ESPECÖ½FICA. Consulte a Licen×—a P×ªblica Geral
  * do GNU para mais detalhes.
  *
- * Você deve ter recebido uma cópia da Licença Pública Geral do GNU junto
- * com este programa; se não, escreva para a Free Software Foundation, Inc., no
- * endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc×š deve ter recebido uma c×£pia da Licen×—a P×ªblica Geral do GNU junto
+ * com este programa; se n×“o, escreva para a Free Software Foundation, Inc., no
+ * endere×—o 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja× <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Arquivo disponível desde a versão 1.0.0
+ * @since     Arquivo dispon×vel desde a vers×“o 1.0.0
  * @version   $Id$
  */
 
@@ -33,11 +33,11 @@ require_once 'include/pmieducar/geral.inc.php';
 /**
  * clsPmieducarEscola class.
  *
- * @author    Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja× <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponível desde a versão 1.0.0
+ * @since     Classe dispon×vel desde a vers×“o 1.0.0
  * @version   @@package_version@@
  */
 class clsPmieducarAluno
@@ -58,7 +58,7 @@ class clsPmieducarAluno
   var $tipo_responsavel;
 
   /**
-   * Armazena o total de resultados obtidos na última chamada ao método lista().
+   * Armazena o total de resultados obtidos na ×ªltima chamada ao m×™todo lista().
    * @var int
    */
   var $_total;
@@ -76,33 +76,33 @@ class clsPmieducarAluno
   var $_tabela;
 
   /**
-   * Lista separada por vírgula, com os campos que devem ser selecionados na
-   * próxima chamado ao método lista().
+   * Lista separada por v×rgula, com os campos que devem ser selecionados na
+   * pr×£xima chamado ao m×™todo lista().
    * @var string
    */
   var $_campos_lista;
 
   /**
-   * Lista com todos os campos da tabela separados por vírgula, padrão para
-   * seleção no método lista.
+   * Lista com todos os campos da tabela separados por v×rgula, padr×“o para
+   * sele×—×“o no m×™todo lista.
    * @var string
    */
   var $_todos_campos;
 
   /**
-   * Valor que define a quantidade de registros a ser retornada pelo método lista().
+   * Valor que define a quantidade de registros a ser retornada pelo m×™todo lista().
    * @var int
    */
   var $_limite_quantidade;
 
   /**
-   * Define o valor de offset no retorno dos registros no método lista().
+   * Define o valor de offset no retorno dos registros no m×™todo lista().
    * @var int
    */
   var $_limite_offset;
 
   /**
-   * Define o campo para ser usado como padrão de ordenação no método lista().
+   * Define o campo para ser usado como padr×“o de ordena×—×“o no m×™todo lista().
    * @var string
    */
   var $_campo_order_by;
@@ -114,13 +114,13 @@ class clsPmieducarAluno
     $ref_cod_religiao = NULL, $ref_usuario_exc = NULL, $ref_usuario_cad = NULL,
     $ref_idpes = NULL, $data_cadastro = NULL, $data_exclusao = NULL, $ativo = NULL,
     $caminho_foto = NULL,$analfabeto = NULL, $nm_pai = NULL, $nm_mae = NULL,
-    $tipo_responsavel = NULL)
+    $tipo_responsavel = NULL, $aluno_estado_id = NULL)
   {
     $db = new clsBanco();
     $this->_schema = 'pmieducar.';
     $this->_tabela = $this->_schema . 'aluno';
 
-    $this->_campos_lista = $this->_todos_campos = 'cod_aluno, ref_cod_aluno_beneficio, ref_cod_religiao, ref_usuario_exc, ref_usuario_cad, ref_idpes, data_cadastro, data_exclusao, ativo, caminho_foto, analfabeto, nm_pai, nm_mae,tipo_responsavel';
+    $this->_campos_lista = $this->_todos_campos = 'cod_aluno, ref_cod_aluno_beneficio, ref_cod_religiao, ref_usuario_exc, ref_usuario_cad, ref_idpes, data_cadastro, data_exclusao, ativo, caminho_foto, analfabeto, nm_pai, nm_mae,tipo_responsavel, aluno_estado_id';
 
     if (is_numeric($ref_cod_aluno_beneficio)) {
       if (class_exists('clsPmieducarAlunoBeneficio')) {
@@ -240,6 +240,8 @@ class clsPmieducarAluno
     if (is_string($tipo_responsavel)) {
       $this->tipo_responsavel = $tipo_responsavel;
     }
+
+    $this->aluno_estado_id = $aluno_estado_id;
   }
 
   /**
@@ -314,6 +316,12 @@ class clsPmieducarAluno
       if (is_string($this->tipo_responsavel ) && sizeof($this->tipo_responsavel) <= 1) {
         $campos  .= "{$gruda}tipo_responsavel";
         $valores .= "{$gruda}'{$this->tipo_responsavel}'";
+        $gruda = ', ';
+      }
+
+      if ($this->aluno_estado_id) {
+        $campos  .= "{$gruda}aluno_estado_id";
+        $valores .= "{$gruda}'{$this->aluno_estado_id}'";
         $gruda = ', ';
       }
 
@@ -413,6 +421,15 @@ class clsPmieducarAluno
         $gruda = ', ';
       }
 
+      if ($this->aluno_estado_id) {
+        $set .= "{$gruda}aluno_estado_id = '{$this->aluno_estado_id}'";
+        $gruda = ', ';
+      }
+      else {
+        $set .= "{$gruda}aluno_estado_id = NULL";
+        $gruda = ', ';
+      }
+
       if ($set) {
         $db->Consulta("UPDATE {$this->_tabela} SET $set WHERE cod_aluno = '{$this->cod_aluno}'" );
         return TRUE;
@@ -423,7 +440,7 @@ class clsPmieducarAluno
   }
 
   /**
-   * Retorna uma lista de registros filtrados de acordo com os parâmetros.
+   * Retorna uma lista de registros filtrados de acordo com os par×’metros.
    * @return array
    */
   function lista($int_cod_aluno = null, $int_ref_cod_aluno_beneficio = null,
@@ -525,7 +542,7 @@ class clsPmieducarAluno
             cadastro.pessoa
           WHERE
             cadastro.pessoa.idpes = ref_idpes
-            AND TO_ASCII(LOWER(nome)) LIKE TO_ASCII(LOWER('%{$str_nome_aluno}%'))
+            AND LOWER(nome) LIKE LOWER('%{$str_nome_aluno}%')
         )";
 
       $whereAnd = ' AND ';
@@ -535,14 +552,14 @@ class clsPmieducarAluno
       $and_resp = '';
 
       if (is_string($str_nome_responsavel)) {
-        $and_nome_pai_mae  = "OR UPPER(TO_ASCII(aluno.nm_pai)) LIKE UPPER(TO_ASCII('%$str_nome_responsavel%')) AND (aluno.tipo_responsavel = 'p')";
+        $and_nome_pai_mae  = "OR UPPER((aluno.nm_pai)) LIKE UPPER(('%$str_nome_responsavel%')) AND (aluno.tipo_responsavel = 'p')";
 
-        $and_nome_pai_mae .= "OR UPPER(TO_ASCII(aluno.nm_mae)) LIKE UPPER(TO_ASCII('%$str_nome_responsavel%')) AND (aluno.tipo_responsavel = 'm')";
+        $and_nome_pai_mae .= "OR UPPER((aluno.nm_mae)) LIKE UPPER(('%$str_nome_responsavel%')) AND (aluno.tipo_responsavel = 'm')";
 
         $and_nome_resp     = "
-          (UPPER(TO_ASCII(pai_mae.nome)) LIKE UPPER(TO_ASCII('%$str_nome_responsavel%'))) AND (aluno.tipo_responsavel = 'm') AND pai_mae.idpes = fisica_aluno.idpes_mae
+          (UPPER((pai_mae.nome)) LIKE UPPER(('%$str_nome_responsavel%'))) AND (aluno.tipo_responsavel = 'm') AND pai_mae.idpes = fisica_aluno.idpes_mae
           OR
-          (UPPER(TO_ASCII(pai_mae.nome)) LIKE UPPER(TO_ASCII('%$str_nome_responsavel%'))) AND (aluno.tipo_responsavel = 'p') AND pai_mae.idpes = fisica_aluno.idpes_pai";
+          (UPPER((pai_mae.nome)) LIKE UPPER(('%$str_nome_responsavel%'))) AND (aluno.tipo_responsavel = 'p') AND pai_mae.idpes = fisica_aluno.idpes_pai";
 
         $and_resp = ' AND ';
       }
@@ -593,12 +610,12 @@ class clsPmieducarAluno
     }
 
     if (is_string($str_nm_pai)) {
-      $filtros .= "{$whereAnd} TO_ASCII(LOWER(nm_pai)) nm_pai LIKE TO_ASCII(LOWER('%{$str_nm_pai}%'))";
+      $filtros .= "{$whereAnd} (LOWER(nm_pai)) nm_pai LIKE (LOWER('%{$str_nm_pai}%'))";
       $whereAnd = ' AND ';
     }
 
     if (is_string($str_nm_mae)) {
-      $filtros .= "{$whereAnd} TO_ASCII(LOWER(nm_mae)) LIKE TO_ASCII(LOWER('%{$str_nm_mae}%'))";
+      $filtros .= "{$whereAnd} (LOWER(nm_mae)) LIKE (LOWER('%{$str_nm_mae}%'))";
       $whereAnd = ' AND ';
     }
 
@@ -647,7 +664,7 @@ class clsPmieducarAluno
   }
 
   /**
-   * Retorna uma lista de registros filtrados de acordo com os parâmetros.
+   * Retorna uma lista de registros filtrados de acordo com os par×’metros.
    * @return array
    */
   function lista2($int_cod_aluno = NULL, $int_ref_cod_aluno_beneficio = NULL,
@@ -658,7 +675,7 @@ class clsPmieducarAluno
     $str_nome_aluno = NULL, $str_nome_responsavel = NULL, $int_cpf_responsavel = NULL,
     $int_analfabeto = NULL, $str_nm_pai = NULL, $str_nm_mae = NULL,
     $int_ref_cod_escola = NULL, $str_tipo_responsavel = NULL, $data_nascimento = NULL,
-    $str_nm_pai2 = NULL, $str_nm_mae2 = NULL, $str_nm_responsavel2 = NULL)
+    $str_nm_pai2 = NULL, $str_nm_mae2 = NULL, $str_nm_responsavel2 = NULL, $cod_inep = NULL)
   {
     $filtros = '';
     $this->resetCamposLista();
@@ -677,7 +694,7 @@ class clsPmieducarAluno
     $whereAnd = ' WHERE ';
 
     if(is_numeric($int_cod_aluno)) {
-      $filtros .= "{$whereAnd} cod_aluno = '{$int_cod_aluno}'";
+      $filtros .= "{$whereAnd} cod_aluno = {$int_cod_aluno}";
       $whereAnd = ' AND ';
     }
 
@@ -742,6 +759,8 @@ class clsPmieducarAluno
     }
 
     if (is_string($str_nome_aluno)) {
+      $str_nome_aluno = addslashes($str_nome_aluno);
+
       $filtros .= "{$whereAnd} EXISTS (
                      SELECT
                        1
@@ -749,7 +768,7 @@ class clsPmieducarAluno
                        cadastro.pessoa
                      WHERE
                        cadastro.pessoa.idpes = ref_idpes
-                       AND TO_ASCII(LOWER(nome)) LIKE TO_ASCII(LOWER('%{$str_nome_aluno}%'))
+                       AND (LOWER(nome)) LIKE (LOWER('%{$str_nome_aluno}%'))
                    )";
 
       $whereAnd = ' AND ';
@@ -759,14 +778,14 @@ class clsPmieducarAluno
       $and_resp = '';
 
       if (is_string($str_nome_responsavel)) {
-        $and_nome_pai_mae  = "OR UPPER(TO_ASCII(aluno.nm_pai)) LIKE UPPER(TO_ASCII('%$str_nome_responsavel%')) AND (aluno.tipo_responsavel = 'p')";
+        $and_nome_pai_mae  = "OR UPPER((aluno.nm_pai)) LIKE UPPER(('%$str_nome_responsavel%')) AND (aluno.tipo_responsavel = 'p')";
 
-        $and_nome_pai_mae .= "OR UPPER(TO_ASCII(aluno.nm_mae)) LIKE UPPER(TO_ASCII('%$str_nome_responsavel%')) AND (aluno.tipo_responsavel = 'm')";
+        $and_nome_pai_mae .= "OR UPPER((aluno.nm_mae)) LIKE UPPER(('%$str_nome_responsavel%')) AND (aluno.tipo_responsavel = 'm')";
 
         $and_nome_resp     = "
-          (UPPER(TO_ASCII(pai_mae.nome)) LIKE UPPER(TO_ASCII('%$str_nome_responsavel%'))) AND (aluno.tipo_responsavel = 'm') AND pai_mae.idpes = fisica_aluno.idpes_mae
+          (UPPER((pai_mae.nome)) LIKE UPPER(('%$str_nome_responsavel%'))) AND (aluno.tipo_responsavel = 'm') AND pai_mae.idpes = fisica_aluno.idpes_mae
           OR
-          (UPPER(TO_ASCII(pai_mae.nome)) LIKE UPPER(TO_ASCII('%$str_nome_responsavel%'))) AND (aluno.tipo_responsavel = 'p') AND pai_mae.idpes = fisica_aluno.idpes_pai";
+          (UPPER((pai_mae.nome)) LIKE UPPER(('%$str_nome_responsavel%'))) AND (aluno.tipo_responsavel = 'p') AND pai_mae.idpes = fisica_aluno.idpes_pai";
 
         $and_resp = 'AND';
       }
@@ -816,12 +835,12 @@ class clsPmieducarAluno
     }
 
     if (is_string($str_nm_pai)) {
-      $filtros .= "{$whereAnd} TO_ASCII(LOWER(nm_pai)) nm_pai LIKE TO_ASCII(LOWER('%{$str_nm_pai}%'))";
+      $filtros .= "{$whereAnd} (LOWER(nm_pai)) nm_pai LIKE (LOWER('%{$str_nm_pai}%'))";
       $whereAnd = ' AND ';
     }
 
     if (is_string($str_nm_mae)) {
-      $filtros .= "{$whereAnd} TO_ASCII(LOWER(nm_mae)) LIKE TO_ASCII(LOWER('%{$str_nm_mae}%'))";
+      $filtros .= "{$whereAnd} (LOWER(nm_mae)) LIKE (LOWER('%{$str_nm_mae}%'))";
       $whereAnd = ' AND ';
     }
 
@@ -840,24 +859,35 @@ class clsPmieducarAluno
       $whereAnd = ' AND ';
     }
 
+    if (!empty($cod_inep) && is_numeric($cod_inep)) {
+      $filtros .= "{$whereAnd} cod_aluno = ( SELECT cod_aluno FROM modules.educacenso_cod_aluno WHERE cod_aluno_inep = {$cod_inep})";
+      $whereAnd = ' AND ';
+    }
+
     if (!empty($str_nm_pai2) || !empty($str_nm_mae2) || !empty($str_nm_responsavel2)) {
       $complemento_letf_outer = '';
       $complemento_where      = '';
       $and_where              = '';
 
       if (!empty($str_nm_pai2)) {
+        $str_nm_pai2 = addslashes($str_nm_pai2);
+
         $complemento_sql   .= ' LEFT OUTER JOIN cadastro.pessoa AS pessoa_pai ON (pessoa_pai.idpes = f.idpes_pai)';
         $complemento_where .= "{$and_where} (nm_pai ILIKE ('%{$str_nm_pai2}%') OR pessoa_pai.nome ILIKE ('%{$str_nm_pai2}%'))";
         $and_where          = ' AND ';
       }
 
       if (!empty($str_nm_mae2)) {
+        $str_nm_mae2 = addslashes($str_nm_mae2);
+
         $complemento_sql   .= ' LEFT OUTER JOIN cadastro.pessoa AS pessoa_mae ON (pessoa_mae.idpes = f.idpes_mae)';
         $complemento_where .= "{$and_where} (nm_mae ILIKE ('%{$str_nm_mae2}%') OR pessoa_mae.nome ILIKE ('%{$str_nm_mae2}%'))";
         $and_where          = ' AND ';
       }
 
       if (!empty($str_nm_responsavel2)) {
+        $str_nm_responsavel2 = addslashes($str_nm_responsavel2);
+
         $complemento_sql .= " LEFT OUTER JOIN cadastro.pessoa AS pessoa_responsavel ON (pessoa_responsavel.idpes = f.idpes_responsavel)";
         $complemento_where .= "{$and_where} (pessoa_responsavel.nome ILIKE ('%{$str_nm_responsavel2}%'))";
         $and_where = " AND ";
@@ -1075,7 +1105,7 @@ class clsPmieducarAluno
   }
 
   /**
-   * Define quais campos da tabela serão selecionados no método Lista().
+   * Define quais campos da tabela ser×“o selecionados no m×™todo Lista().
    */
   function setCamposLista($str_campos)
   {
@@ -1083,7 +1113,7 @@ class clsPmieducarAluno
   }
 
   /**
-   * Define que o método Lista() deverpa retornar todos os campos da tabela.
+   * Define que o m×™todo Lista() deverpa retornar todos os campos da tabela.
    */
   function resetCamposLista()
   {
@@ -1091,7 +1121,7 @@ class clsPmieducarAluno
   }
 
   /**
-   * Define limites de retorno para o método Lista().
+   * Define limites de retorno para o m×™todo Lista().
    */
   function setLimite($intLimiteQtd, $intLimiteOffset = NULL)
   {
@@ -1100,7 +1130,7 @@ class clsPmieducarAluno
   }
 
   /**
-   * Retorna a string com o trecho da query responsável pelo limite de
+   * Retorna a string com o trecho da query respons×‘vel pelo limite de
    * registros retornados/afetados.
    *
    * @return string
@@ -1118,7 +1148,7 @@ class clsPmieducarAluno
   }
 
   /**
-   * Define o campo para ser utilizado como ordenação no método Lista().
+   * Define o campo para ser utilizado como ordena×—×“o no m×™todo Lista().
    */
   function setOrderby($strNomeCampo)
   {
@@ -1128,7 +1158,7 @@ class clsPmieducarAluno
   }
 
   /**
-   * Retorna a string com o trecho da query responsável pela Ordenação dos
+   * Retorna a string com o trecho da query respons×‘vel pela Ordena×—×“o dos
    * registros.
    *
    * @return string

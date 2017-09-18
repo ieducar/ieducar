@@ -1,31 +1,31 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *																	     *
-*	@author Prefeitura Municipal de Itajaí								 *
+*	@author Prefeitura Municipal de ItajaÃ­								 *
 *	@updated 29/03/2007													 *
-*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 *																		 *
-*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 *						ctima@itajai.sc.gov.br					    	 *
 *																		 *
-*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 *																		 *
-*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 *																		 *
-*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 *	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 *	02111-1307, USA.													 *
 *																		 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /*
-* @author Prefeitura Municipal de Itajaí
+* @author Prefeitura Municipal de ItajaÃ­
 *
 * Criado em 31/07/2006 16:40 pelo gerador automatico de classes
 */
@@ -107,13 +107,13 @@ class clsPmieducarEscolaAnoLetivo
 	 *
 	 * @return object
 	 */
-	function clsPmieducarEscolaAnoLetivo( $ref_cod_escola = null, $ano = null, $ref_usuario_cad = null, $ref_usuario_exc = null, $andamento = null, $data_cadastro = null, $data_exclusao = null, $ativo = null )
+	function clsPmieducarEscolaAnoLetivo( $ref_cod_escola = null, $ano = null, $ref_usuario_cad = null, $ref_usuario_exc = null, $andamento = null, $data_cadastro = null, $data_exclusao = null, $ativo = null, $turmas_por_ano = null )
 	{
 		$db = new clsBanco();
 		$this->_schema = "pmieducar.";
 		$this->_tabela = "{$this->_schema}escola_ano_letivo";
 
-		$this->_campos_lista = $this->_todos_campos = "ref_cod_escola, ano, ref_usuario_cad, ref_usuario_exc, andamento, data_cadastro, data_exclusao, ativo";
+		$this->_campos_lista = $this->_todos_campos = "ref_cod_escola, ano, ref_usuario_cad, ref_usuario_exc, andamento, data_cadastro, data_exclusao, ativo, turmas_por_ano";
 
 		if( is_numeric( $ref_usuario_exc ) )
 		{
@@ -222,6 +222,7 @@ class clsPmieducarEscolaAnoLetivo
 			$this->ativo = $ativo;
 		}
 
+		$this->turmas_por_ano = $turmas_por_ano;
 	}
 
 	/**
@@ -263,13 +264,21 @@ class clsPmieducarEscolaAnoLetivo
 				$valores .= "{$gruda}'{$this->andamento}'";
 				$gruda = ", ";
 			}
+
 			$campos .= "{$gruda}data_cadastro";
 			$valores .= "{$gruda}NOW()";
 			$gruda = ", ";
+
 			$campos .= "{$gruda}ativo";
 			$valores .= "{$gruda}'1'";
 			$gruda = ", ";
 
+			if( is_numeric( $this->turmas_por_ano ) )
+			{
+				$campos .= "{$gruda}turmas_por_ano";
+				$valores .= "{$gruda}'{$this->turmas_por_ano}'";
+				$gruda = ", ";
+			}
 
 			$db->Consulta( "INSERT INTO {$this->_tabela} ( $campos ) VALUES( $valores )" );
 			return true;

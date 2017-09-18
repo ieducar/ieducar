@@ -2,7 +2,8 @@
   "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="pt">
 <head>
-  <meta http-equiv='Content-Type' content='text/html; charset=ISO-8859-1' />
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
+  <!--meta http-equiv="Content-Type" content="text/html; charset=utf-8" /-->
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="-1" />
   <!-- #&REFRESH&# -->
@@ -13,17 +14,22 @@
   <link rel=stylesheet type='text/css' href='styles/styles.css' />
   <link rel=stylesheet type='text/css' href='styles/novo.css' />
   <link rel=stylesheet type='text/css' href='styles/menu.css' />
+  <!--link rel=stylesheet type='text/css' href='styles/reset.css' />
+  <link rel=stylesheet type='text/css' href='styles/portabilis.css' /-->
+  <link rel=stylesheet type='text/css' href='styles/min-portabilis.css' />
+  <link rel=stylesheet type='text/css' href='styles/mytdt.css' />
 
   <!-- #&ESTILO&# -->
 
   <script type="text/javascript" src="scripts/padrao.js?1"></script>
   <script type="text/javascript" src="scripts/novo.js?1"></script>
-  <script type="text/javascript" src="scripts/dom.js?1"></script>
+  <script type="text/javascript" src="scripts/dom.js?2"></script>
   <script type="text/javascript" src="scripts/menu.js?1"></script>
   <script type="text/javascript" src="scripts/ied/forms.js?1"></script>
   <script type="text/javascript" src="scripts/ied/phpjs.js?1"></script>
-  <script type="text/javascript" src="scripts/scriptaculous/prototype.js"></script>
-  <script type="text/javascript" src="scripts/scriptaculous/scriptaculous.js?load=effects"></script>
+
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js?load=effects"></script>
 
   <script type="text/javascript">
     var running = false;

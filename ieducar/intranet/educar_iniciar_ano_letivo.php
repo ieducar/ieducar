@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -145,7 +145,7 @@ class indice extends clsCadastro
 		if($existe_ano_andamento)
 		{
 			echo "<script>
-					alert('Não foi possível iniciar ano letivo, já existe ano em andamento!');
+					alert('NÃ£o foi possÃ­vel iniciar ano letivo, jÃ¡ existe ano em andamento!');
 					window.location = 'educar_escola_det.php?cod_escola={$this->ref_cod_escola}#ano_letivo';
 				  </script>";
 			die;
@@ -165,80 +165,6 @@ class indice extends clsCadastro
 		}
 		else
 		{
-			// lista todos alunos desse Escola que tem a ultima matricula no ano anterior e situacao APROVADO
-			$obj_matricula = new clsPmieducarMatricula();
-			$lst_matricula = $obj_matricula->lista( null,null,$this->ref_cod_escola,null,null,null,null,1,null,null,null,null,1,$this->ano-1,null,null,1 );
-
-			if ( is_array($lst_matricula))
-			{
-				foreach ($lst_matricula AS $key => $matricula)
-				{
-					$obj_sequencia = new clsPmieducarSequenciaSerie();
-					$lst_sequencia = $obj_sequencia->lista( $matricula['ref_ref_cod_serie'],null,null,null,null,null,null,null,1 );
-					// verifica qual eh a serie da sequencia
-					
-					if ( is_array($lst_sequencia) && (count($lst_sequencia) == 1) )
-					{
-//						echo "<pre>"; print_r($lst_sequencia);die;
-						$det_sequencia = array_shift($lst_sequencia);
-						$serie_destino = $det_sequencia["ref_serie_destino"];
-
-						
-						$obj_serie = new clsPmieducarSerie( $serie_destino );
-						$det_serie = $obj_serie->detalhe();
-						
-						//verificar aqui se a escola possui o curso
-//						echo "<pre>"; print_r($matricula); die();
-						$obj_escola_curso = new clsPmieducarEscolaCurso($this->ref_cod_escola, $det_serie["ref_cod_curso"]);
-						if (is_array($obj_escola_curso->detalhe()))
-						{
-							$obj = new clsPmieducarMatricula( $matricula['cod_matricula'],null,null,null,$this->pessoa_logada,null,null,null,null,null,1,null,0 );
-							$editou = $obj->edita();
-							if( $editou )
-							{
-								$obj = new clsPmieducarMatricula( null,null,$this->ref_cod_escola,$serie_destino,null,$this->pessoa_logada,$matricula['ref_cod_aluno'],3,null,null,1,$this->ano,1,null,null,null,null,$det_serie["ref_cod_curso"] );
-								$cadastra = $obj->cadastra();
-								if( !$cadastra )
-								{
-									echo "<script>
-											alert('Erro ao matricular os alunos da Escola!');
-											window.location = 'educar_escola_det.php?cod_escola={$this->ref_cod_escola}#ano_letivo';
-										  </script>";
-								}
-							}
-						}
-					}
-				}
-			}
-
-			// lista todos alunos desse Escola que tem a ultima matricula no ano anterior e situacao REPROVADO
-			$obj_matricula = new clsPmieducarMatricula();
-			$lst_matricula = $obj_matricula->lista( null,null,$this->ref_cod_escola,null,null,null,null,2,null,null,null,null,1,$this->ano-1,null,null,1 );
-			if ( is_array($lst_matricula) )
-			{
-//				echo "<pre>"; print_r($lst_matricula);die;
-				foreach ($lst_matricula AS $key => $matricula)
-				{
-					$obj_serie = new clsPmieducarSerie( $matricula['ref_ref_cod_serie'] );
-					$det_serie = $obj_serie->detalhe();
-
-					$obj = new clsPmieducarMatricula( $matricula['cod_matricula'],null,null,null,$this->pessoa_logada,null,null,null,null,null,1,null,0 );
-					$editou1 = $obj->edita();
-					if( $editou1 )
-					{
-						$obj = new clsPmieducarMatricula( null,null,$this->ref_cod_escola,$matricula['ref_ref_cod_serie'],null,$this->pessoa_logada,$matricula['ref_cod_aluno'],3,null,null,1,$this->ano,1,null,null,null,null,$det_serie["ref_cod_curso"] );
-						$cadastra1 = $obj->cadastra();
-						if( !$cadastra1 )
-						{
-							echo "<script>
-									alert('Erro ao matricular os alunos da Escola!');
-									window.location = 'educar_escola_det.php?cod_escola={$this->ref_cod_escola}#ano_letivo';
-								  </script>";
-						}
-					}
-				}
-			}
-
 			echo "<script>
 					alert('Ano letivo inicializado com sucesso!');
 					window.location = 'educar_escola_det.php?cod_escola={$this->ref_cod_escola}#ano_letivo';
@@ -249,7 +175,7 @@ class indice extends clsCadastro
 	function finalizarAnoLetivo()
 	{
 		/**
-		 * VERIFICA se nï¿½o existem matriculas em andamento
+		 * VERIFICA se nÃ¯Â¿Â½o existem matriculas em andamento
 		 */
 
 		$obj_matriculas = new clsPmieducarMatricula();
@@ -258,7 +184,7 @@ class indice extends clsCadastro
 		if($existe_matricula_andamento_com_curso)
 		{
 			echo "<script>
-					alert('Não foi possível finalizar o ano letivo existem matrículas em andamento!');
+					alert('NÃ£o foi possÃ­vel finalizar o ano letivo existem matrÃ­culas em andamento!');
 					window.location = 'educar_escola_det.php?cod_escola={$this->ref_cod_escola}';
 				  </script>";
 		}
@@ -272,7 +198,7 @@ class indice extends clsCadastro
 			if(!editou)
 			{
 				echo "<script>
-						alert('Não foi possível finalizar o ano letivo.\\nErro ao editar matriculas de curso sem avaliação!');
+						alert('NÃ£o foi possÃ­vel finalizar o ano letivo.\\nErro ao editar matriculas de curso sem avaliaÃ§Ã£o!');
 						window.location = 'educar_escola_det.php?cod_escola={$this->ref_cod_escola}';
 					  </script>";
 			}

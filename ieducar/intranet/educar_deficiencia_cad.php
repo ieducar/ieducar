@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de ItajaÌ								 *
+	*	@author Prefeitura Municipal de Itaja√≠								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software P˙blico Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software P√∫blico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÌ			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itaja√≠			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  È  software livre, vocÍ pode redistribuÌ-lo e/ou	 *
-	*	modific·-lo sob os termos da LicenÁa P˙blica Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a vers„o 2 da	 *
-	*	LicenÁa   como  (a  seu  critÈrio)  qualquer  vers„o  mais  nova.	 *
+	*	Este  programa  √©  software livre, voc√™ pode redistribu√≠-lo e/ou	 *
+	*	modific√°-lo sob os termos da Licen√ßa P√∫blica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a vers√£o 2 da	 *
+	*	Licen√ßa   como  (a  seu  crit√©rio)  qualquer  vers√£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  È distribuÌdo na expectativa de ser ˙til, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implÌcita de COMERCIALI-	 *
-	*	ZA«√O  ou  de ADEQUA«√O A QUALQUER PROP”SITO EM PARTICULAR. Con-	 *
-	*	sulte  a  LicenÁa  P˙blica  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  √© distribu√≠do na expectativa de ser √∫til, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia impl√≠cita de COMERCIALI-	 *
+	*	ZA√á√ÉO  ou  de ADEQUA√á√ÉO A QUALQUER PROP√ìSITO EM PARTICULAR. Con-	 *
+	*	sulte  a  Licen√ßa  P√∫blica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	VocÍ  deve  ter  recebido uma cÛpia da LicenÁa P˙blica Geral GNU	 *
-	*	junto  com  este  programa. Se n„o, escreva para a Free Software	 *
+	*	Voc√™  deve  ter  recebido uma c√≥pia da Licen√ßa P√∫blica Geral GNU	 *
+	*	junto  com  este  programa. Se n√£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -36,6 +36,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Defici&ecirc;ncia" );
 		$this->processoAp = "631";
+		$this->addEstilo("localizacaoSistema");
 	}
 }
 
@@ -81,6 +82,17 @@ class indice extends clsCadastro
 			}
 		}
 		$this->url_cancelar = ($retorno == "Editar") ? "educar_deficiencia_det.php?cod_deficiencia={$registro["cod_deficiencia"]}" : "educar_deficiencia_lst.php";
+
+		$nomeMenu = $retorno == "Editar" ? $retorno : "Cadastrar";
+        $localizacao = new LocalizacaoSistema();
+        $localizacao->entradaCaminhos( array(
+             $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+
+             "educar_index.php"                  => "i-Educar - Escola",
+             ""        => "{$nomeMenu} defici&ecirc;ncia"
+        ));
+        $this->enviaLocalizacao($localizacao->montar());
+
 		$this->nome_url_cancelar = "Cancelar";
 		return $retorno;
 	}
@@ -93,7 +105,7 @@ class indice extends clsCadastro
 		// foreign keys
 
 		// text
-		$this->campoTexto( "nm_deficiencia", "DeficiÍncia", $this->nm_deficiencia, 30, 255, true );
+		$this->campoTexto( "nm_deficiencia", "Defici√™ncia", $this->nm_deficiencia, 30, 255, true );
 
 		// data
 
@@ -178,3 +190,16 @@ $pagina->addForm( $miolo );
 // gera o html
 $pagina->MakeAll();
 ?>
+<script type="text/javascript">
+	// Reescrita da fun√ß√£o para exibir mensagem interativa 
+	function excluir()
+    {
+      document.formcadastro.reset();
+
+      if (confirm('Deseja mesmo excluir essa defici√™ncia? \nVinculos com os alunos ser√£o deletados.')) {
+        document.formcadastro.tipoacao.value = 'Excluir';
+        document.formcadastro.submit();
+      }
+    }
+
+</script>

@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de ItajaÌ								 *
+	*	@author Prefeitura Municipal de Itaja√≠								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software P˙blico Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software P√∫blico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÌ			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itaja√≠			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  È  software livre, vocÍ pode redistribuÌ-lo e/ou	 *
-	*	modific·-lo sob os termos da LicenÁa P˙blica Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a vers„o 2 da	 *
-	*	LicenÁa   como  (a  seu  critÈrio)  qualquer  vers„o  mais  nova.	 *
+	*	Este  programa  √©  software livre, voc√™ pode redistribu√≠-lo e/ou	 *
+	*	modific√°-lo sob os termos da Licen√ßa P√∫blica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a vers√£o 2 da	 *
+	*	Licen√ßa   como  (a  seu  crit√©rio)  qualquer  vers√£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  È distribuÌdo na expectativa de ser ˙til, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implÌcita de COMERCIALI-	 *
-	*	ZA«√O  ou  de ADEQUA«√O A QUALQUER PROP”SITO EM PARTICULAR. Con-	 *
-	*	sulte  a  LicenÁa  P˙blica  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  √© distribu√≠do na expectativa de ser √∫til, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia impl√≠cita de COMERCIALI-	 *
+	*	ZA√á√ÉO  ou  de ADEQUA√á√ÉO A QUALQUER PROP√ìSITO EM PARTICULAR. Con-	 *
+	*	sulte  a  Licen√ßa  P√∫blica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	VocÍ  deve  ter  recebido uma cÛpia da LicenÁa P˙blica Geral GNU	 *
-	*	junto  com  este  programa. Se n„o, escreva para a Free Software	 *
+	*	Voc√™  deve  ter  recebido uma c√≥pia da Licen√ßa P√∫blica Geral GNU	 *
+	*	junto  com  este  programa. Se n√£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -28,6 +28,7 @@ require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/pmieducar/geral.inc.php" );
+require_once ("include/localizacaoSistema.php");
 
 class clsIndexBase extends clsBase
 {
@@ -35,6 +36,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Obras" );
 		$this->processoAp = "598";
+		$this->addEstilo('localizacaoSistema');
 	}
 }
 
@@ -89,6 +91,7 @@ class indice extends clsListagem
 	var $data_exclusao;
 	var $ativo;
 	var $ref_cod_biblioteca;
+	var $ref_cod_assunto_acervo;
 
 	function Gerar()
 	{
@@ -101,7 +104,7 @@ class indice extends clsListagem
 		foreach( $_GET AS $var => $val ) // passa todos os valores obtidos no GET para atributos do objeto
 			$this->$var = ( $val === "" ) ? null: $val;
 
-		$this->addBanner( "imagens/nvp_top_intranet.jpg", "imagens/nvp_vert_intranet.jpg", "Intranet" );
+		
 
 		$lista_busca = array(
 			"Obra"
@@ -159,10 +162,21 @@ class indice extends clsListagem
 				}
 			}
 		}
-		$this->campoLista("ref_cod_acervo_colecao", "Acervo ColeÁ„o", $opcoes_colecao, $this->ref_cod_acervo_colecao, "", false, "", "", false, false);
+		$this->campoLista("ref_cod_acervo_colecao", "Acervo Cole√ß√£o", $opcoes_colecao, $this->ref_cod_acervo_colecao, "", false, "", "", false, false);
 		$this->campoLista("ref_cod_exemplar_tipo", "Tipo Exemplar", $opcoes_exemplar, $this->ref_cod_exemplar_tipo, "", false, "", "", false, false);
 		$this->campoLista("ref_cod_acervo_editora", "Editora", $opcoes_editora, $this->ref_cod_acervo_editora, "", false, "", "", false, false);
 		
+    $objTemp = new clsPmieducarAcervoAssunto();
+    $lista = $objTemp->lista();
+
+    if (is_array($lista) && count($lista)) {
+      foreach ($lista as $registro) {
+        $opcoes[$registro['cod_acervo_assunto']] = $registro['nm_assunto'];
+      }
+    }		
+
+	  $this->campoLista('ref_cod_assunto_acervo', 'Assunto', $opcoes, $this->ref_cod_assunto_acervo, '', FALSE, '',
+    	  '', FALSE, FALSE);		
 		
 		$this->campoTexto( "titulo_livro", "Titulo", $this->titulo_livro, 30, 255, false );
 
@@ -180,6 +194,7 @@ class indice extends clsListagem
 		$obj_acervo = new clsPmieducarAcervo();
 		$obj_acervo->setOrderby( "titulo ASC" );
 		$obj_acervo->setLimite( $this->limite, $this->offset );
+		$obj_acervo->ref_cod_acervo_assunto = $this->ref_cod_assunto_acervo;
 		
 				
 		
@@ -271,6 +286,14 @@ class indice extends clsListagem
 		}
 
 		$this->largura = "100%";
+
+	    $localizacao = new LocalizacaoSistema();
+	    $localizacao->entradaCaminhos( array(
+	         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+	         "educar_biblioteca_index.php"                  => "i-Educar - Biblioteca",
+	         ""                                  => "Listagem de obras"
+	    ));
+	    $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 // cria uma extensao da classe base
@@ -301,7 +324,7 @@ function getExemplarTipo(xml_exemplar_tipo)
 		}
 	}
 	else
-		campoTipo.options[0].text = 'A biblioteca n„o possui nenhum tipo de exemplar';
+		campoTipo.options[0].text = 'A biblioteca n√£o possui nenhum tipo de exemplar';
 }
 
 function getAcervoColecao(xml_acervo_colecao)
@@ -311,7 +334,7 @@ function getAcervoColecao(xml_acervo_colecao)
 	if(DOM_array.length)
 	{
 		campoColecao.length = 1;
-		campoColecao.options[0].text = 'Selecione uma coleÁ„o';
+		campoColecao.options[0].text = 'Selecione uma cole√ß√£o';
 		campoColecao.disabled = false;
 
 		for( var i = 0; i < DOM_array.length; i++ )
@@ -320,7 +343,7 @@ function getAcervoColecao(xml_acervo_colecao)
 		}
 	}
 	else
-		campoColecao.options[0].text = 'A biblioteca n„o possui nenhuma coleÁ„o';
+		campoColecao.options[0].text = 'A biblioteca n√£o possui nenhuma cole√ß√£o';
 }
 
 function getAcervoEditora(xml_acervo_editora)
@@ -339,7 +362,7 @@ function getAcervoEditora(xml_acervo_editora)
 		}
 	}
 	else
-		campoEditora.options[0].text = 'A biblioteca n„o possui nenhuma editora';	
+		campoEditora.options[0].text = 'A biblioteca n√£o possui nenhuma editora';	
 }
 
 document.getElementById('ref_cod_biblioteca').onchange = function()
@@ -356,7 +379,7 @@ document.getElementById('ref_cod_biblioteca').onchange = function()
 	var campoColecao = document.getElementById('ref_cod_acervo_colecao');
 	campoColecao.length = 1;
 	campoColecao.disabled = true;
-	campoColecao.options[0].text = 'Carregando coleÁ„o';
+	campoColecao.options[0].text = 'Carregando cole√ß√£o';
 	var xml_acervo_colecao = new ajax(getAcervoColecao);
 	xml_acervo_colecao.envia("educar_acervo_colecao_xml.php?bib="+campoBiblioteca);
 	

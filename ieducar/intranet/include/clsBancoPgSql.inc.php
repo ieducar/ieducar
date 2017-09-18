@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+ * com este programa; se n√£o, escreva para a Free Software Foundation, Inc., no
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd
- * @since     Arquivo disponÌvel desde a vers„o 1.0.0
+ * @since     Arquivo dispon√≠vel desde a vers√£o 1.0.0
  * @version   $Id$
  */
 
@@ -32,27 +32,29 @@ require_once 'clsConfigItajai.inc.php';
 require_once 'include/clsCronometro.inc.php';
 require_once 'include/clsEmail.inc.php';
 
+require_once 'modules/Error/Mailers/NotificationMailer.php';
+
 /**
  * clsBancoSQL_ abstract class.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 abstract class clsBancoSQL_
 {
   /**
-   * OpÁıes de fetch de uma consulta pgsql.
+   * Op√ß√µes de fetch de uma consulta pgsql.
    * @var int
    */
   const FETCH_ARRAY = 1;
   const FETCH_ASSOC = 2;
 
   /**
-   * Nome ou endereÁo IP do servidor do banco de dados.
+   * Nome ou endere√ßo IP do servidor do banco de dados.
    * @var string
    */
   protected $strHost       = NULL;
@@ -64,13 +66,13 @@ abstract class clsBancoSQL_
   protected $strBanco      = NULL;
 
   /**
-   * Usu·rio devidamente autorizado a acessar o banco.
+   * Usu√°rio devidamente autorizado a acessar o banco.
    * @var string
    */
   protected $strUsuario    = NULL;
 
   /**
-   * Senha do usu·rio do banco
+   * Senha do usu√°rio do banco
    * @var string
    */
   protected $strSenha      = NULL;
@@ -82,7 +84,7 @@ abstract class clsBancoSQL_
   protected $strPort       = NULL;
 
   /**
-   * Identificador da conex„o.
+   * Identificador da conex√£o.
    * @var int
    */
   public $bLink_ID         = 0;
@@ -112,19 +114,19 @@ abstract class clsBancoSQL_
   public $bErro_no         = 0;
 
   /**
-   * Frase de descriÁ„o do erro retornado
+   * Frase de descri√ß√£o do erro retornado
    * @var string
    */
   public $strErro          = '';
 
   /**
-   * Ativa ou desativa funÁıes de depuraÁ„o
+   * Ativa ou desativa fun√ß√µes de depura√ß√£o
    * @var bool
    */
   public $bDepurar         = FALSE;
 
   /**
-   * '1' para limpar o resultado assim que chegar ao ˙ltimo registro.
+   * '1' para limpar o resultado assim que chegar ao √∫ltimo registro.
    * @var bool
    */
   public $bAuto_Limpa      = FALSE;
@@ -148,23 +150,18 @@ abstract class clsBancoSQL_
   /**
    * @var bool
    */
-  var $showReportarErro    = TRUE;
-
-  /**
-   * @var bool
-   */
   var $executandoEcho      = FALSE;
 
   /**
-   * Define se ser„o lanÁadas exceÁıes como respostas a erros da extens„o
-   * ext/pgsql. Implementado no mÈtodo Consulta().
+   * Define se ser√£o lan√ßadas exce√ß√µes como respostas a erros da extens√£o
+   * ext/pgsql. Implementado no m√©todo Consulta().
    * @see clsBancoSQL_#Consulta()
    * @var bool
    */
   protected $_throwException = FALSE;
 
   /**
-   * OpÁıes de fetch de resultado de pg_query() disponÌveis.
+   * Op√ß√µes de fetch de resultado de pg_query() dispon√≠veis.
    * @var array
    */
   protected $_fetchOptions = array(
@@ -181,12 +178,12 @@ abstract class clsBancoSQL_
 
   /**
    * Construtor.
-   * @link http://svn.softwarepublico.gov.br/trac/ieducar/ticket/58 Remover par‚metro n„o utilizado do construtor de clsBanco (ticket 58)
+   * @link http://svn.softwarepublico.gov.br/trac/ieducar/ticket/58 Remover par√¢metro n√£o utilizado do construtor de clsBanco (ticket 58)
    */
   public function __construct($options)
   {
-    // Verifica se o par‚metro È do tipo array, para evitar problemas enquanto
-    // o ticket 58 n„o È resolvido.
+    // Verifica se o par√¢metro √© do tipo array, para evitar problemas enquanto
+    // o ticket 58 n√£o √© resolvido.
     if (is_array($options)) {
       if (0 < count($options)) {
         // Verifica por fetchMode
@@ -199,7 +196,7 @@ abstract class clsBancoSQL_
 
   /**
    * Setter.
-   * @param string $v O nome do host onde est· o banco de dados.
+   * @param string $v O nome do host onde est√° o banco de dados.
    */
   public function setHost($v) {
     $this->strHost = (string) $v;
@@ -215,7 +212,7 @@ abstract class clsBancoSQL_
 
   /**
    * Setter.
-   * @param string $v O nome do usu·rio do banco de dados.
+   * @param string $v O nome do usu√°rio do banco de dados.
    */
   public function setUser($v) {
     $this->strUsuario = (string) $v;
@@ -223,7 +220,7 @@ abstract class clsBancoSQL_
 
   /**
    * Setter.
-   * @param string $v A senha de acesso para o usu·rio do banco de dados.
+   * @param string $v A senha de acesso para o usu√°rio do banco de dados.
    */
   public function setPassword($v) {
     $this->strSenha = (string) $v;
@@ -231,7 +228,7 @@ abstract class clsBancoSQL_
 
   /**
    * Setter.
-   * @param string $v A porta em que o banco de dados est· escutando.
+   * @param string $v A porta em que o banco de dados est√° escutando.
    */
   public function setPort($v) {
     $this->strPort = (string) $v;
@@ -280,7 +277,7 @@ abstract class clsBancoSQL_
   /**
    * Setter para o modo de fetch de resultados do banco de dados.
    * @param int $fetchMode
-   * @return clsBancoSQL_ ProvÍ interface fluÌda
+   * @return clsBancoSQL_ Prov√™ interface flu√≠da
    */
   public function setFetchMode($fetchMode = self::FETCH_ARRAY)
   {
@@ -305,7 +302,7 @@ abstract class clsBancoSQL_
   /**
    * Setter.
    * @param bool $throw
-   * @return clsBancoSQL_ ProvÍ interface fluÌda
+   * @return clsBancoSQL_ Prov√™ interface flu√≠da
    */
   public function setThrowException($throw = FALSE)
   {
@@ -331,7 +328,7 @@ abstract class clsBancoSQL_
   }
 
   /**
-   * ConstrÛi a string de conex„o de banco de dados.
+   * Constr√≥i a string de conex√£o de banco de dados.
    */
   public function FraseConexao() {
     $this->strFraseConexao = "";
@@ -355,23 +352,17 @@ abstract class clsBancoSQL_
   /**
    * Conecta com o banco de dados
    *
-   * Verifica se o link est· inativo e conecta. Se a conex„o n„o obtiver
+   * Verifica se o link est√° inativo e conecta. Se a conex√£o n√£o obtiver
    * sucesso, interrompe o script
    */
   public function Conecta() {
-    // Verifica se o link de conex„o est· inativo e conecta
+    // Verifica se o link de conex√£o est√° inativo e conecta
     if (0 == $this->bLink_ID) {
       $this->FraseConexao();
-
-      if ($this->bDepurar) {
-        printf("<br>Depurar: Frase de Conex&atilde;o : %s<br>\n", $this->strFraseConexao);
-      }
-
       $this->bLink_ID = pg_connect($this->strFraseConexao);
 
-      if (!$this->bLink_ID) {
-        $this->Interrompe("Link inv&aacute;lido, conex&atilde;o falhou!");
-      }
+      if (! $this->bLink_ID)
+        $this->Interrompe("N&atilde;o foi possivel conectar ao banco de dados");
     }
   }
 
@@ -379,7 +370,7 @@ abstract class clsBancoSQL_
    * Executa uma consulta SQL.
    *
    * @param  string  $consulta    Consulta SQL.
-   * @param  bool    $reescrever  (Opcional) SQL È reescrita para transformar
+   * @param  bool    $reescrever  (Opcional) SQL √© reescrita para transformar
    *   sintaxe MySQL em PostgreSQL.
    * @return bool|resource FALSE em caso de erro ou o identificador da consulta
    *   em caso de sucesso.
@@ -404,21 +395,19 @@ abstract class clsBancoSQL_
       printf("<br>Depurar: Frase de Consulta = %s<br>\n", $this->strStringSQL);
     }
 
-    // AlteraÁıes de padr„o MySQL para PostgreSQL
+    // Altera√ß√µes de padr√£o MySQL para PostgreSQL
     if ($reescrever) {
       // Altera o Limit
-      $this->strStringSQL = eregi_replace( "LIMIT[ ]{0,3}([0-9]+)[ ]{0,3},[ ]{0,3}([0-9]+)", "LIMIT \\2 OFFSET \\1", $this->strStringSQL );
+      $this->strStringSQL = preg_replace( "/LIMIT[ ]{0,3}([0-9]+)[ ]{0,3},[ ]{0,3}([0-9]+)/i", "LIMIT \\2 OFFSET \\1", $this->strStringSQL );
 
       // Altera selects com YEAR( campo ) ou MONTH ou DAY
-      $this->strStringSQL = eregi_replace( "(YEAR|MONTH|DAY)[(][ ]{0,3}(([a-z]|_|[0-9])+)[ ]{0,3}[)]", "EXTRACT( \\1 FROM \\2 )", $this->strStringSQL );
+      $this->strStringSQL = preg_replace( "/(YEAR|MONTH|DAY)[(][ ]{0,3}(([a-z]|_|[0-9])+)[ ]{0,3}[)]/i", "EXTRACT( \\1 FROM \\2 )", $this->strStringSQL );
 
       // Remove os ORDER BY das querys COUNT()
       // Altera os LIKE para ILIKE (ignore case)
-      $this->strStringSQL = eregi_replace(" LIKE ", " ILIKE ", $this->strStringSQL);
+      $this->strStringSQL = preg_replace("/ LIKE /i", " ILIKE ", $this->strStringSQL);
 
-      $this->strStringSQL = eregi_replace("([a-z_0-9.]+) +ILIKE +'([^']+)'", "to_ascii(\\1) ILIKE to_ascii('\\2')", $this->strStringSQL);
-
-      $this->strStringSQL = eregi_replace("fcn_upper_nrm", "to_ascii", $this->strStringSQL);
+      $this->strStringSQL = preg_replace("/fcn_upper_nrm/i", "", $this->strStringSQL);
     }
 
     $temp = explode("'", $this->strStringSQL);
@@ -427,7 +416,7 @@ abstract class clsBancoSQL_
       // Ignora o que est· entre aspas
       if (! ($i % 2)) {
         // Fora das aspas, verifica se h· algo errado no SQL
-        if (eregi("(--|#|/\*)", $temp[$i])) {
+        if (preg_match("/(--|#|\/\*)/", $temp[$i])) {
           $erroMsg = 'ProteÁ„o contra injection: ' . date( "Y-m-d H:i:s" );
           echo "<!-- {$this->strStringSQL} -->";
           $this->Interrompe($erroMsg);
@@ -447,23 +436,17 @@ abstract class clsBancoSQL_
 
     if (!$this->bConsulta_ID) {
       if ($this->getThrowException()) {
-        $message = $this->bErro_no ? "($this->bErro_no) " . $this->strErro :
-          pg_last_error($this->bLink_ID);
+        $message  = $this->bErro_no ? "($this->bErro_no) " . $this->strErro :
+                                      pg_last_error($this->bLink_ID);
 
         $message .= PHP_EOL . $this->strStringSQL;
 
         throw new Exception($message);
       }
-      else {
+      else
+      {
         $erroMsg = "SQL invalido: {$this->strStringSQL}<br>\n";
-        die($erroMsg);
-
-        if ($this->transactionBlock) {
-          // Nada.
-        }
-
-        $this->Interrompe($erroMsg);
-        return FALSE;
+        throw new Exception("Erro ao executar uma a√ß√£o no banco de dados: $erroMsg");
       }
     }
 
@@ -516,7 +499,7 @@ abstract class clsBancoSQL_
   }
 
   /**
-   * Inicia um bloco de transaÁ„o (transaction block).
+   * Inicia um bloco de transa√ß√£o (transaction block).
    * @return bool
    */
   function begin()
@@ -530,7 +513,7 @@ abstract class clsBancoSQL_
       return TRUE;
     }
 
-    // Tratamento de erro informando que est· dentro de um transaction block
+    // Tratamento de erro informando que est√° dentro de um transaction block
     return FALSE;
   }
 
@@ -550,7 +533,7 @@ abstract class clsBancoSQL_
       return TRUE;
     }
 
-    // Tratamento de erro informando que est· dentro de um transaction block
+    // Tratamento de erro informando que est√° dentro de um transaction block
     return FALSE;
   }
 
@@ -564,7 +547,7 @@ abstract class clsBancoSQL_
     if ($this->transactionBlock) {
       if ($strSavePointName) {
         foreach ($this->savePoints as $key => $nome) {
-          // N„o podemos ter dois savepoints com o mesmo nome
+          // N√£o podemos ter dois savepoints com o mesmo nome
           if ($nome == $strSavePointName) {
             return FALSE;
           }
@@ -588,7 +571,7 @@ abstract class clsBancoSQL_
   /**
    * Cria um novo savePoint.
    * @param  string $strSavePointName Nome do savePoint onde se deseja voltar,
-   *   se n„o for definido volta ao ˙ltimo savepoint criado
+   *   se n√£o for definido volta ao √∫ltimo savepoint criado
    * @return bool
    */
   function rollBack($strSavePointName = FALSE)
@@ -597,7 +580,7 @@ abstract class clsBancoSQL_
       if (count($this->savePoints)) {
         if ($strSavePointName) {
           foreach ($this->savePoints as $key => $nome) {
-            // Se achar È porque tem o savePoint
+            // Se achar √© porque tem o savePoint
             if ($nome == $strSavePointName) {
               $this->savePoints = array_slice($this->savePoints, 0, $key);
               $this->Consulta("ROLLBACK TO {$strSavePointName}");
@@ -606,7 +589,7 @@ abstract class clsBancoSQL_
           }
         }
         else {
-          // Se n„o tem um nome definido ele volta ao ˙ltimo savePoint
+          // Se n√£o tem um nome definido ele volta ao √∫ltimo savePoint
           $lastPos = count($this->savePoints) - 1;
           $strSavePointName = $this->savePoints[$lastPos];
           $this->savePoints = array_slice($this->savePoints, 0, ($lastPos - 1));
@@ -619,7 +602,7 @@ abstract class clsBancoSQL_
   }
 
   /**
-   * Retorna o ˙ltimo ID gerado por uma sequence.
+   * Retorna o √∫ltimo ID gerado por uma sequence.
    * @param  string $str_sequencia
    * @return bool|string
    */
@@ -643,8 +626,8 @@ abstract class clsBancoSQL_
   }
 
   /**
-   * AvanÁa um registro no resultado da consulta corrente, retorna FALSE quando
-   * exaure a lista de resultados. … necess·rio chamar essa funÁ„o antes de
+   * Avan√ßa um registro no resultado da consulta corrente, retorna FALSE quando
+   * exaure a lista de resultados. √â necess√°rio chamar essa fun√ß√£o antes de
    * tentar acessar o primeiro registro com uma chamada a Tupla(), para mover
    * o ponteiro interno do array de resultados.
    *
@@ -664,7 +647,7 @@ abstract class clsBancoSQL_
     $this->strErro = @pg_result_error($this->bConsulta_ID);
     $this->bErro_no = ($this->strErro == '') ? FALSE : TRUE;
 
-    // Testa se est· vazio e verifica se Auto_Limpa È TRUE
+    // Testa se est√° vazio e verifica se Auto_Limpa √© TRUE
     $stat = is_array($this->arrayStrRegistro);
     if ($this->bDepurar && $stat) {
       printf("<br>Depurar: Registro : %s <br>\n", implode($this->arrayStrRegistro));
@@ -679,7 +662,7 @@ abstract class clsBancoSQL_
   }
 
   /**
-   * Setter para Ìndice de um registro do array de resultados retornado por
+   * Setter para √≠ndice de um registro do array de resultados retornado por
    * Consulta().
    * @param int $Pos
    */
@@ -697,7 +680,7 @@ abstract class clsBancoSQL_
   }
 
   /**
-   * Libera os resultados da memÛria.
+   * Libera os resultados da mem√≥ria.
    */
   function Libera()
   {
@@ -715,7 +698,7 @@ abstract class clsBancoSQL_
   }
 
   /**
-   * Retorna o n˙mero de linhas do resultado de uma chamada a Consulta().
+   * Retorna o n√∫mero de linhas do resultado de uma chamada a Consulta().
    * @return int
    */
   function numLinhas()
@@ -732,7 +715,7 @@ abstract class clsBancoSQL_
   }
 
   /**
-   * Retorna o n˙mero de campos do resultado de uma chamada a Consulta().
+   * Retorna o n√∫mero de campos do resultado de uma chamada a Consulta().
    * @return int
    */
   function numCampos()
@@ -784,7 +767,7 @@ abstract class clsBancoSQL_
   }
 
   /**
-   * Retorna um ˙nico registro de uma query SELECT.
+   * Retorna um √∫nico registro de uma query SELECT.
    * @param  string $consulta
    * @return mixed
    */
@@ -806,62 +789,59 @@ abstract class clsBancoSQL_
   }
 
   /**
-   * Mostra a mensagem de erro e interrompe a execuÁ„o do script.
+   * Mostra a mensagem de erro e interrompe a execu√ß√£o do script.
    * @param  string $msg
    * @param  bool   $getError
    */
-  function Interrompe($msg, $getError = FALSE)
+  function Interrompe($appErrorMsg, $getError = FALSE)
   {
-    if ($getError) {
-      $this->strErro = pg_result_error($this->bConsulta_ID);
-      $this->bErro_no = ($this->strErro == '') ? FALSE : TRUE;
-    }
-
-    $erro1 = substr(md5('1erro'), 0, 10);
-    $erro2 = substr(md5('2erro'), 0, 10);
-
-    function show($data, $func = 'var_dump') {
-      ob_start();
-      $func($data);
-      $output = ob_get_contents();
-      ob_end_clean();
-      return $output;
-    }
+    $lastError = error_get_last();
 
     @session_start();
-    $_SESSION['vars_session'] = show($_SESSION);
-    $_SESSION['vars_post']    = show($_POST);
-    $_SESSION['vars_get']     = show($_GET);
-    $_SESSION['vars_cookie']  = show($_COOKIE);
-    $_SESSION['vars_erro1']   = $msg;
-    $_SESSION['vars_erro2']   = $this->strErro;
-    $_SESSION['vars_server']  = show($_SERVER);
-    $id_pessoa = $_SESSION['id_pessoa'];
+    $_SESSION['last_php_error_message'] = $lastError['message'];
+    $_SESSION['last_php_error_line']    = $lastError['line'];
+    $_SESSION['last_php_error_file']    = $lastError['file'];
+    @session_write_close();
 
-    session_write_close();
+    $pgErrorMsg = $getError ? pg_result_error($this->bConsulta_ID) : '';
+    NotificationMailer::unexpectedDataBaseError($appErrorMsg, $pgErrorMsg, $this->strStringSQL);
 
-    if ($this->showReportarErro) {
-      $array_idpes_erro_total = array();
-      $array_idpes_erro_total[4910] = TRUE;
-      $array_idpes_erro_total[2151] = TRUE;
-      $array_idpes_erro_total[8194] = TRUE;
-      $array_idpes_erro_total[7470] = TRUE;
-      $array_idpes_erro_total[4637] = TRUE;
-      $array_idpes_erro_total[4702] = TRUE;
-      $array_idpes_erro_total[1801] = TRUE;
+    die("<script>document.location.href = '/module/Error/unexpected';</script>");
+  }
 
-      if (! $array_idpes_erro_total[$id_pessoa]) {
-        die( "<script>document.location.href = 'erro_banco.php';</script>" );
+
+  /**
+   * Executa uma consulta SQL preparada ver: http://php.net/manual/en/function.pg-prepare.php
+   * ex: $db->execPreparedQuery("select * from portal.funcionario where matricula = $1 and senha = $2", array('admin', '123'))
+   *
+   * @param  string $name    nome da consulta
+   * @param  string $query   sql para ser preparado
+   * @param  array  $params  parametros para consulta
+   *
+   * @return bool|resource FALSE em caso de erro ou o identificador da consulta
+   *   em caso de sucesso.
+   */
+  public function execPreparedQuery($query, $params = array()) {
+    try {
+      $errorMsgs = '';
+      $this->Conecta();
+      $dbConn = $this->bLink_ID;
+
+      if (! is_array($params))
+        $params = array($params);
+
+      $this->bConsulta_ID = @pg_query_params($dbConn, $query, $params);
+      $resultError = @pg_result_error($this->bConsulta_ID);
+      $errorMsgs .= trim($resultError) != '' ? $resultError : @pg_last_error($this->bConsulta_ID);
+
       }
-      else {
-        printf("</td></tr></table><b>Erro de Banco de Dados:</b> %s<br><br>\n", $msg);
-        printf("<b>SQL:</b> %s<br><br>\n", $this->strStringSQL );
-        printf("<b>Erro do PgSQL </b>: %s (%s)<br><br>\n", $this->bErro_no, $this->strErro);
-        die("Sess„o Interrompida.");
+      catch(Exception $e) {
+        $errorMsgs .= "Exception: " . $e->getMessage();
       }
-    }
-    else {
-      die($this->strErro . "\n");
-    }
+
+      if ($this->bConsulta_ID == false || trim($errorMsgs) != '')
+        throw new Exception("Erro ao preparar consulta ($query) no banco de dados: $errorMsgs");
+
+      return $this->bConsulta_ID;
   }
 }

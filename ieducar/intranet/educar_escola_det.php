@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -35,6 +35,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Escola" );
 		$this->processoAp = "561";
+		$this->addEstilo("localizacaoSistema");
 	}
 }
 
@@ -67,7 +68,7 @@ class indice extends clsDetalhe
 		session_write_close();
 
 		$this->titulo = "Escola - Detalhe";
-		$this->addBanner( "imagens/nvp_top_intranet.jpg", "imagens/nvp_vert_intranet.jpg", "Intranet" );
+		
 
 		$this->cod_escola = $_GET["cod_escola"];
 
@@ -107,7 +108,7 @@ class indice extends clsDetalhe
 				$tipo = 1;
 				$endereco_lst = $obj_endereco->lista($registro["ref_idpes"]);
 				if ( $endereco_lst )
-				{			
+				{
 					foreach ($endereco_lst as $endereco)
 					{
 						$cep = $endereco["cep"]->cep;
@@ -392,7 +393,7 @@ class indice extends clsDetalhe
 			{
 				$this->addDetalhe( array( "Fax", "{$telefone_fax}") );
 			}
-			
+
 		}
 		else if ($tipo == 3)
 		{
@@ -477,25 +478,34 @@ class indice extends clsDetalhe
 			$this->addDetalhe( array( "Curso", "{$tabela}") );
 		}
 
-		if( $tabela = $this->listaAnos() )
-		{
+		if( $tabela = $this->listaAnos() ) {
 			$this->addDetalhe( array( "-", "{$tabela}") );
 		}
-		$obj_permissoes = new clsPermissoes();
-		if( $obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 3 ) )
-		{
-			$this->url_novo = "educar_escola_cad.php";
-			$this->url_editar = "educar_escola_cad.php?cod_escola={$registro["cod_escola"]}";
 
-		}
-		if( $obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 7 ) )
-		{
-			$this->array_botao = array ("Definir Ano Letivo");
+		$obj_permissoes = new clsPermissoes();
+
+		$canCreate = $obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 3 );
+		$canEdit   = $obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 7 );
+
+  	if($canCreate)
+			$this->url_novo = "educar_escola_cad.php";
+
+		if($canEdit) {
+			$this->url_editar      = "educar_escola_cad.php?cod_escola={$registro["cod_escola"]}";
+			$this->array_botao     = array ("Definir Ano Letivo");
 			$this->array_botao_url = array ("educar_escola_ano_letivo_cad.php?cod_escola={$registro["cod_escola"]}");
 		}
-		$this->url_cancelar = "educar_escola_lst.php";
 
-		$this->largura = "100%";
+		$this->url_cancelar = "educar_escola_lst.php";
+		$this->largura      = "100%";
+
+		$localizacao = new LocalizacaoSistema();
+	    $localizacao->entradaCaminhos( array(
+	         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+	         "educar_index.php"                  => "i-Educar - Escola",
+	         ""        => "Detalhe da escola"
+	    ));
+	    $this->enviaLocalizacao($localizacao->montar());
 	}
 
 	//***

@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+ * com este programa; se n√£o, escreva para a Free Software Foundation, Inc., no
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Include
- * @since     Arquivo disponÌvel desde a vers„o 1.0.0
+ * @since     Arquivo dispon√≠vel desde a vers√£o 1.0.0
  * @version   $Id$
  */
 
@@ -33,6 +33,11 @@ require_once 'include/clsCampos.inc.php';
 if (class_exists('clsPmiajudaPagina')) {
   require_once 'include/pmiajuda/clsPmiajudaPagina.inc.php';
 }
+
+require_once 'Portabilis/View/Helper/Application.php';
+require_once 'Portabilis/View/Helper/Inputs.php';
+
+require_once 'include/localizacaoSistema.php';
 
 define('alTopLeft', 'valign=top align=left');
 define('alTopCenter', 'valign=top align=center');
@@ -49,11 +54,11 @@ define('alBottomRight', 'valign=bottom align=right');
 /**
  * clsListagem class.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Include
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class clsListagem extends clsCampos
@@ -77,6 +82,8 @@ class clsListagem extends clsCampos
   var $funcAcao = '';
   var $funcAcaoNome = '';
   var $rotulo_anterior;
+  var $locale = null;
+  var $appendInTop = false;
 
   var $array_botao;
   var $array_botao_url;
@@ -95,6 +102,8 @@ class clsListagem extends clsCampos
   var $ordenacao;
   var $campos_ordenacao;
   var $fonte;
+
+  var $exibirBotaoSubmit = true;
 
   function Gerar()
   {
@@ -115,6 +124,13 @@ class clsListagem extends clsCampos
     }
 
     $this->bannerClose = $boolFechaBanner;
+  }
+
+  function enviaLocalizacao($localizao, $appendInTop = FALSE){
+    if($localizao)
+      $this->locale = $localizao;
+
+    $this->appendInTop = $appendInTop;
   }
 
   function addCabecalhos($coluna)
@@ -181,7 +197,7 @@ class clsListagem extends clsCampos
        */
       $strReturn = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" align=\"center\"><tr>";
 
-      // Setas de inÌcio e anterior
+      // Setas de in√≠cio e anterior
       $imagem = ($intPaginaAtual > 1) ? "seta" :"seta_transp";
       $compl_url = ($add_iniciolimit) ? "&iniciolimit=" . (1 + $pag_modifier): "";
       $strReturn .= "<td width=\"23\" align=\"center\"><a href=\"{$linkFixo}$getVar=" . (1 + $pag_modifier) . "{$compl_url}\" class=\"nvp_paginador\" title=\"Ir para a primeira pagina\"><img src=\"imagens/paginador/{$imagem}1.gif\" border=\"0\" alt=\"primeira pagina\"></a></td> ";
@@ -203,7 +219,7 @@ class clsListagem extends clsCampos
 
       $strReturn .= "<td align=\"center\"><img src=\"imagens/paginador/dir.gif\" border=\"0\" alt=\"\"></td>";
 
-      // Setas de fim e prÛxima
+      // Setas de fim e pr√≥xima
       $imagem     = ($intPaginaAtual < $totalPaginas) ? 'seta' : 'seta_transp';
       $compl_url  = ($add_iniciolimit) ? "&iniciolimit=" . min($totalPaginas + $pag_modifier, $intPaginaAtual + 1) : '';
       $strReturn .= "<td width=\"23\" align=\"center\"><a href=\"{$linkFixo}$getVar=" . min($totalPaginas + $pag_modifier, $intPaginaAtual + 1) . "{$compl_url}\" class=\"nvp_paginador\" title=\"Ir para a proxima pagina\"><img src=\"imagens/paginador/{$imagem}3.gif\" border=\"0\" alt=\"proxima pagina\"></a></td> ";
@@ -233,7 +249,7 @@ class clsListagem extends clsCampos
   }
 
   /**
-   * Cria o cÛdigo HTML.
+   * Cria o c√≥digo HTML.
    *
    * @param string $caminho
    * @param int $qdt_registros
@@ -272,14 +288,26 @@ class clsListagem extends clsCampos
     $retorno .= $this->MakeFormat();
     $retorno .= '</script>';
 
+    if ($this->locale && $this->appendInTop){
+
+      $retorno .=  "
+        <table class='tablelistagem' id='tableLocalizacao'width='100%' border='0'  cellpadding='0' cellspacing='0'>";
+
+      $retorno .=  "<tr height='10px'>
+                      <td class='fundoLocalizacao' colspan='2'>{$this->locale}</td>
+                    </tr>";
+
+      $retorno .= "</table>";
+    }
+
     if ($this->campos) {
       $width = empty($this->largura) ? '' : "width='$this->largura'";
 
       /**
-       * Adiciona o help da p·gina.
+       * Adiciona o help da p√°gina.
        */
       $url = parse_url($_SERVER['REQUEST_URI']);
-      $url = ereg_replace( '^/', '', $url['path']);
+      $url = preg_match( '^/', '', $url['path']);
 
       if (strpos($url, '_det.php') !== FALSE) {
         $tipo = 'det';
@@ -294,6 +322,14 @@ class clsListagem extends clsCampos
         $tipo = 'cad';
       }
 
+      $server = $_SERVER['SERVER_NAME'];
+      $endereco = $_SERVER ['REQUEST_URI'];
+      $enderecoPagina = $_SERVER['PHP_SELF'];
+
+      $server = $_SERVER['SERVER_NAME'];
+      $endereco = $_SERVER ['REQUEST_URI'];
+      $enderecoPagina = $_SERVER['PHP_SELF'];
+
       $barra = '<b>Filtros de busca</b>';
 
       if (class_exists('clsPmiajudaPagina')) {
@@ -304,9 +340,9 @@ class clsListagem extends clsCampos
           <table border=\"0\" cellpading=\"0\" cellspacing=\"0\" width=\"100%\">
             <tr>
             <script type=\"text/javascript\">document.help_page_index = 0;</script>
-            <td width=\"20\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"BotÔøΩo de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta pÔøΩgina\"></a></td>
+            <td width=\"20\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"Bot√Ø¬ø¬Ωo de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta p√Ø¬ø¬Ωgina\"></a></td>
             <td><b>Filtros de busca</b></td>
-            <td align=\"right\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"BotÔøΩo de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta pÔøΩgina\"></a></td>
+            <td align=\"right\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"Bot√Ø¬ø¬Ωo de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta p√Ø¬ø¬Ωgina\"></a></td>
             </tr>
           </table>";
         }
@@ -327,7 +363,7 @@ class clsListagem extends clsCampos
           }
         }
 
-        $janela .=  "<tr><td class='formdktd' colspan='2' height='24'>{$barra}</td></tr>";
+        $janela .= "<tr><td class='formdktd' colspan='2' height='24'>{$barra}</td></tr>";
 
         if (empty($this->campos)) {
           $janela .=  "<tr><td class='formlttd' colspan='2'><span class='form'>N&atilde;o existem campos definidos para o formul&aacute;rio</span></td></tr>";
@@ -377,6 +413,18 @@ class clsListagem extends clsCampos
           }
         }
 
+        if ($this->locale && !$this->appendInTop){
+
+          $retorno .=  "
+            <table class='tablelistagem' $width border='0'  cellpadding='0' cellspacing='0'>";
+
+          $retorno .=  "<tr height='10px'>
+                          <td class='fundoLocalizacao' colspan='2'>{$this->locale}</td>
+                        </tr>";
+
+          $retorno .= "</table>";
+        }
+
         $retorno .=  "
           <table class='tablelistagem' $width border='0' cellpadding='2' cellspacing='1'>";
 
@@ -413,11 +461,13 @@ class clsListagem extends clsCampos
 
         $retorno .=  "</script>";
 
-        if ($this->botao_submit) {
-          $retorno .=  "&nbsp;<input type='submit' class='botaolistagem' value='busca' id='botao_busca'>&nbsp;";
-        }
-        else {
-          $retorno .=  "&nbsp;<input type='button' class='botaolistagem' onclick='javascript:acao{$this->funcAcaoNome}();' value='busca' id='botao_busca'>&nbsp;";
+        if ($this->exibirBotaoSubmit) {
+          if ($this->botao_submit) {
+            $retorno .=  "&nbsp;<input type='submit' class='botaolistagem' value='busca' id='botao_busca'>&nbsp;";
+          }
+          else {
+            $retorno .=  "&nbsp;<input type='button' class='botaolistagem' onclick='javascript:acao{$this->funcAcaoNome}();' value='busca' id='botao_busca'>&nbsp;";
+          }
         }
 
         $retorno .=  "
@@ -440,6 +490,18 @@ class clsListagem extends clsCampos
 
     $this->method = 'POST';
 
+    if ($this->locale && !$this->campos && !$this->appendInTop){
+
+      $retorno .=  "
+        <table class='tablelistagem' $width border='0'  cellpadding='0' cellspacing='0'>";
+
+      $retorno .=  "<tr height='10px'>
+                      <td class='fundoLocalizacao linkpreto' style='background-color: white;' colspan='2'>{$this->locale}</td>
+                    </tr>";
+
+      $retorno .= "</table>";
+    }
+
     $retorno .=  "
         <form name=\"form_resultado\" id=\"form_resultado\" method=\"POST\" action=\"\">
         <!-- listagem begin -->
@@ -450,7 +512,7 @@ class clsListagem extends clsCampos
 
     $ncols = count( $this->cabecalho );
 
-    // CabeÁalho
+    // Cabe√ßalho
     if (!empty($this->cabecalho)) {
       reset($this->cabecalho);
 
@@ -725,16 +787,25 @@ class clsListagem extends clsCampos
       ";
     }
 
+    Portabilis_View_Helper_Application::embedJavascriptToFixupFieldsWidth($this);
+
     return $retorno;
   }
 
   /**
    * Exibe mensagem de DIE formatada;
    * @param String $msg
-   * @param String $url Redirecionar apÛs 1 segundo
+   * @param String $url Redirecionar ap√≥s 1 segundo
    */
   function erro($msg, $redir = 'index.php')
   {
     die("<div style='width: 300px; height: 100px; font: 700 11px Arial,Helv,Sans; background-color: #f6f6f6; color: #e11; position: absolute; left: 50%; top: 50%; margin-top: -20px; margin-left: -100px; text-align: center; border: solid 1px #a1a1f1;'>{$msg}</div><script>setTimeout('window.location=\'$redir\'',5000);</script>");
+  }
+
+  public function inputsHelper() {
+    if (! isset($this->_inputsHelper))
+      $this->_inputsHelper = new Portabilis_View_Helper_Inputs($this);
+
+    return $this->_inputsHelper;
   }
 }

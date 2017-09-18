@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -35,6 +35,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Ocorr&ecirc;ncia Disciplinar" );
 		$this->processoAp = "578";
+		$this->addEstilo("localizacaoSistema");
 	}
 }
 
@@ -91,8 +92,8 @@ class indice extends clsCadastro
 		$this->ref_cod_matricula=$_GET["ref_cod_matricula"];
 		$this->ref_cod_tipo_ocorrencia_disciplinar=$_GET["ref_cod_tipo_ocorrencia_disciplinar"];
 
-		if (is_numeric($this->ref_cod_matricula) && 
-		    is_numeric($this->ref_cod_tipo_ocorrencia_disciplinar) && 
+		if (is_numeric($this->ref_cod_matricula) &&
+		    is_numeric($this->ref_cod_tipo_ocorrencia_disciplinar) &&
 		    is_numeric($this->sequencial))
 		{
 			$obj = new clsPmieducarMatriculaOcorrenciaDisciplinar($this->ref_cod_matricula, $this->ref_cod_tipo_ocorrencia_disciplinar, $this->sequencial);
@@ -134,6 +135,16 @@ class indice extends clsCadastro
 
 
 		$this->url_cancelar = ($retorno == "Editar") ? "educar_matricula_ocorrencia_disciplinar_det.php?ref_cod_matricula={$registro["ref_cod_matricula"]}&ref_cod_tipo_ocorrencia_disciplinar={$registro["ref_cod_tipo_ocorrencia_disciplinar"]}&sequencial={$registro["sequencial"]}" : "educar_matricula_ocorrencia_disciplinar_lst.php?ref_cod_matricula={$this->ref_cod_matricula}";
+
+		$nomeMenu = $retorno == "Editar" ? $retorno : "Cadastrar";
+        $localizacao = new LocalizacaoSistema();
+        $localizacao->entradaCaminhos( array(
+             $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+             "educar_index.php"                  => "i-Educar - Escola",
+             ""        => "{$nomeMenu} ocorr&ecirc;ncia disciplinar da matr&iacute;cula"
+        ));
+        $this->enviaLocalizacao($localizacao->montar());
+
 		$this->nome_url_cancelar = "Cancelar";
 		return $retorno;
 	}
@@ -218,11 +229,16 @@ class indice extends clsCadastro
 			echo "<!--\nErro\nClasse clsPmieducarTipoOcorrenciaDisciplinar nao encontrada\n-->";
 			$opcoes = array( "" => "Erro na geracao" );
 		}
-		$this->campoLista( "ref_cod_tipo_ocorrencia_disciplinar", "Tipo Ocorrencia Disciplinar", $opcoes, $this->ref_cod_tipo_ocorrencia_disciplinar );
+		$this->campoLista( "ref_cod_tipo_ocorrencia_disciplinar", "Tipo Ocorr&ecirc;ncia Disciplinar", $opcoes, $this->ref_cod_tipo_ocorrencia_disciplinar );
 
 
 		// text
 		$this->campoMemo( "observacao", "Observac&atilde;o", $this->observacao, 60, 10, true );
+
+		$this->campoCheck("visivel_pais", 
+						  "VisÃ­vel aos pais",
+						  $this->visivel_pais,
+						  "Marque este campo, caso deseje que os pais do aluno possam visualizar tal ocorrÃªncia disciplinar.");
 
 		// data
 
@@ -237,11 +253,9 @@ class indice extends clsCadastro
 		$obj_permissoes = new clsPermissoes();
 		$obj_permissoes->permissao_cadastra( 578, $this->pessoa_logada, 7,  "educar_matricula_ocorrencia_disciplinar_lst.php" );
 
-//echo "<pre>";print_r($this);
-//echo aki.dataToBanco($this->data_cadastro);die;
-		$this->data_cadastro = "{$this->data_cadastro} {$this->hora_cadastro}";
+		$this->visivel_pais = is_null($this->visivel_pais) ? 0 : 1;
 
-		$obj = new clsPmieducarMatriculaOcorrenciaDisciplinar( $this->ref_cod_matricula, $this->ref_cod_tipo_ocorrencia_disciplinar, null, $this->pessoa_logada, $this->pessoa_logada, $this->observacao, $this->data_cadastro, $this->data_exclusao, $this->ativo );
+		$obj = new clsPmieducarMatriculaOcorrenciaDisciplinar( $this->ref_cod_matricula, $this->ref_cod_tipo_ocorrencia_disciplinar, null, $this->pessoa_logada, $this->pessoa_logada, $this->observacao, $this->getDataHoraCadastro(), $this->data_exclusao, $this->ativo, $this->visivel_pais);
 		$cadastrou = $obj->cadastra();
 		if( $cadastrou )
 		{
@@ -265,9 +279,9 @@ class indice extends clsCadastro
 		$obj_permissoes = new clsPermissoes();
 		$obj_permissoes->permissao_cadastra( 578, $this->pessoa_logada, 7,  "educar_matricula_ocorrencia_disciplinar_lst.php" );
 
-    $this->data_cadastro = "{$this->data_cadastro} {$this->hora_cadastro}";
-    
-		$obj = new clsPmieducarMatriculaOcorrenciaDisciplinar($this->ref_cod_matricula, $this->ref_cod_tipo_ocorrencia_disciplinar, $this->sequencial, $this->pessoa_logada, $this->pessoa_logada, $this->observacao, $this->data_cadastro, $this->data_exclusao, $this->ativo);
+		$this->visivel_pais = is_null($this->visivel_pais) ? 0 : 1;
+
+    	$obj = new clsPmieducarMatriculaOcorrenciaDisciplinar($this->ref_cod_matricula, $this->ref_cod_tipo_ocorrencia_disciplinar, $this->sequencial, $this->pessoa_logada, $this->pessoa_logada, $this->observacao, $this->getDataHoraCadastro(), $this->data_exclusao, $this->ativo, $this->visivel_pais);
 		$editou = $obj->edita();
 		if( $editou )
 		{
@@ -306,6 +320,10 @@ class indice extends clsCadastro
 		echo "<!--\nErro ao excluir clsPmieducarMatriculaOcorrenciaDisciplinar\nvalores obrigatorios\nif( is_numeric( $this->ref_cod_matricula ) && is_numeric( $this->ref_cod_tipo_ocorrencia_disciplinar ) && is_numeric( $this->sequencial ) && is_numeric( $this->ref_usuario_exc ) )\n-->";
 		return false;
 	}
+
+  protected function getDataHoraCadastro() {
+    return $this->data_cadastro = dataToBanco($this->data_cadastro) . " " . $this->hora_cadastro;
+  }
 }
 
 // cria uma extensao da classe base

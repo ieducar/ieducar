@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -29,6 +29,8 @@ require_once ("include/clsCadastro.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/pmieducar/geral.inc.php" );
 require_once ("include/Geral.inc.php");
+require_once 'includes/bootstrap.php';
+require_once 'Portabilis/Date/Utils.php';
 
 class clsIndexBase extends clsBase
 {
@@ -36,6 +38,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Institui&ccedil;&atilde;o" );
 		$this->processoAp = "559";
+		$this->addEstilo("localizacaoSistema");
 	}
 }
 
@@ -66,6 +69,8 @@ class indice extends clsCadastro
 	var $data_exclusao;
 	var $ativo;
 	var $nm_instituicao;
+ 	var $data_base_transferencia;
+ 	var $data_base_remanejamento;
 
 	function Inicializar()
 	{
@@ -97,6 +102,16 @@ class indice extends clsCadastro
 			}
 		}
 		$this->url_cancelar = ($retorno == "Editar") ? "educar_instituicao_det.php?cod_instituicao={$registro["cod_instituicao"]}" : "educar_instituicao_lst.php";
+
+		$nomeMenu = $retorno == "Editar" ? $retorno : "Cadastrar";
+        $localizacao = new LocalizacaoSistema();
+        $localizacao->entradaCaminhos( array(
+             $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+             "educar_index.php"                  => "i-Educar - Escola",
+             ""        => "{$nomeMenu} institui&ccedil;&atilde;o"
+        ));
+        $this->enviaLocalizacao($localizacao->montar());
+
 		$this->nome_url_cancelar = "Cancelar";
 		return $retorno;
 	}
@@ -107,7 +122,7 @@ class indice extends clsCadastro
 		$this->campoOculto( "cod_instituicao", $this->cod_instituicao );
 
 		// text
-		$this->campoTexto( "nm_instituicao", "Nome da Instituição", $this->nm_instituicao, 30, 255, true );
+		$this->campoTexto( "nm_instituicao", "Nome da InstituiÃ§Ã£o", $this->nm_instituicao, 30, 255, true );
 		$this->campoCep( "cep", "CEP", int2CEP( $this->cep ), true, "-", false, false );
 		$this->campoTexto( "logradouro", "Logradouro", $this->logradouro, 30, 255, true );
 		$this->campoTexto( "bairro", "Bairro", $this->bairro, 30, 40, true );
@@ -156,11 +171,16 @@ class indice extends clsCadastro
 		}
 		$this->campoLista( "ref_sigla_uf", "UF", $opcoes, $this->ref_sigla_uf, "", false, "", "", false, true );
 
-		$this->campoNumero( "numero", "Número", $this->numero, 6, 6 );
+		$this->campoNumero( "numero", "NÃºmero", $this->numero, 6, 6 );
 		$this->campoTexto( "complemento", "Complemento", $this->complemento, 30, 50, false );
-		$this->campoTexto( "nm_responsavel", "Nome do Responsável", $this->nm_responsavel, 30, 255, true );
+		$this->campoTexto( "nm_responsavel", "Nome do ResponsÃ¡vel", $this->nm_responsavel, 30, 255, true );
 		$this->campoNumero( "ddd_telefone", "DDD Telefone", $this->ddd_telefone, 2, 2 );
 		$this->campoNumero( "telefone", "Telefone", $this->telefone, 11, 11 );
+
+		if ($GLOBALS['coreExt']['Config']->app->instituicao->data_base_deslocamento) {
+       		$this->campoData('data_base_transferencia', 'Data mÃ¡xima para deslocamento', Portabilis_Date_Utils::pgSQLToBr($this->data_base_transferencia), null, null, false);
+       		$this->campoData('data_base_remanejamento', 'Data mÃ¡xima para troca de sala', Portabilis_Date_Utils::pgSQLToBr($this->data_base_remanejamento), null, null, false);
+     	}
 	}
 
 	function Novo()
@@ -170,6 +190,10 @@ class indice extends clsCadastro
 		@session_write_close();
 
 		$obj = new clsPmieducarInstituicao( null, $this->ref_usuario_exc, $this->pessoa_logada, $this->ref_idtlog, $this->ref_sigla_uf, str_replace( "-", "", $this->cep ), $this->cidade, $this->bairro, $this->logradouro, $this->numero, $this->complemento, $this->nm_responsavel, $this->ddd_telefone, $this->telefone, $this->data_cadastro, $this->data_exclusao, 1, $this->nm_instituicao );
+
+		$obj->data_base_remanejamento = Portabilis_Date_Utils::brToPgSQL($this->data_base_remanejamento);
+		$obj->data_base_transferencia = Portabilis_Date_Utils::brToPgSQL($this->data_base_transferencia);
+
 		$cadastrou = $obj->cadastra();
 		if( $cadastrou )
 		{
@@ -190,6 +214,10 @@ class indice extends clsCadastro
 		 $this->pessoa_logada = $_SESSION['id_pessoa'];
 		@session_write_close();
 		$obj = new clsPmieducarInstituicao( $this->cod_instituicao, $this->ref_usuario_exc, $this->pessoa_logada, $this->ref_idtlog, $this->ref_sigla_uf, str_replace( "-", "", $this->cep ), $this->cidade, $this->bairro, $this->logradouro, $this->numero, $this->complemento, $this->nm_responsavel, $this->ddd_telefone, $this->telefone, $this->data_cadastro, $this->data_exclusao, 1, $this->nm_instituicao );
+
+		$obj->data_base_remanejamento = Portabilis_Date_Utils::brToPgSQL($this->data_base_remanejamento);
+		$obj->data_base_transferencia = Portabilis_Date_Utils::brToPgSQL($this->data_base_transferencia);
+
 		$editou = $obj->edita();
 		if( $editou )
 		{

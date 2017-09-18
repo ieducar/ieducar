@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de ItajaÌ								 *
+	*	@author Prefeitura Municipal de Itaja√≠								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software P˙blico Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software P√∫blico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÌ			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itaja√≠			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  È  software livre, vocÍ pode redistribuÌ-lo e/ou	 *
-	*	modific·-lo sob os termos da LicenÁa P˙blica Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a vers„o 2 da	 *
-	*	LicenÁa   como  (a  seu  critÈrio)  qualquer  vers„o  mais  nova.	 *
+	*	Este  programa  √©  software livre, voc√™ pode redistribu√≠-lo e/ou	 *
+	*	modific√°-lo sob os termos da Licen√ßa P√∫blica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a vers√£o 2 da	 *
+	*	Licen√ßa   como  (a  seu  crit√©rio)  qualquer  vers√£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  È distribuÌdo na expectativa de ser ˙til, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implÌcita de COMERCIALI-	 *
-	*	ZA«√O  ou  de ADEQUA«√O A QUALQUER PROP”SITO EM PARTICULAR. Con-	 *
-	*	sulte  a  LicenÁa  P˙blica  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  √© distribu√≠do na expectativa de ser √∫til, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia impl√≠cita de COMERCIALI-	 *
+	*	ZA√á√ÉO  ou  de ADEQUA√á√ÉO A QUALQUER PROP√ìSITO EM PARTICULAR. Con-	 *
+	*	sulte  a  Licen√ßa  P√∫blica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	VocÍ  deve  ter  recebido uma cÛpia da LicenÁa P˙blica Geral GNU	 *
-	*	junto  com  este  programa. Se n„o, escreva para a Free Software	 *
+	*	Voc√™  deve  ter  recebido uma c√≥pia da Licen√ßa P√∫blica Geral GNU	 *
+	*	junto  com  este  programa. Se n√£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -35,6 +35,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Situa&ccedil;&atilde;o" );
 		$this->processoAp = "602";
+		$this->addEstilo('localizacaoSistema');
 	}
 }
 
@@ -106,6 +107,16 @@ class indice extends clsCadastro
 		}
 		$this->url_cancelar = ($retorno == "Editar") ? "educar_situacao_det.php?cod_situacao={$registro["cod_situacao"]}" : "educar_situacao_lst.php";
 		$this->nome_url_cancelar = "Cancelar";
+
+    $nomeMenu = $retorno == "Editar" ? $retorno : "Cadastrar";
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         "educar_biblioteca_index.php"                  => "i-Educar - Biblioteca",
+         ""        => "{$nomeMenu} situa&ccedil;&atilde;o"             
+    ));
+    $this->enviaLocalizacao($localizacao->montar());
+
 		return $retorno;
 	}
 
@@ -216,15 +227,8 @@ class indice extends clsCadastro
 		$obj_permissoes = new clsPermissoes();
 		$obj_permissoes->permissao_cadastra( 602, $this->pessoa_logada, 11,  "educar_situacao_lst.php" );
 
-		if ($this->situacao_padrao == 'on')
-			$this->situacao_padrao = 1;
-		else
-			$this->situacao_padrao = 0;
-
-		if ($this->situacao_emprestada == 'on')
-			$this->situacao_emprestada = 1;
-		else
-			$this->situacao_emprestada = 0;
+    $this->situacao_padrao = is_null($this->situacao_padrao) ? 0 : 1;
+    $this->situacao_emprestada = is_null($this->situacao_emprestada) ? 0 : 1;
 
 		$obj = new clsPmieducarSituacao( null, null, $this->pessoa_logada, $this->nm_situacao, $this->permite_emprestimo, $this->descricao, $this->situacao_padrao, $this->situacao_emprestada, null, null, 1, $this->ref_cod_biblioteca );
 		$cadastrou = $obj->cadastra();
@@ -250,15 +254,8 @@ class indice extends clsCadastro
 		$obj_permissoes = new clsPermissoes();
 		$obj_permissoes->permissao_cadastra( 602, $this->pessoa_logada, 11,  "educar_situacao_lst.php" );
 
-		if ($this->situacao_padrao == 'on')
-			$this->situacao_padrao = 1;
-		else
-			$this->situacao_padrao = 0;
-
-		if ($this->situacao_emprestada == 'on')
-			$this->situacao_emprestada = 1;
-		else
-			$this->situacao_emprestada = 0;
+    $this->situacao_padrao = is_null($this->situacao_padrao) ? 0 : 1;
+    $this->situacao_emprestada = is_null($this->situacao_emprestada) ? 0 : 1;
 
 		$obj = new clsPmieducarSituacao($this->cod_situacao, $this->pessoa_logada, null, $this->nm_situacao, $this->permite_emprestimo, $this->descricao, $this->situacao_padrao, $this->situacao_emprestada, null, null, 1, $this->ref_cod_biblioteca);
 		$editou = $obj->edita();
@@ -366,7 +363,7 @@ function valida()
 
 	if( campoPadrao == true && campoEmprestada == true)
 	{
-		alert("N„o È permitido setar ao mesmo tempo os campos \n 'SituaÁ„o Padr„o' e 'SituaÁ„o Emprestada'!");
+		alert("N√£o √© permitido setar ao mesmo tempo os campos \n 'Situa√ß√£o Padr√£o' e 'Situa√ß√£o Emprestada'!");
 		return false;
 	}
 

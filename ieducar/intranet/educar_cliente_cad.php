@@ -1,26 +1,26 @@
 <?php
 /**
  *
- * @author  Prefeitura Municipal de ItajaÌ
+ * @author  Prefeitura Municipal de Itaja√≠
  * @version SVN: $Id$
  *
- * Pacote: i-PLB Software P˙blico Livre e Brasileiro
+ * Pacote: i-PLB Software P√∫blico Livre e Brasileiro
  *
- * Copyright (C) 2006 PMI - Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006 PMI - Prefeitura Municipal de Itaja√≠
  *            ctima@itajai.sc.gov.br
  *
- * Este  programa  È  software livre, vocÍ pode redistribuÌ-lo e/ou
- * modific·-lo sob os termos da LicenÁa P˙blica Geral GNU, conforme
- * publicada pela Free  Software  Foundation,  tanto  a vers„o 2 da
- * LicenÁa   como  (a  seu  critÈrio)  qualquer  vers„o  mais  nova.
+ * Este  programa  √©  software livre, voc√™ pode redistribu√≠-lo e/ou
+ * modific√°-lo sob os termos da Licen√ßa P√∫blica Geral GNU, conforme
+ * publicada pela Free  Software  Foundation,  tanto  a vers√£o 2 da
+ * Licen√ßa   como  (a  seu  crit√©rio)  qualquer  vers√£o  mais  nova.
  *
- * Este programa  È distribuÌdo na expectativa de ser ˙til, mas SEM
- * QUALQUER GARANTIA. Sem mesmo a garantia implÌcita de COMERCIALI-
- * ZA«√O  ou  de ADEQUA«√O A QUALQUER PROP”SITO EM PARTICULAR. Con-
- * sulte  a  LicenÁa  P˙blica  Geral  GNU para obter mais detalhes.
+ * Este programa  √© distribu√≠do na expectativa de ser √∫til, mas SEM
+ * QUALQUER GARANTIA. Sem mesmo a garantia impl√≠cita de COMERCIALI-
+ * ZA√á√ÉO  ou  de ADEQUA√á√ÉO A QUALQUER PROP√ìSITO EM PARTICULAR. Con-
+ * sulte  a  Licen√ßa  P√∫blica  Geral  GNU para obter mais detalhes.
  *
- * VocÍ  deve  ter  recebido uma cÛpia da LicenÁa P˙blica Geral GNU
- * junto  com  este  programa. Se n„o, escreva para a Free Software
+ * Voc√™  deve  ter  recebido uma c√≥pia da Licen√ßa P√∫blica Geral GNU
+ * junto  com  este  programa. Se n√£o, escreva para a Free Software
  * Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA
  * 02111-1307, USA.
  *
@@ -37,6 +37,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Cliente" );
 		$this->processoAp = "603";
+		$this->addEstilo('localizacaoSistema');
 	}
 }
 
@@ -105,6 +106,15 @@ class indice extends clsCadastro
 		$this->url_cancelar = ($retorno == "Editar") ? "educar_cliente_det.php?cod_cliente={$registro["cod_cliente"]}&ref_cod_biblioteca={$this->ref_cod_biblioteca}" : "educar_cliente_lst.php";
 		$this->nome_url_cancelar = "Cancelar";
 
+    $nomeMenu = $retorno == "Editar" ? $retorno : "Cadastrar";
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         "educar_biblioteca_index.php"                  => "i-Educar - Biblioteca",
+         ""        => "{$nomeMenu} cliente"             
+    ));
+    $this->enviaLocalizacao($localizacao->montar());		
+
     return $retorno;
 	}
 
@@ -121,14 +131,14 @@ class indice extends clsCadastro
 			$opcoes["{$detalhe["idpes"]}"] = $detalhe["nome"];
 		}
 
-    // Caso o cliente n„o exista, exibe um campo de pesquisa, sen„o, mostra um rÛtulo
+    // Caso o cliente n√£o exista, exibe um campo de pesquisa, sen√£o, mostra um r√≥tulo
     if (!$this->cod_cliente) {
       $parametros = new clsParametrosPesquisas();
       $parametros->setSubmit(0);
       $parametros->adicionaCampoSelect('ref_idpes', 'idpes', 'nome');
       $parametros->setPessoa('F');
       $parametros->setPessoaCPF('N');
-      $parametros->setCodSistema(1);
+      $parametros->setCodSistema(null);
       $parametros->setPessoaNovo('S');
       $parametros->setPessoaTela('frame');
 
@@ -144,42 +154,27 @@ class indice extends clsCadastro
 		$this->campoNumero( "login", "Login", $this->login_, 9, 9, false );
 		$this->campoSenha( "senha", "Senha", $this->senha_, false );
 
-		$get_escola     = 1;
-		$get_biblioteca = 1;
-		$instituicao_obrigatorio = true;
-		$escola_obrigatorio = false;
-		$biblioteca_obrigatorio = true;
-		include("include/pmieducar/educar_campo_lista.php");
-
-		//$instituicao_obrigatorio  = true;
-		//$escola_obrigatorio		  = false;
-		//$biblioteca_obrigatorio	  = true;
-		$cliente_tipo_obrigatorio = true;
-		$get_instituicao 		  = true;
-		$get_escola		 		  = true;
-		//$get_biblioteca  		  = true;
-		$get_cliente_tipo		  = true;
-
 		if($this->cod_cliente && $this->ref_cod_biblioteca)
 		{
 			$db = new clsBanco();
 
-      // Cria campo oculto com o ID da biblioteca atual ao qual usu·rio est· cadastrado
+      // Cria campo oculto com o ID da biblioteca atual ao qual usu√°rio est√° cadastrado
 			$this->ref_cod_biblioteca_atual = $this->ref_cod_biblioteca;
 			$this->campoOculto("ref_cod_biblioteca_atual", $this->ref_cod_biblioteca_atual);
 
-			$this->ref_cod_instituicao  = $db->CampoUnico("SELECT ref_cod_instituicao  FROM pmieducar.biblioteca, pmieducar.cliente_tipo_cliente ctc, pmieducar.cliente_tipo ct WHERE ref_cod_cliente = '$this->cod_cliente' AND ref_cod_cliente_tipo = cod_cliente_tipo AND ct.ref_cod_biblioteca = cod_biblioteca AND ctc.ref_cod_biblioteca = {$this->ref_cod_biblioteca}");
-			$this->ref_cod_escola       = $db->CampoUnico("SELECT ref_cod_escola  FROM pmieducar.biblioteca, pmieducar.cliente_tipo_cliente ctc, pmieducar.cliente_tipo ct WHERE ref_cod_cliente = '$this->cod_cliente' AND ref_cod_cliente_tipo = cod_cliente_tipo AND ct.ref_cod_biblioteca = cod_biblioteca AND ctc.ref_cod_biblioteca = {$this->ref_cod_biblioteca}");
-			$this->ref_cod_biblioteca   = $db->CampoUnico("SELECT cod_biblioteca  FROM pmieducar.biblioteca, pmieducar.cliente_tipo_cliente ctc, pmieducar.cliente_tipo ct WHERE ref_cod_cliente = '$this->cod_cliente' AND ref_cod_cliente_tipo = cod_cliente_tipo AND ct.ref_cod_biblioteca = cod_biblioteca AND ctc.ref_cod_biblioteca = {$this->ref_cod_biblioteca}");
-			$this->ref_cod_cliente_tipo = $db->CampoUnico("SELECT ref_cod_cliente_tipo FROM pmieducar.cliente_tipo_cliente WHERE ref_cod_cliente = '$this->cod_cliente'");// AND ref_cod_cliente_tipo IN (SELECT cod_cliente_tipo FROM pmieducar.cliente_tipo WHERE ref_cod_biblioteca = )");//IN (SELECT ref_cod_biblioteca FROM pmieducar.biblioteca_usuario WHERE ref_cod_usuario = '$this->pessoa_logada'))");
+			//$this->ref_cod_biblioteca   = $db->CampoUnico("SELECT cod_biblioteca  FROM pmieducar.biblioteca, pmieducar.cliente_tipo_cliente ctc, pmieducar.cliente_tipo ct WHERE ref_cod_cliente = '$this->cod_cliente' AND ref_cod_cliente_tipo = cod_cliente_tipo AND ct.ref_cod_biblioteca = cod_biblioteca AND ctc.ref_cod_biblioteca = {$this->ref_cod_biblioteca}");
+
+      // obtem o codigo do tipo de cliente, apartir da tabela cliente_tipo_cliente
+			$this->ref_cod_cliente_tipo = $db->CampoUnico("SELECT ref_cod_cliente_tipo FROM pmieducar.cliente_tipo_cliente WHERE ref_cod_cliente = '$this->cod_cliente'");
 		}
-		include( "include/pmieducar/educar_campo_lista.php" );
+
+    $this->inputsHelper()->dynamic(array('instituicao', 'escola', 'biblioteca', 'bibliotecaTipoCliente'));
 	}
 
 
 
   /**
-   * Sobrescrita do mÈtodo clsCadastro::Novo.
+   * Sobrescrita do m√©todo clsCadastro::Novo.
    *
    * Insere novo registro nas tabelas pmieducar.cliente e pmieducar.cliente_tipo_cliente.
    */
@@ -201,7 +196,7 @@ class indice extends clsCadastro
       $lst_cliente = $obj_cliente->lista(NULL, NULL, NULL, NULL, $this->login);
 
       if ($lst_cliente && $this->login != '') {
-        $this->mensagem = "Este login j· est· sendo utilizado por outra pessoa!<br>";
+        $this->mensagem = "Este login j√° est√° sendo utilizado por outra pessoa!<br>";
       }
       else {
         $obj = new clsPmieducarCliente($this->cod_cliente, NULL, $this->pessoa_logada,
@@ -247,7 +242,7 @@ class indice extends clsCadastro
 
       $this->ativo = 1;
 
-      $sql = "SELECT COUNT(0) FROM pmieducar.cliente_tipo_cliente WHERE ref_cod_cliente_tipo = {$this->cod_cliente}
+      $sql = "SELECT COUNT(0) FROM pmieducar.cliente_tipo_cliente WHERE ref_cod_cliente = {$this->cod_cliente}
         AND ref_cod_biblioteca = {$this->ref_cod_biblioteca} AND ativo = 1";
 
       $db = new clsBanco();
@@ -257,7 +252,7 @@ class indice extends clsCadastro
           $this->cod_cliente, NULL, NULL, $this->pessoa_logada, NULL, NULL, $this->ref_cod_biblioteca);
 
         if (!$obj_cliente_tipo_cliente->cadastra()) {
-          $this->mensagem = "N„o cadastrou";
+          $this->mensagem = "N√£o cadastrou";
 
           return FALSE;
 				}
@@ -269,8 +264,7 @@ class indice extends clsCadastro
 				}
       }
 			else {
-        $this->Editar();
-        $this->mensagem = "O cliente j· est· cadastrado!<br>";
+        $this->mensagem = "O cliente j√° est√° cadastrado!<br>";
       }
     }
   }
@@ -278,13 +272,13 @@ class indice extends clsCadastro
 
 
   /**
-   * Sobrescrita do mÈtodo clsCadastro::Editar.
+   * Sobrescrita do m√©todo clsCadastro::Editar.
    *
    * Verifica:
-   * - Se usu·rio tem permiss„o de ediÁ„o
-   * - Se usu·rio existe na biblioteca atual
+   * - Se usu√°rio tem permiss√£o de edi√ß√£o
+   * - Se usu√°rio existe na biblioteca atual
    *   - Se existir, troca pela biblioteca escolhida na interface
-   *   - Sen„o, cadastra como cliente da biblioteca
+   *   - Sen√£o, cadastra como cliente da biblioteca
    */
   public function Editar() {
     session_start();
@@ -307,7 +301,7 @@ class indice extends clsCadastro
         $this->pessoa_logada, $this->pessoa_logada, 1, $this->ref_cod_biblioteca);
 
       // clsPmieducarClienteTipoCliente::trocaTipoBiblioteca recebe o valor antigo para usar
-      // na cl·usula WHERE
+      // na cl√°usula WHERE
       if ($obj_cliente_tipo->existeClienteBiblioteca($_POST['ref_cod_biblioteca_atual'])) {
         if ($obj_cliente_tipo->trocaTipoBiblioteca($_POST['ref_cod_biblioteca_atual'])) {
           $this->mensagem .= 'Cadastro efetuado com sucesso.<br>';
@@ -369,35 +363,6 @@ $pagina->addForm( $miolo );
 $pagina->MakeAll();
 ?>
 <script>
-/*
-if(document.getElementById('ref_cod_biblioteca').type == 'select-one')
-{
-	var campoTipo = document.getElementById('ref_cod_cliente_tipo');
-	campoTipo.length = 1;
-	campoTipo.options[0].text = 'Selecione uma biblioteca';
-	campoTipo.disabled = true;
-}*/
-
-function getClienteTipo(xml_cliente_tipo)
-{
-	var campoTipo = document.getElementById('ref_cod_cliente_tipo');
-	var DOM_array = xml_cliente_tipo.getElementsByTagName( "cliente_tipo" );
-
-	if(DOM_array.length)
-	{
-		campoTipo.length = 1;
-		campoTipo.options[0].text = 'Selecione um tipo';
-		campoTipo.disabled = false;
-
-		for( var i = 0; i < DOM_array.length; i++ )
-		{
-			campoTipo.options[campoTipo.options.length] = new Option( DOM_array[i].firstChild.data, DOM_array[i].getAttribute("cod_cliente_tipo"),false,false);
-		}
-	}
-	else
-		campoTipo.options[0].text = 'A biblioteca n„o possui tipos';
-}
-
 document.getElementById('ref_cod_biblioteca').onchange = function()
 {
 	ajaxBiblioteca();
@@ -407,18 +372,10 @@ if(document.getElementById('ref_cod_biblioteca').value != '')
 {
 	ajaxBiblioteca();
 }
+
 function ajaxBiblioteca()
 {
 	var campoBiblioteca = document.getElementById('ref_cod_biblioteca').value;
-	var campoTipo = document.getElementById('ref_cod_cliente_tipo');
-
-	campoTipo.length = 1;
-	campoTipo.disabled = true;
-	campoTipo.options[0].text = 'Carregando situaÁ„o';
-
-	var xml_cliente_tipo = new ajax( getClienteTipo );
-	xml_cliente_tipo.envia( "educar_cliente_tipo_xml.php?bib="+campoBiblioteca );
-
 	var xml_biblioteca = new ajax( requisitaSenha );
 	xml_biblioteca.envia( "educar_biblioteca_xml.php?bib="+campoBiblioteca );
 }

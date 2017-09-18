@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -35,6 +35,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Editora" );
 		$this->processoAp = "595";
+		$this->addEstilo('localizacaoSistema');
 	}
 }
 
@@ -97,6 +98,15 @@ class indice extends clsCadastro
 		}
 		$this->url_cancelar = ($retorno == "Editar") ? "educar_acervo_editora_det.php?cod_acervo_editora={$registro["cod_acervo_editora"]}" : "educar_acervo_editora_lst.php";
 		$this->nome_url_cancelar = "Cancelar";
+
+    $nomeMenu = $retorno == "Editar" ? $retorno : "Cadastrar";
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         "educar_biblioteca_index.php"                  => "i-Educar - Biblioteca",
+         ""        => "{$nomeMenu} editora"             
+    ));
+    $this->enviaLocalizacao($localizacao->montar());		
 		return $retorno;
 	}
 
@@ -105,30 +115,9 @@ class indice extends clsCadastro
 		// primary keys
 		$this->campoOculto( "cod_acervo_editora", $this->cod_acervo_editora );
 
-		/*$obj_pessoa_bib = new clsPmieducarBibliotecaUsuario();
-		$lst_pessoa_bib = $obj_pessoa_bib->lista(null, $this->pessoa_logada);
+    //foreign keys
+    $this->inputsHelper()->dynamic(array('instituicao', 'escola', 'biblioteca'));
 
-		$opcoes = array("" => "Selecione");
-		if(is_array($lst_pessoa_bib))
-		{
-			foreach ($lst_pessoa_bib as $bib)
-			{
-				$obj_biblioteca = new clsPmieducarBiblioteca($bib['ref_cod_biblioteca']);
-				$det_biblioteca = $obj_biblioteca->detalhe();
-				
-				$opcoes[$det_biblioteca['cod_biblioteca']] = $det_biblioteca['nm_biblioteca'];
-			}
-		}
-		$this->campoLista("ref_cod_biblioteca", "Biblioteca", $opcoes, $this->ref_cod_biblioteca);
-		*/
-		
-		$get_escola     = 1;
-		$escola_obrigatorio = false;
-		$get_biblioteca = 1;
-		$instituicao_obrigatorio = true;
-		$biblioteca_obrigatorio = true;
-		include("include/pmieducar/educar_campo_lista.php");
-		
 		//text
 		$this->campoTexto( "nm_editora", "Editora", $this->nm_editora, 30, 255, true );
 
@@ -138,7 +127,7 @@ class indice extends clsCadastro
 			$this->cep = int2CEP($this->cep);
 		}
 
-		$this->campoCep( "cep", "CEP", $this->cep, true );
+		$this->campoCep( "cep", "CEP", $this->cep, false );
 
 		$opcoes = array( "" => "Selecione" );
 		if( class_exists( "clsUf" ) )
@@ -158,10 +147,10 @@ class indice extends clsCadastro
 			echo "<!--\nErro\nClasse clsUf nao encontrada\n-->";
 			$opcoes = array( "" => "Erro na geracao" );
 		}
-		$this->campoLista( "ref_sigla_uf", "Estado", $opcoes, $this->ref_sigla_uf );
+		$this->campoLista( "ref_sigla_uf", "Estado", $opcoes, $this->ref_sigla_uf, '', false, '', '', false, false );
 
-		$this->campoTexto( "cidade", "Cidade", $this->cidade, 30, 60, true );
-		$this->campoTexto( "bairro", "Bairro", $this->bairro, 30, 60, true );
+		$this->campoTexto( "cidade", "Cidade", $this->cidade, 30, 60, false );
+		$this->campoTexto( "bairro", "Bairro", $this->bairro, 30, 60, false );
 
 		$opcoes = array( "" => "Selecione" );
 		if( class_exists( "clsTipoLogradouro" ) )
@@ -181,9 +170,9 @@ class indice extends clsCadastro
 			echo "<!--\nErro\nClasse clsUrbanoTipoLogradouro nao encontrada\n-->";
 			$opcoes = array( "" => "Erro na geracao" );
 		}
-		$this->campoLista( "ref_idtlog", "Tipo Logradouro", $opcoes, $this->ref_idtlog );
+		$this->campoLista( "ref_idtlog", "Tipo Logradouro", $opcoes, $this->ref_idtlog, '', false, '', '', false, false );
 
-		$this->campoTexto( "logradouro", "Logradouro", $this->logradouro, 30, 255, true );
+		$this->campoTexto( "logradouro", "Logradouro", $this->logradouro, 30, 255, false );
 
 		$this->campoNumero( "numero", "N&uacute;mero", $this->numero, 6, 6 );
 

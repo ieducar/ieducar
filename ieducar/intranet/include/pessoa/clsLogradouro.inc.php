@@ -32,9 +32,10 @@ class clsLogradouro
 	var $idlog;
 	var $idtlog;
 	var $nome;
-	var $idnum;
+	var $idmun;
 	var $geom;
 	var $ident_oficial;
+	var $idpes_cad;
 	
 	var $tabela;
 	var $schema = "public";
@@ -44,7 +45,7 @@ class clsLogradouro
 	 *
 	 * @return Object:clsLogradouro
 	 */
-	function clsLogradouro( $int_idlog = false, $str_idtlog=false, $str_nome=false, $int_idnum=false, $str_geom=false, $str_ident_oficial=false )
+	function clsLogradouro( $int_idlog = false, $str_idtlog=false, $str_nome=false, $int_idmun=false, $str_geom=false, $str_ident_oficial=false, $idpes_cad = null)
 	{
 		$this->idlog = $int_idlog;
 		
@@ -55,9 +56,10 @@ class clsLogradouro
 		}
 		
 		$this->nome = $str_nome;
-		$this->idnum = $int_idnum;
+		$this->idmun = $int_idmun;
 		$this->geom = $str_geom;
 		$this->ident_oficial = $str_ident_oficial;
+		$this->idpes_cad = $idpes_cad;
 		
 		$this->tabela = "logradouro";
 	}
@@ -71,7 +73,7 @@ class clsLogradouro
 	{
 		$db = new clsBanco();
 		// verificacoes de campos obrigatorios para insercao
-		if( is_string( $this->idtlog ) && is_string( $this->nome ) && is_numeric( $this->idnum ) && is_string($this->ident_oficial) )
+		if( is_string( $this->idtlog ) && is_string( $this->nome ) && is_numeric( $this->idmun ) && is_string($this->ident_oficial) )
 		{
 			$campos = "";
 			$values = "";
@@ -82,9 +84,15 @@ class clsLogradouro
 				$values .= ", '{$this->geom}'";
 			}
 
-			$db->Consulta( "INSERT INTO {$this->schema}.{$this->tabela} ( idtlog, nome, idnum, ident_oficial$campos ) VALUES ( '{$this->idtlog}', '{$this->nome}', '{$this->idnum}'$values )" );
-			
-			return true;
+			if( is_string( $this->idpes_cad ) )
+			{
+				$campos .= ", idpes_cad";
+				$values .= ", '{$this->idpes_cad}'";
+			}
+
+			$db->Consulta( "INSERT INTO {$this->schema}.{$this->tabela} ( idtlog, nome, idmun, origem_gravacao, ident_oficial,data_cad, OPERACAO, idsis_cad$campos ) VALUES ( '{$this->idtlog}', '{$this->nome}', '{$this->idmun}', 'U', '{$this->ident_oficial}', NOW(), 'I', '9' $values )" );
+
+			return $db->InsertId("{$this->schema}.seq_logradouro");
 		}
 		return false;
 	}
@@ -97,9 +105,9 @@ class clsLogradouro
 	function edita()
 	{
 		// verifica campos obrigatorios para edicao
-		if( is_numeric( $this->idlog )  && is_string( $this->idtlog ) && is_string( $this->nome ) && is_numeric( $this->idnum ) && is_string($this->ident_oficial) )
+		if( is_numeric( $this->idlog )  && is_string( $this->idtlog ) && is_string( $this->nome ) && is_numeric( $this->idmun ) && is_string($this->ident_oficial) )
 		{
-			$set = "SET idtlog = '{$this->idtlog}', nome = '{$this->nome}', idnum = '{$this->idnum}', ident_oficial = '{$this->ident_oficial}'";
+			$set = "SET idtlog = '{$this->idtlog}', nome = '{$this->nome}', idmun = '{$this->idmun}', ident_oficial = '{$this->ident_oficial}'";
 			
 			if( is_string( $this->geom ) )
 			{
@@ -172,9 +180,9 @@ class clsLogradouro
 			$where .= "{$whereAnd}fcn_upper_nrm( nome ) ILIKE '%$str_nome%'";
 			$whereAnd = " AND ";
 		}
-		if( is_numeric( $int_idnum ) )
+		if( is_numeric( $int_idmun ) )
 		{
-			$where .= "{$whereAnd}idmun = '$int_idnum'";
+			$where .= "{$whereAnd}idmun = '$int_idmun'";
 			$whereAnd = " AND ";
 		}
 		if( is_string( $str_geom ) )
@@ -220,80 +228,7 @@ class clsLogradouro
 			return $resultado;
 		}
 		return false;
-	} 
-/**
-	 * Exibe uma lista baseada nos parametros de filtragem passados incluindo id municipio
-	 *
-	 * @return Array
-	 */
-	function listamun( $str_idtlog=false, $str_nome=false, $int_idnum=false, $int_idmun=false, $str_geom=false, $str_ident_oficial=false, $int_limite_ini=0, $int_limite_qtd=20, $str_orderBy = false )
-	{
-		// verificacoes de filtros a serem usados
-		$whereAnd = "WHERE ";
-		if( is_string( $str_idtlog ) )
-		{
-			$where .= "{$whereAnd}idtlog LIKE '%$str_idtlog%'";
-			$whereAnd = " AND ";
-		}
-		if( is_string( $str_nome ) )
-		{
-			$where .= "{$whereAnd}nome LIKE '%$str_nome%'";
-			$whereAnd = " AND ";
-		}
-		if( is_numeric( $int_idnum ) )
-		{
-			$where .= "{$whereAnd}idnum = '$int_idnum'";
-			$whereAnd = " AND ";
-		}
-		if( is_numeric( $int_idmun ) )
-		{
-			$where .= "{$whereAnd}idmun = '$int_idmun'";
-			$whereAnd = " AND ";
-		}
-		if( is_string( $str_geom ) )
-		{
-			$where .= "{$whereAnd}geom LIKE '%$str_geom%'";
-			$whereAnd = " AND ";
-		}
-		
-		if( is_string( $str_ident_oficial ) )
-		{
-			$where .= "{$whereAnd}ident_oficial LIKE '%$str_ident_oficial%'";
-			$whereAnd = " AND ";
-		}
-		
-		if($str_orderBy)
-		{
-			$orderBy = "ORDER BY $str_orderBy";
-		}
-		
-		$limit = "";
-		if( is_numeric( $int_limite_ini ) && is_numeric( $int_limite_qtd ) )
-		{
-			$limit = " LIMIT $int_limite_ini,$int_limite_qtd";
-		}
-		
-		$db = new clsBanco();
-		$db->Consulta( "SELECT COUNT(0) AS total FROM {$this->schema}.{$this->tabela} $where" );
-		$db->ProximoRegistro();
-		$total = $db->Campo( "total" );
-	
-		$db->Consulta( "SELECT idlog, idtlog, nome, idmun, geom, ident_oficial FROM {$this->schema}.{$this->tabela} $where $orderBy $limit" );
-		$resultado = array();
-		while ( $db->ProximoRegistro() ) 
-		{
-			$tupla = $db->Tupla();
-			$tupla["idtlog"] = new clsTipoLogradouro( $tupla["idtlog"] );
-
-			$tupla["total"] = $total;
-			$resultado[] = $tupla;
-		}
-		if( count( $resultado ) )
-		{
-			return $resultado;
-		}
-		return false;
-	} 
+	}
 	/**
 	 * Retorna um array com os detalhes do objeto
 	 *
@@ -311,7 +246,7 @@ class clsLogradouro
 				$this->idlog = $tupla["idlog"];
 				$this->idtlog = $tupla["idtlog"];
 				$this->nome = $tupla["nome"];
-				$this->idnum = $tupla["idnum"];
+				$this->idmun = $tupla["idmun"];
 				$this->geom = $tupla["geom"];
 				$this->ident_oficial = $tupla["ident_oficial"];
 				

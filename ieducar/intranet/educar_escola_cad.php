@@ -1,25 +1,29 @@
 <?php
+
+#error_reporting(E_ALL);
+#ini_set("display_errors", 1);
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -28,6 +32,7 @@ require_once ("include/clsBase.inc.php");
 require_once ("include/clsCadastro.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/pmieducar/geral.inc.php" );
+require_once 'Portabilis/View/Helper/Application.php';
 
 class clsIndexBase extends clsBase
 {
@@ -35,6 +40,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Escola" );
 		$this->processoAp = "561";
+		$this->addEstilo("localizacaoSistema");
 	}
 }
 
@@ -113,7 +119,7 @@ class indice extends clsCadastro
 		@session_write_close();
 
 		$obj_permissoes = new clsPermissoes();
-		$obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 3, "educar_escola_lst.php" );
+		$obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 7, "educar_escola_lst.php" );
 
 		$this->cod_escola = $_GET["cod_escola"];
 
@@ -351,16 +357,37 @@ class indice extends clsCadastro
 		}
 
 		$this->url_cancelar = ($retorno == "Editar") ? "educar_escola_det.php?cod_escola={$registro["cod_escola"]}" : "educar_escola_lst.php";
+
+		$nomeMenu = $retorno == "Editar" ? $retorno : "Cadastrar";
+	    $localizacao = new LocalizacaoSistema();
+	    $localizacao->entradaCaminhos( array(
+	         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+	         "educar_index.php"                  => "i-Educar - Escola",
+	         ""        => "{$nomeMenu} escola"
+	    ));
+	    $this->enviaLocalizacao($localizacao->montar());
+
 		$this->nome_url_cancelar = "Cancelar";
 
-		return $retorno;
+  	return $retorno;
 	}
 
 	function Gerar()
 	{
 
-		$obj_permissoes = new clsPermissoes();
+		// js
+		Portabilis_View_Helper_Application::loadJQueryLib($this);
 
+		$scripts = array(
+			'/modules/Portabilis/Assets/Javascripts/Utils.js',
+			'/modules/Portabilis/Assets/Javascripts/ClientApi.js',
+			'/modules/Cadastro/Assets/Javascripts/Escola.js'
+			);
+
+		Portabilis_View_Helper_Application::loadJavascript($this, $scripts);
+
+
+		$obj_permissoes = new clsPermissoes();
 //		echo "<pre>";print_r($_POST);die;
 
 		if( !$this->sem_cnpj && !$this->com_cnpj)
@@ -386,6 +413,7 @@ class indice extends clsCadastro
 		}
 		else
 		{
+  		$this->inputsHelper()->integer('escola_inep_id', array('label' => 'CÃ³digo inep', 'required' => false, 'max_length' => 14));
 
 			if( $_POST )
 			foreach( $_POST AS $campo => $val )
@@ -442,7 +470,7 @@ class indice extends clsCadastro
 					}
 					else
 					{
-						die( "Usuï¿½rio nï¿½o ï¿½ do nivel poli-institucional e nï¿½o possui uma instituiï¿½ï¿½o" );
+						die( "UsuÃ¯Â¿Â½rio nÃ¯Â¿Â½o Ã¯Â¿Â½ do nivel poli-institucional e nÃ¯Â¿Â½o possui uma instituiÃ¯Â¿Â½Ã¯Â¿Â½o" );
 					}
 				}
 
@@ -477,7 +505,7 @@ class indice extends clsCadastro
 						}
 						$script = "<img id='img_rede_ensino' style='display: \'\'' src='imagens/banco_imagens/escreve.gif' style='cursor:hand; cursor:pointer;' border='0' onclick=\"{$script}\">";
 					}
-					else 
+					else
 					{
 						$script = "<img id='img_rede_ensino' style='display: none;'  src='imagens/banco_imagens/escreve.gif' style='cursor:hand; cursor:pointer;' border='0' onclick=\"{$script}\">";
 					}
@@ -518,7 +546,7 @@ class indice extends clsCadastro
 						}
 						$script = "<img id='img_localizacao' style='display: \'\'' src='imagens/banco_imagens/escreve.gif' style='cursor:hand; cursor:pointer;' border='0' onclick=\"{$script}\">";
 					}
-					else 
+					else
 					{
 						$script = "<img id='img_localizacao' style='display: none;'  src='imagens/banco_imagens/escreve.gif' style='cursor:hand; cursor:pointer;' border='0' onclick=\"{$script}\">";
 					}
@@ -541,7 +569,7 @@ class indice extends clsCadastro
 				$this->campoTexto( "bairro", "Bairro",  $this->bairro, "50", "20", true );
 				$this->campoTexto( "logradouro", "Logradouro",  $this->logradouro, "50", "255",true );
 				$this->campoTexto( "complemento", "Complemento",  $this->complemento, "22", "20", false );
-				$this->campoNumero( "numero", "Número",  $this->numero, "6", "6", true );
+				$this->campoNumero( "numero", "NÃºmero",  $this->numero, "6", "6", true );
 
 				$this->campoTexto( "p_ddd_telefone_1", "DDD Telefone 1",  $this->p_ddd_telefone_1, "2", "2", false );
 				$this->campoTexto( "p_telefone_1", "Telefone 1",  $this->p_telefone_1, "10", "15", false );
@@ -550,6 +578,7 @@ class indice extends clsCadastro
 
 				$this->campoTexto( "p_email", "E-mail",  $this->p_email, "50", "255", false );
 			}
+
 			if ($this->com_cnpj)
 			{
 				$this->campoOculto( "com_cnpj", $this->com_cnpj );
@@ -599,7 +628,7 @@ class indice extends clsCadastro
 
 					// text
 					$this->campoTexto( "fantasia", "Escola", $this->fantasia, 30, 255, true );
-					$this->campoTexto( "sigla", "Sigla", $this->sigla, 30, 255, true );
+					$this->campoTexto( "sigla", "Sigla", $this->sigla, 30, 20, true );
 
 					// foreign keys
 					$nivel = $obj_permissoes->nivel_acesso($this->pessoa_logada);
@@ -628,7 +657,7 @@ class indice extends clsCadastro
 						}
 						else
 						{
-							die( "Usuï¿½rio nï¿½o ï¿½ do nivel poli-institucional e nï¿½o possui uma instituiï¿½ï¿½o" );
+							die( "UsuÃ¯Â¿Â½rio nÃ¯Â¿Â½o Ã¯Â¿Â½ do nivel poli-institucional e nÃ¯Â¿Â½o possui uma instituiÃ¯Â¿Â½Ã¯Â¿Â½o" );
 						}
 					}
 
@@ -662,7 +691,7 @@ class indice extends clsCadastro
 							}
 							$script = "<img id='img_rede_ensino' style='display:\'\'' src='imagens/banco_imagens/escreve.gif' style='cursor:hand; cursor:pointer;' border='0' onclick=\"{$script}\">";
 						}
-						else 
+						else
 						{
 							$script = "<img id='img_rede_ensino' style='display: none;'  src='imagens/banco_imagens/escreve.gif' style='cursor:hand; cursor:pointer;' border='0' onclick=\"{$script}\">";
 						}
@@ -704,7 +733,7 @@ class indice extends clsCadastro
 							}
 							$script = "<img id='img_localizacao' style='display:\'\'' src='imagens/banco_imagens/escreve.gif' style='cursor:hand; cursor:pointer;' border='0' onclick=\"{$script}\">";
 						}
-						else 
+						else
 						{
 							$script = "<img id='img_localizacao' style='display: none;' src='imagens/banco_imagens/escreve.gif' style='cursor:hand; cursor:pointer;' border='0' onclick=\"{$script}\">";
 						}
@@ -766,7 +795,7 @@ $disabled = $this->isEnderecoExterno ? false : true ;
 						$this->campoLista( "idtlog", "Tipo Logradouro", $listaTLog, $this->idtlog, false, false, false, false, true ,true);
 						$this->campoTexto( "logradouro", "Logradouro",  $this->logradouro, "50", "255", true, false, false, "", "", "", "onKeyUp", true );
 						$this->campoTexto( "complemento", "Complemento",  $this->complemento, "22", "20", false, false );
-						$this->campoNumero("numero", "Número", $this->numero, "6", "6", false );
+						$this->campoNumero("numero", "NÃºmero", $this->numero, "6", "6", false );
 						$this->campoNumero("andar", "Andar", $this->andar, "2","2", false);
 					}
 					elseif($this->ref_idpes && $this->cep)
@@ -783,7 +812,7 @@ $disabled = $this->isEnderecoExterno ? false : true ;
 						$this->campoLista( "idtlog", "Tipo Logradouro", $listaTLog, $this->idtlog, "", false, "", "", false,true );
 						$this->campoTexto( "logradouro", "Logradouro",  $this->logradouro, "50", "255", true, false, false, "", "", "", "onKeyUp", false );
 						$this->campoTexto( "complemento", "Complemento",  $this->complemento, "22", "20", false, false, false, "", "", "", "onKeyUp", false );
-						$this->campoNumero( "numero", "Número",  $this->numero, 6, 6, false, "", ""  );
+						$this->campoNumero( "numero", "NÃºmero",  $this->numero, 6, 6, false, "", ""  );
 						$this->campoNumero( "andar", "Andar", $this->andar, "2","2", false );
 					}
 					else
@@ -866,6 +895,8 @@ if(!$this->isEnderecoExterno){
 //
 //
 //			}
+
+  		$this->campoCheck("bloquear_lancamento_diario_anos_letivos_encerrados", "Bloquear lanÃ§amento no diÃ¡rio para anos letivos encerrados", $this->bloquear_lancamento_diario_anos_letivos_encerrados);
 
 			if ( $_POST["escola_curso"] )
 				$this->escola_curso = unserialize( urldecode( $_POST["escola_curso"] ) );
@@ -974,6 +1005,8 @@ if(!$this->isEnderecoExterno){
 		$obj_permissoes = new clsPermissoes();
 		$obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 3, "educar_escola_lst.php" );
 
+    $this->bloquear_lancamento_diario_anos_letivos_encerrados = is_null($this->bloquear_lancamento_diario_anos_letivos_encerrados) ? 0 : 1;
+
 		if ($this->com_cnpj)
 		{
 //			echo "clsPessoa_( false, $this->fantasia, $this->pessoa_logada, $this->p_http, "J", false, false, $this->p_email )";
@@ -987,8 +1020,9 @@ if(!$this->isEnderecoExterno){
 
 				if ($cadastrou)
 				{
-					$obj = new clsPmieducarEscola( null, $this->pessoa_logada, null, $this->ref_cod_instituicao, $this->ref_cod_escola_localizacao, $this->ref_cod_escola_rede_ensino, $this->ref_idpes, $this->sigla, null, null, 1 );
+					$obj = new clsPmieducarEscola( null, $this->pessoa_logada, null, $this->ref_cod_instituicao, $this->ref_cod_escola_localizacao, $this->ref_cod_escola_rede_ensino, $this->ref_idpes, $this->sigla, null, null, 1, NULL, $this->bloquear_lancamento_diario_anos_letivos_encerrados);
 					$cadastrou1 = $obj->cadastra();
+
 					if( $cadastrou1 )
 					{
 						$objTelefone = new clsPessoaTelefone( $this->ref_idpes);
@@ -1081,8 +1115,11 @@ if(!$this->isEnderecoExterno){
 		}
 		else if( $this->sem_cnpj )
 		{
-			$obj = new clsPmieducarEscola( null, $this->pessoa_logada, null, $this->ref_cod_instituicao, $this->ref_cod_escola_localizacao, $this->ref_cod_escola_rede_ensino, null, $this->sigla, null, null, 1 );
+			$obj = new clsPmieducarEscola( null, $this->pessoa_logada, null, $this->ref_cod_instituicao, $this->ref_cod_escola_localizacao, $this->ref_cod_escola_rede_ensino, null, $this->sigla, null, null, 1, null, $this->bloquear_lancamento_diario_anos_letivos_encerrados );
 			$cadastrou = $obj->cadastra();
+
+
+
 			if ($cadastrou)
 			{
 				$obj2 = new clsPmieducarEscolaComplemento( $cadastrou, null, $this->pessoa_logada, idFederal2int( $this->cep ),$this->numero,$this->complemento,$this->p_email,$this->fantasia,$this->cidade,$this->bairro,$this->logradouro,$this->p_ddd_telefone_1, $this->p_telefone_1,$this->p_ddd_telefone_fax, $this->p_telefone_fax,null,null,1);
@@ -1135,20 +1172,25 @@ if(!$this->isEnderecoExterno){
 		@session_write_close();
 
 		$obj_permissoes = new clsPermissoes();
-		$obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 3, "educar_escola_lst.php" );
+		$obj_permissoes->permissao_cadastra( 561, $this->pessoa_logada, 7, "educar_escola_lst.php" );
+
+    $this->bloquear_lancamento_diario_anos_letivos_encerrados = is_null($this->bloquear_lancamento_diario_anos_letivos_encerrados) ? 0 : 1;
+
 //
 //		echo "<br>cep: ".$this->cep;
 //		echo "<br>cep_: ".$this->cep_;die;
 		if ($this->cod_escola)
 		{
-			$obj = new clsPmieducarEscola($this->cod_escola, null, $this->pessoa_logada, $this->ref_cod_instituicao, $this->ref_cod_escola_localizacao, $this->ref_cod_escola_rede_ensino, $this->ref_idpes, $this->sigla, null, null, 1);
+			$obj = new clsPmieducarEscola($this->cod_escola, null, $this->pessoa_logada, $this->ref_cod_instituicao, $this->ref_cod_escola_localizacao, $this->ref_cod_escola_rede_ensino, $this->ref_idpes, $this->sigla, null, null, 1, $this->bloquear_lancamento_diario_anos_letivos_encerrados);
 			$editou = $obj->edita();
+
 		}
 		else
 		{
-			$obj = new clsPmieducarEscola(null, $this->pessoa_logada, null, $this->ref_cod_instituicao, $this->ref_cod_escola_localizacao, $this->ref_cod_escola_rede_ensino, $this->ref_idpes, $this->sigla, null, null, 1);
+			$obj = new clsPmieducarEscola(null, $this->pessoa_logada, null, $this->ref_cod_instituicao, $this->ref_cod_escola_localizacao, $this->ref_cod_escola_rede_ensino, $this->ref_idpes, $this->sigla, null, null, 1, $this->bloquear_lancamento_diario_anos_letivos_encerrados);
 			$editou = $obj->cadastra();
 			$this->cod_escola = $editou;
+
 		}
 		if( $editou )
 		{
@@ -1434,7 +1476,7 @@ function getRedeEnsino(xml_escola_rede_ensino)
 		}
 	}
 	else
-		campoRedeEnsino.options[0].text = 'A instituição não possui nenhuma rede de ensino';
+		campoRedeEnsino.options[0].text = 'A instituiÃ§Ã£o nÃ£o possui nenhuma rede de ensino';
 }
 
 function getLocalizacao(xml_escola_localizacao)
@@ -1458,7 +1500,7 @@ function getLocalizacao(xml_escola_localizacao)
 	if(DOM_array.length)
 	{
 		campoLocalizacao.length = 1;
-		campoLocalizacao.options[0].text = 'Selecione uma localização';
+		campoLocalizacao.options[0].text = 'Selecione uma localizaÃ§Ã£o';
 		campoLocalizacao.disabled = false;
 
 		for( var i = 0; i < DOM_array.length; i++ )
@@ -1467,7 +1509,7 @@ function getLocalizacao(xml_escola_localizacao)
 		}
 	}
 	else
-		campoLocalizacao.options[0].text = 'A instituição não possui nenhuma localização';
+		campoLocalizacao.options[0].text = 'A instituiÃ§Ã£o nÃ£o possui nenhuma localizaÃ§Ã£o';
 }
 
 function getCurso(xml_curso)
@@ -1500,7 +1542,7 @@ function getCurso(xml_curso)
 		}
 	}
 	else
-		campoCurso.options[0].text = 'A instituição não possui nenhum curso';
+		campoCurso.options[0].text = 'A instituiÃ§Ã£o nÃ£o possui nenhum curso';
 }
 
 
@@ -1521,7 +1563,7 @@ if ( document.getElementById('ref_cod_instituicao') )
 		var campoLocalizacao = document.getElementById('ref_cod_escola_localizacao');
 		campoLocalizacao.length = 1;
 		campoLocalizacao.disabled = true;
-		campoLocalizacao.options[0].text = 'Carregando localização';
+		campoLocalizacao.options[0].text = 'Carregando localizaÃ§Ã£o';
 
 		var campoCurso = document.getElementById('ref_cod_curso');
 		campoCurso.length = 1;
@@ -1536,7 +1578,7 @@ if ( document.getElementById('ref_cod_instituicao') )
 
 		var xml_curso = new ajax( getCurso );
 		xml_curso.envia( "educar_curso_xml2.php?ins="+campoInstituicao );
-		
+
 		if (this.value == '')
 		{
 			$('img_rede_ensino').style.display = 'none;';
@@ -1547,7 +1589,7 @@ if ( document.getElementById('ref_cod_instituicao') )
 			$('img_rede_ensino').style.display = '';
 			$('img_localizacao').style.display = '';
 		}
-		
+
 	}
 }
 

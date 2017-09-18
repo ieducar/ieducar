@@ -1,46 +1,47 @@
 <?php
 
 /**
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+ * com este programa; se n√£o, escreva para a Free Software Foundation, Inc., no
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Include
- * @since     Arquivo disponÌvel desde a vers„o 1.0.0
+ * @since     Arquivo dispon√≠vel desde a vers√£o 1.0.0
  * @version   $Id$
  */
 
 require_once 'Core/Controller/Page/Abstract.php';
+require_once 'include/localizacaoSistema.php';
 
 /**
  * clsDetalhe class.
  *
- * Cria um template para a visualizaÁ„o de um registro de alguma tabela do banco
+ * Cria um template para a visualiza√ß√£o de um registro de alguma tabela do banco
  * de dados.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Include
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class clsDetalhe extends Core_Controller_Page_Abstract
@@ -52,6 +53,7 @@ class clsDetalhe extends Core_Controller_Page_Abstract
   var $bannerClose = FALSE;
   var $largura;
   var $detalhe = array();
+  var $locale = null;
 
   var $url_novo;
   var $caption_novo = "Novo";
@@ -86,6 +88,11 @@ class clsDetalhe extends Core_Controller_Page_Abstract
     $this->detalhe[] = $detalhe;
   }
 
+  function enviaLocalizacao($localizao){
+    if($localizao)
+      $this->locale = $localizao;
+  }
+
   function Gerar() {
     return FALSE;
   }
@@ -112,7 +119,7 @@ class clsDetalhe extends Core_Controller_Page_Abstract
      * adiciona os botoes de help para a pagina atual
      */
     $url = parse_url($_SERVER['REQUEST_URI']);
-    $url = ereg_replace( "^/", "", $url["path"] );
+    $url = preg_match( "^/", "", $url["path"] );
 
     if (strpos($url, '_det.php') !== FALSE) {
       $tipo = "det";
@@ -137,12 +144,24 @@ class clsDetalhe extends Core_Controller_Page_Abstract
           <table border=\"0\" cellpading=\"0\" cellspacing=\"0\" width=\"100%\">
             <tr>
               <script type=\"text/javascript\">document.help_page_index = 0;</script>
-              <td width=\"20\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"BotÔøΩo de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta pÔøΩgina\"></a></td>
+              <td width=\"20\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"Bot√Ø¬ø¬Ωo de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta p√Ø¬ø¬Ωgina\"></a></td>
               <td><b>{$this->titulo}</b></td>
-              <td align=\"right\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"BotÔøΩo de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta pÔøΩgina\"></a></td>
+              <td align=\"right\"><a href=\"javascript:showExpansivelIframe(700,500,'ajuda_mostra.php?cod_topico={$lista[0]["ref_cod_topico"]}&tipo={$tipo}');\"><img src=\"imagens/banco_imagens/interrogacao.gif\" border=\"0\" alt=\"Bot√Ø¬ø¬Ωo de Ajuda\" title=\"Clique aqui para obter ajuda sobre esta p√Ø¬ø¬Ωgina\"></a></td>
             </tr>
           </table>";
       }
+    }
+
+    if ($this->locale){
+
+      $retorno .=  "
+        <table class='tableDetalhe' $width border='0'  cellpadding='0' cellspacing='0'>";
+
+      $retorno .=  "<tr height='10px'>
+                      <td class='fundoLocalizacao' colspan='2'>{$this->locale}</td>
+                    </tr>";
+
+      $retorno .= "</table>";
     }
 
     $retorno .= "
@@ -156,35 +175,51 @@ class clsDetalhe extends Core_Controller_Page_Abstract
     if (empty($this->detalhe)) {
       $retorno .= "<tr><td class='tableDetalheLinhaSim' colspan='2'>N&atilde;o h&aacute; informa&ccedil;&atilde;o a ser apresentada.</td></tr>\n";
     }
-    else {
-      if (is_array($this->detalhe)) {
+    else
+    {
+      if (is_array($this->detalhe))
+      {
         reset($this->detalhe);
 
         $campo_anterior = "";
         $md = TRUE;
 
-        foreach ($this->detalhe as $pardetalhe) {
-          $campo = $pardetalhe[0].":";
-          $texto = $pardetalhe[1];
+        foreach ($this->detalhe as $pardetalhe)
+        {
+          if (is_array($pardetalhe))
+          {
+            $campo = $pardetalhe[0].":";
+            $texto = $pardetalhe[1];
 
-          if ($campo == $campo_anterior) {
-            $campo = "";
-          }
-          else {
-            $campo_anterior = $campo;
-            $md = !$md;
-          }
-
-          if ($campo == "-:") {
-            if (empty($texto)) {
-              $texto = '&nbsp;';
+            if ($campo == $campo_anterior)
+            {
+              $campo = "";
+            }
+            else
+            {
+              $campo_anterior = $campo;
+              $md = !$md;
             }
 
-            $retorno .= "<tr><td colspan='2' class='' width='20%'><span class='form'><b>$texto</b></span></td></tr>\n";
+            if ($campo == "-:")
+            {
+              if (empty($texto))
+              {
+                $texto = '&nbsp;';
+              }
+              $retorno .= "<tr><td colspan='2' class='' width='20%'><span class='form'><b>$texto</b></span></td></tr>\n";
+            }
+            else
+            {
+              $classe = $md ? 'formmdtd' : 'formlttd';
+              $retorno .= "<tr><td class='$classe' width='20%'>$campo</td><td class='$classe'>$texto</td></tr>\n";
+            }
           }
-          else {
-            $classe = $md ? 'formmdtd' : 'formlttd';
-            $retorno .= "<tr><td class='$classe' width='20%'>$campo</td><td class='$classe'>$texto</td></tr>\n";
+          else
+          {
+
+            $retorno .= "<tr><td colspan='2'>$pardetalhe</td></tr>";
+
           }
         }
       }

@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -28,6 +28,8 @@ require_once ("include/clsBase.inc.php");
 require_once ("include/clsListagem.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/pmieducar/geral.inc.php" );
+require_once ("include/localizacaoSistema.php");
+require_once 'Portabilis/Date/Utils.php';
 
 class clsIndexBase extends clsBase
 {
@@ -35,6 +37,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Reservas" );
 		$this->processoAp = "609";
+		$this->addEstilo('localizacaoSistema');
 	}
 }
 
@@ -85,6 +88,8 @@ class indice extends clsListagem
 	var $ref_cod_escola;
 	var $cod_biblioteca;
 
+	var $tipo_reserva;
+
 	function Gerar()
 	{
 		@session_start();
@@ -98,12 +103,13 @@ class indice extends clsListagem
 		foreach( $_GET AS $var => $val ) // passa todos os valores obtidos no GET para atributos do objeto
 			$this->$var = ( $val === "" ) ? null: $val;
 
-		$this->addBanner( "imagens/nvp_top_intranet.jpg", "imagens/nvp_vert_intranet.jpg", "Intranet" );
+		
 
 		$lista_busca = array(
 			"Cliente",
 			"Obra",
-			"Data Reserva"
+			"Data Reserva",
+			'Data retirada'
 		);
 
 		// Filtros de Foreign Keys
@@ -124,7 +130,15 @@ class indice extends clsListagem
 		$this->campoOculto("ref_cod_exemplar", $this->ref_cod_exemplar);
 		$this->campoOculto("ref_cod_acervo", $this->ref_cod_acervo);
 
-		$this->campoData( "data_reserva", "Data Reserva", $this->data_reserva, false );
+		// Filtro verificando se ouve retirada
+		$resources = array( 1 => 'Todas',
+                        2 => 'Sem retirada',
+                        3 => 'Com retirada');
+
+    $options = array('label' => 'Tipo de reserva', 'resources' => $resources, 'value' => $this->tipo_reserva);
+    $this->inputsHelper()->select('tipo_reserva', $options);
+
+		$this->campoData( "data_reserva", "Data reserva", $this->data_reserva, false );
 
 		if ($this->ref_cod_biblioteca)
 		{
@@ -160,7 +174,8 @@ class indice extends clsListagem
 			1,
 			$this->ref_cod_biblioteca,
 			$this->ref_cod_instituicao,
-			$this->ref_cod_escola
+			$this->ref_cod_escola,
+			($this->tipo_reserva == 1 || is_null($this->tipo_reserva) ? null : ($this->tipo_reserva == 2 ? true : false))
 		);
 
 		$total = $obj_reservas->_total;
@@ -173,6 +188,7 @@ class indice extends clsListagem
 				// muda os campos data
 				$registro["data_reserva_time"] = strtotime( substr( $registro["data_reserva"], 0, 16 ) );
 				$registro["data_reserva_br"] = date( "d/m/Y", $registro["data_reserva_time"] );
+				$registro["data_retirada_br"] = ($registro["data_retirada"] == null ? '-' :  Portabilis_Date_Utils::PgSqltoBr(substr($registro["data_retirada"],0,10) ));
 
 				// pega detalhes de foreign_keys
 				if( class_exists( "clsPmieducarExemplar" ) )
@@ -225,20 +241,21 @@ class indice extends clsListagem
 				}
 
 				$lista_busca = array(
-					"<a href=\"educar_reservas_det.php?cod_reserva={$registro["cod_reserva"]}\">{$registro["ref_cod_cliente"]}</a>",
-					"<a href=\"educar_reservas_det.php?cod_reserva={$registro["cod_reserva"]}\">{$registro["ref_cod_exemplar"]}</a>",
-					"<a href=\"educar_reservas_det.php?cod_reserva={$registro["cod_reserva"]}\">{$registro["data_reserva_br"]}</a>"
+					"{$registro["ref_cod_cliente"]}",
+					"{$registro["ref_cod_exemplar"]}",
+					"{$registro["data_reserva_br"]}",
+					"{$registro["data_retirada_br"] }"
 				);
 
 
 				if ($qtd_bibliotecas > 1 && ($nivel_usuario == 4 || $nivel_usuario == 8))
-					$lista_busca[] = "<a href=\"educar_reservas_det.php?cod_reserva={$registro["cod_reserva"]}\">{$registro["ref_cod_biblioteca"]}</a>";
+					$lista_busca[] = "{$registro["ref_cod_biblioteca"]}";
 				else if ($nivel_usuario == 1 || $nivel_usuario == 2 || $nivel_usuario == 4)
-					$lista_busca[] = "<a href=\"educar_reservas_det.php?cod_reserva={$registro["cod_reserva"]}\">{$registro["ref_cod_biblioteca"]}</a>";
+					$lista_busca[] = "{$registro["ref_cod_biblioteca"]}";
 				if ($nivel_usuario == 1 || $nivel_usuario == 2)
-					$lista_busca[] = "<a href=\"educar_reservas_det.php?cod_reserva={$registro["cod_reserva"]}\">{$registro["ref_cod_escola"]}</a>";
+					$lista_busca[] = "{$registro["ref_cod_escola"]}";
 				if ($nivel_usuario == 1)
-					$lista_busca[] = "<a href=\"educar_reservas_det.php?cod_reserva={$registro["cod_reserva"]}\">{$registro["ref_cod_instituicao"]}</a>";
+					$lista_busca[] = "{$registro["ref_cod_instituicao"]}";
 
 				$this->addLinhas($lista_busca);
 			}
@@ -247,11 +264,19 @@ class indice extends clsListagem
 		$obj_permissoes = new clsPermissoes();
 		if( $obj_permissoes->permissao_cadastra( 609, $this->pessoa_logada, 11 ) )
 		{
-			$this->acao = "go(\"educar_reservas_login_cad.php\")";
+			$this->acao = "go(\"/module/Biblioteca/Reserva\")";
 			$this->nome_acao = "Novo";
 		}
 
 		$this->largura = "100%";
+
+	    $localizacao = new LocalizacaoSistema();
+	    $localizacao->entradaCaminhos( array(
+	         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+	         "educar_biblioteca_index.php"                  => "i-Educar - Biblioteca",
+	         ""                                  => "Listagem de reservas"
+	    ));
+	    $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 // cria uma extensao da classe base

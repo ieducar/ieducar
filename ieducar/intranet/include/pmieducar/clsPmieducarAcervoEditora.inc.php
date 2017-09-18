@@ -1,31 +1,31 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *																	     *
-*	@author Prefeitura Municipal de Itajaí								 *
+*	@author Prefeitura Municipal de ItajaÃ­								 *
 *	@updated 29/03/2007													 *
-*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 *																		 *
-*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 *						ctima@itajai.sc.gov.br					    	 *
 *																		 *
-*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 *																		 *
-*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 *																		 *
-*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 *	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 *	02111-1307, USA.													 *
 *																		 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /**
-* @author Prefeitura Municipal de Itajaí
+* @author Prefeitura Municipal de ItajaÃ­
 *
 * Criado em 14/07/2006 09:28 pelo gerador automatico de classes
 */
@@ -208,6 +208,7 @@ class clsPmieducarAcervoEditora
 				}
 			}
 		}
+
 		if( is_string( $ref_sigla_uf ) )
 		{
 			if( class_exists( "clsUf" ) )
@@ -298,10 +299,8 @@ class clsPmieducarAcervoEditora
 	 *
 	 * @return bool
 	 */
-	function cadastra()
-	{
-		if( is_numeric( $this->ref_usuario_cad ) && is_string( $this->ref_idtlog ) && is_string( $this->ref_sigla_uf ) && is_string( $this->nm_editora ) && is_numeric( $this->cep ) && is_string( $this->cidade ) && is_string( $this->bairro ) && is_string( $this->logradouro ) && is_numeric($this->ref_cod_biblioteca) )
-		{
+	function cadastra() {
+		if(is_numeric($this->ref_usuario_cad ) && is_string( $this->nm_editora ) && is_numeric($this->ref_cod_biblioteca)) {
 			$db = new clsBanco();
 
 			$campos = "";
@@ -417,16 +416,25 @@ class clsPmieducarAcervoEditora
 				$set .= "{$gruda}ref_usuario_exc = '{$this->ref_usuario_exc}'";
 				$gruda = ", ";
 			}
-			if( is_string( $this->ref_idtlog ) )
-			{
-				$set .= "{$gruda}ref_idtlog = '{$this->ref_idtlog}'";
-				$gruda = ", ";
-			}
-			if( is_string( $this->ref_sigla_uf ) )
-			{
-				$set .= "{$gruda}ref_sigla_uf = '{$this->ref_sigla_uf}'";
-				$gruda = ", ";
-			}
+
+			if(is_string($this->ref_idtlog )){
+			  $set .= "{$gruda}ref_idtlog = '{$this->ref_idtlog}'";
+  			$gruda = ", ";
+      }
+      else {
+			  $set .= "{$gruda}ref_idtlog = null";
+  			$gruda = ", ";
+      }
+
+			if(is_string($this->ref_sigla_uf)){
+			  $set .= "{$gruda}ref_sigla_uf = '{$this->ref_sigla_uf}'";
+  			$gruda = ", ";
+      }
+      else {
+			  $set .= "{$gruda}ref_sigla_uf = null";
+  			$gruda = ", ";
+      }
+
 			if( is_string( $this->nm_editora ) )
 			{
 				$set .= "{$gruda}nm_editora = '{$this->nm_editora}'";

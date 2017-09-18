@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de ItajaÌ								 *
+	*	@author Prefeitura Municipal de Itaja√≠								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software P˙blico Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software P√∫blico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÌ			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itaja√≠			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  È  software livre, vocÍ pode redistribuÌ-lo e/ou	 *
-	*	modific·-lo sob os termos da LicenÁa P˙blica Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a vers„o 2 da	 *
-	*	LicenÁa   como  (a  seu  critÈrio)  qualquer  vers„o  mais  nova.	 *
+	*	Este  programa  √©  software livre, voc√™ pode redistribu√≠-lo e/ou	 *
+	*	modific√°-lo sob os termos da Licen√ßa P√∫blica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a vers√£o 2 da	 *
+	*	Licen√ßa   como  (a  seu  crit√©rio)  qualquer  vers√£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  È distribuÌdo na expectativa de ser ˙til, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implÌcita de COMERCIALI-	 *
-	*	ZA«√O  ou  de ADEQUA«√O A QUALQUER PROP”SITO EM PARTICULAR. Con-	 *
-	*	sulte  a  LicenÁa  P˙blica  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  √© distribu√≠do na expectativa de ser √∫til, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia impl√≠cita de COMERCIALI-	 *
+	*	ZA√á√ÉO  ou  de ADEQUA√á√ÉO A QUALQUER PROP√ìSITO EM PARTICULAR. Con-	 *
+	*	sulte  a  Licen√ßa  P√∫blica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	VocÍ  deve  ter  recebido uma cÛpia da LicenÁa P˙blica Geral GNU	 *
-	*	junto  com  este  programa. Se n„o, escreva para a Free Software	 *
+	*	Voc√™  deve  ter  recebido uma c√≥pia da Licen√ßa P√∫blica Geral GNU	 *
+	*	junto  com  este  programa. Se n√£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -28,6 +28,7 @@ require_once ("include/clsBase.inc.php");
 require_once ("include/clsCadastro.inc.php");
 require_once ("include/clsBanco.inc.php");
 require_once( "include/pmieducar/geral.inc.php" );
+require_once 'lib/Portabilis/Date/Utils.php';
 
 class clsIndexBase extends clsBase
 {
@@ -35,6 +36,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Transfer&ecirc;ncia Solicita&ccedil;&atilde;o" );
 		$this->processoAp = "578";
+		$this->addEstilo("localizacaoSistema");
 	}
 }
 
@@ -82,14 +84,48 @@ class indice extends clsCadastro
 		{
 			if( $obj_permissoes->permissao_excluir( 578, $this->pessoa_logada, 7 ) )
 			{
+
+        if ($_GET['reabrir_matricula']) {
+          $this->reabrirMatricula($this->ref_cod_matricula);
+        }
+
 				$this->Excluir();
 			}
 		}
 
 		$this->url_cancelar = "educar_matricula_det.php?cod_matricula={$this->ref_cod_matricula}";
+
+		$nomeMenu = $retorno == "Editar" ? $retorno : "Cadastrar";
+        $localizacao = new LocalizacaoSistema();
+        $localizacao->entradaCaminhos( array(
+             $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+             "educar_index.php"                  => "i-Educar - Escola",
+             ""        => "{$nomeMenu} transfer&ecirc;ncia de matr&iacute;cula"
+        ));
+        $this->enviaLocalizacao($localizacao->montar());
+
 		$this->nome_url_cancelar = "Cancelar";
 		return $retorno;
 	}
+
+  
+  function reabrirMatricula($matriculaId) {
+    $matricula = new clsPmieducarMatricula($matriculaId, NULL, NULL, NULL, $this->pessoa_logada, NULL, NULL, 3);
+    $matricula->edita();   
+
+    $sql = "select ref_cod_turma, sequencial from pmieducar.matricula_turma where ref_cod_matricula = $matriculaId and sequencial = (select max(sequencial) from pmieducar.matricula_turma where ref_cod_matricula = $matriculaId) and not exists(select 1 from pmieducar.matricula_turma where ref_cod_matricula = $matriculaId and ativo = 1 limit 1) limit 1";
+
+    $db = new clsBanco();
+    $ultimaEnturmacao = $db->Consulta($sql);
+    $db->ProximoRegistro();
+    $ultimaEnturmacao = $db->Tupla();
+
+    if($ultimaEnturmacao) {
+      $enturmacao = new clsPmieducarMatriculaTurma($matriculaId, $ultimaEnturmacao['ref_cod_turma'], $this->pessoa_logada, NULL, NULL, NULL, 1, null, $ultimaEnturmacao['sequencial']);
+      $enturmacao->edita();
+    }
+  }
+
 
 	function Gerar()
 	{
@@ -132,7 +168,7 @@ class indice extends clsCadastro
 			$opcoes = array( "" => "Erro na geracao" );
 		}
 		$this->campoLista( "ref_cod_transferencia_tipo", "Transfer&ecirc;ncia Motivo", $opcoes, $this->ref_cod_transferencia_tipo );
-
+		$this->inputsHelper()->date('data_cancel', array('label' => 'Data da transfer√™ncia', 'placeholder' => 'dd/mm/yyyy', 'value' => date('d/m/Y')));
 		// text
 		$this->campoMemo( "observacao", "Observa&ccedil;&atilde;o", $this->observacao, 60, 5, false );
 	}
@@ -153,6 +189,30 @@ class indice extends clsCadastro
 //			$det_matricula = array_shift($lst_matricula);
 //			$this->ref_cod_matricula_saida = $det_matricula["cod_matricula"];
 
+  
+    // escola externa
+		$this->data_cancel = Portabilis_Date_Utils::brToPgSQL($this->data_cancel);
+		$obj = new clsPmieducarMatricula( $this->ref_cod_matricula, null,null,null,$this->pessoa_logada);
+		$det_matricula = $obj->detalhe();
+
+		if(is_null($det_matricula['data_matricula'])){
+
+			if(substr($det_matricula['data_cadastro'], 0, 10) > $this->data_cancel){
+
+				$this->mensagem = "Data de abandono n√£o pode ser inferior a data da matr√≠cula.<br>";
+				return false;	
+				die();							
+			} 
+		}else{
+			if(substr($det_matricula['data_matricula'], 0, 10) > $this->data_cancel){
+				$this->mensagem = "Data de abandono n√£o pode ser inferior a data da matr√≠cula.<br>";
+				return false;
+				die();
+			}
+		}		
+		$editou = $obj->edita();
+
+		$obj->data_cancel = $this->data_cancel;    
 		if ($this->transferencia_tipo == 2)
 		{
 			$this->data_transferencia = date("Y-m-d");
@@ -171,19 +231,25 @@ class indice extends clsCadastro
 					$this->mensagem = "N&atilde;o foi poss&iacute;vel editar a Matr&iacute;cula do Aluno.<br>";
 					return false;
 				}
-				
-				$obj_matricula_turma = new clsPmieducarMatriculaTurma();
-				$lst_matricula_turma = $obj_matricula_turma->lista( $this->ref_cod_matricula, null, null, null, null, null, null, null, 1 );
-				if( $lst_matricula_turma ) 
+			
+				$enturmacoes = new clsPmieducarMatriculaTurma();
+				$enturmacoes = $enturmacoes->lista($this->ref_cod_matricula, null, null, null, null, null, null, null, 1 );
+
+				if($enturmacoes) 
 				{
-					$det_matricula_turma = array_shift($lst_matricula_turma);
-					
-					$obj_matricula_turma = new clsPmieducarMatriculaTurma( $this->ref_cod_matricula, $det_matricula_turma['ref_cod_turma'], $this->pessoa_logada, null, null, null, 0, null, $det_matricula_turma['sequencial'] );
-					if( !$obj_matricula_turma->edita() ) 
-					{
-						$this->mensagem = "N&atilde;o foi poss&iacute;vel desativar a Matr&iacute;cula Turma do Aluno.<br>";
-						return false;
-					}
+          // foreach necess√°rio pois metodo edita e exclui da classe clsPmieducarMatriculaTurma, necessitam do
+          // c√≥digo da turma e do sequencial
+					foreach ($enturmacoes as $enturmacao) {
+					  $enturmacao = new clsPmieducarMatriculaTurma( $this->ref_cod_matricula, $enturmacao['ref_cod_turma'], $this->pessoa_logada, null, null, null, 0, null, $enturmacao['sequencial']);
+
+					  if(! $enturmacao->edita())
+					  {
+    				  $this->mensagem = "N&atilde;o foi poss&iacute;vel desativar as enturma&ccedil;&otilde;es da matr&iacute;cula.";
+						  return false;
+					  }else{
+ +					  	$enturmacao->marcaAlunoTransferido($this->data_cancel);
+					  }
+          }
 				}
 			}
 		}
@@ -192,6 +258,11 @@ class indice extends clsCadastro
 		$cadastrou = $obj->cadastra();
 		if( $cadastrou )
 		{
+			
+			$obj = new clsPmieducarMatricula( $this->ref_cod_matricula, null,null,null,$this->pessoa_logada);
+			$det_matricula = $obj->detalhe();
+			$obj->data_cancel = $this->data_cancel;
+			$obj->edita();			
 			$this->mensagem .= "Cadastro efetuado com sucesso.<br>";
 			header( "Location: educar_matricula_det.php?cod_matricula={$this->ref_cod_matricula}" );
 			die();

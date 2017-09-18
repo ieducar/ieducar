@@ -1,31 +1,31 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *																	     *
-*	@author Prefeitura Municipal de ItajaÌ								 *
+*	@author Prefeitura Municipal de Itaja√≠								 *
 *	@updated 29/03/2007													 *
-*   Pacote: i-PLB Software P˙blico Livre e Brasileiro					 *
+*   Pacote: i-PLB Software P√∫blico Livre e Brasileiro					 *
 *																		 *
-*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÌ			 *
+*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itaja√≠			 *
 *						ctima@itajai.sc.gov.br					    	 *
 *																		 *
-*	Este  programa  È  software livre, vocÍ pode redistribuÌ-lo e/ou	 *
-*	modific·-lo sob os termos da LicenÁa P˙blica Geral GNU, conforme	 *
-*	publicada pela Free  Software  Foundation,  tanto  a vers„o 2 da	 *
-*	LicenÁa   como  (a  seu  critÈrio)  qualquer  vers„o  mais  nova.	 *
+*	Este  programa  √©  software livre, voc√™ pode redistribu√≠-lo e/ou	 *
+*	modific√°-lo sob os termos da Licen√ßa P√∫blica Geral GNU, conforme	 *
+*	publicada pela Free  Software  Foundation,  tanto  a vers√£o 2 da	 *
+*	Licen√ßa   como  (a  seu  crit√©rio)  qualquer  vers√£o  mais  nova.	 *
 *																		 *
-*	Este programa  È distribuÌdo na expectativa de ser ˙til, mas SEM	 *
-*	QUALQUER GARANTIA. Sem mesmo a garantia implÌcita de COMERCIALI-	 *
-*	ZA«√O  ou  de ADEQUA«√O A QUALQUER PROP”SITO EM PARTICULAR. Con-	 *
-*	sulte  a  LicenÁa  P˙blica  Geral  GNU para obter mais detalhes.	 *
+*	Este programa  √© distribu√≠do na expectativa de ser √∫til, mas SEM	 *
+*	QUALQUER GARANTIA. Sem mesmo a garantia impl√≠cita de COMERCIALI-	 *
+*	ZA√á√ÉO  ou  de ADEQUA√á√ÉO A QUALQUER PROP√ìSITO EM PARTICULAR. Con-	 *
+*	sulte  a  Licen√ßa  P√∫blica  Geral  GNU para obter mais detalhes.	 *
 *																		 *
-*	VocÍ  deve  ter  recebido uma cÛpia da LicenÁa P˙blica Geral GNU	 *
-*	junto  com  este  programa. Se n„o, escreva para a Free Software	 *
+*	Voc√™  deve  ter  recebido uma c√≥pia da Licen√ßa P√∫blica Geral GNU	 *
+*	junto  com  este  programa. Se n√£o, escreva para a Free Software	 *
 *	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 *	02111-1307, USA.													 *
 *																		 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /**
-* @author Prefeitura Municipal de ItajaÌ
+* @author Prefeitura Municipal de Itaja√≠
 *
 * Criado em 22/12/2006 16:57 pelo gerador automatico de classes
 */
@@ -58,6 +58,7 @@ class clsPortalFuncionario
 	var $ref_cod_setor_new;
 	var $matricula_new;
 	var $matricula_permanente;
+	var $matricula_interna;
 	var $tipo_menu;
 
 	// propriedades padrao
@@ -150,13 +151,13 @@ class clsPortalFuncionario
 	 *
 	 * @return object
 	 */
-	function clsPortalFuncionario( $ref_cod_pessoa_fj = null, $matricula = null, $senha = null, $ativo = null, $ref_sec = null, $ramal = null, $sequencial = null, $opcao_menu = null, $ref_cod_administracao_secretaria = null, $ref_ref_cod_administracao_secretaria = null, $ref_cod_departamento = null, $ref_ref_ref_cod_administracao_secretaria = null, $ref_ref_cod_departamento = null, $ref_cod_setor = null, $ref_cod_funcionario_vinculo = null, $tempo_expira_senha = null, $tempo_expira_conta = null, $data_troca_senha = null, $data_reativa_conta = null, $ref_ref_cod_pessoa_fj = null, $proibido = null, $ref_cod_setor_new = null, $matricula_new = null, $matricula_permanente = null, $tipo_menu = null )
+	function clsPortalFuncionario( $ref_cod_pessoa_fj = null, $matricula = null, $senha = null, $ativo = null, $ref_sec = null, $ramal = null, $sequencial = null, $opcao_menu = null, $ref_cod_administracao_secretaria = null, $ref_ref_cod_administracao_secretaria = null, $ref_cod_departamento = null, $ref_ref_ref_cod_administracao_secretaria = null, $ref_ref_cod_departamento = null, $ref_cod_setor = null, $ref_cod_funcionario_vinculo = null, $tempo_expira_senha = null, $tempo_expira_conta = null, $data_troca_senha = null, $data_reativa_conta = null, $ref_ref_cod_pessoa_fj = null, $proibido = null, $ref_cod_setor_new = null, $matricula_new = null, $matricula_permanente = null, $tipo_menu = null, $email = null, $matricula_interna = null)
 	{
 		$db = new clsBanco();
 		$this->_schema = "portal.";
 		$this->_tabela = "{$this->_schema}funcionario";
 
-		$this->_campos_lista = $this->_todos_campos = "ref_cod_pessoa_fj, matricula, senha, ativo, ref_sec, ramal, sequencial, opcao_menu, ref_cod_setor, ref_cod_funcionario_vinculo, tempo_expira_senha, tempo_expira_conta, data_troca_senha, data_reativa_conta, ref_ref_cod_pessoa_fj, proibido, ref_cod_setor_new, matricula_new, matricula_permanente, tipo_menu";
+		$this->_campos_lista = $this->_todos_campos = "ref_cod_pessoa_fj, matricula, matricula_interna, senha, ativo, ref_sec, ramal, sequencial, opcao_menu, ref_cod_setor, ref_cod_funcionario_vinculo, tempo_expira_senha, tempo_expira_conta, data_troca_senha, data_reativa_conta, ref_ref_cod_pessoa_fj, proibido, ref_cod_setor_new, matricula_new, matricula_permanente, tipo_menu, email";
 
 		if( is_numeric( $ref_ref_cod_pessoa_fj ) )
 		{
@@ -402,6 +403,12 @@ class clsPortalFuncionario
 			$this->tipo_menu = $tipo_menu;
 		}
 
+		if(is_string($email))
+			$this->email = $email;
+
+		if (is_string($matricula_interna))
+			$this->matricula_interna = $matricula_interna;
+
 	}
 
 	/**
@@ -429,6 +436,12 @@ class clsPortalFuncionario
 			{
 				$campos .= "{$gruda}matricula";
 				$valores .= "{$gruda}'{$this->matricula}'";
+				$gruda = ", ";
+			}
+			if( is_string( $this->matricula_interna ) )
+			{
+				$campos .= "{$gruda}matricula_interna";
+				$valores .= "{$gruda}'{$this->matricula_interna}'";
 				$gruda = ", ";
 			}
 			if( is_string( $this->senha ) )
@@ -567,6 +580,12 @@ class clsPortalFuncionario
 				$gruda = ", ";
 			}
 
+			if(is_string($this->email))
+			{
+				$campos .= "{$gruda}email";
+				$valores .= "{$gruda}'{$this->email}'";
+				$gruda = ", ";
+			}
 
 			$db->Consulta( "INSERT INTO {$this->_tabela} ( $campos ) VALUES( $valores )" );
 			return true;//$db->InsertId( "{$this->_tabela}_ref_cod_pessoa_fj_seq");
@@ -595,6 +614,11 @@ class clsPortalFuncionario
 			if( is_string( $this->senha ) )
 			{
 				$set .= "{$gruda}senha = '{$this->senha}'";
+				$gruda = ", ";
+			}
+			if( is_string( $this->matricula_interna ) )
+			{
+				$set .= "{$gruda}matricula_interna = '{$this->matricula_interna}'";
 				$gruda = ", ";
 			}
 			if( is_numeric( $this->ativo ) )
@@ -708,6 +732,11 @@ class clsPortalFuncionario
 				$gruda = ", ";
 			}
 
+			if(is_string($this->email))
+			{
+				$set .= "{$gruda}email = '{$this->email}'";
+				$gruda = ", ";
+			}
 
 			if( $set )
 			{
@@ -953,7 +982,7 @@ class clsPortalFuncionario
 	}
 
 	/**
-	 * Retorna true se o registro existir. Caso contr·rio retorna false.
+	 * Retorna true se o registro existir. Caso contr√°rio retorna false.
 	 *
 	 * @return bool
 	 */

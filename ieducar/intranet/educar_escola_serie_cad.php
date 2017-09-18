@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Arquivo disponÌvel desde a vers„o 1.0.0
+ * @since     Arquivo dispon√≠vel desde a vers√£o 1.0.0
  * @version   $Id$
  */
 
@@ -34,15 +34,16 @@ require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
 require_once 'ComponenteCurricular/Model/AnoEscolarDataMapper.php';
 require_once 'ComponenteCurricular/Model/ComponenteDataMapper.php';
+require_once 'Avaliacao/Fixups/CleanComponentesCurriculares.php';
 
 /**
  * clsIndexBase class.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class clsIndexBase extends clsBase
@@ -51,21 +52,22 @@ class clsIndexBase extends clsBase
   {
     $this->SetTitulo($this->_instituicao . ' i-Educar - Escola S&eacute;rie');
     $this->processoAp = 585;
+    $this->addEstilo("localizacaoSistema");
   }
 }
 
 /**
  * indice class.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponÌvel desde a vers„o 1.0.0
- * @todo      Ver a quest„o de formul·rios que tem campos dinamicamente
- *   desabilitados de acordo com a requisiÁ„o (GET, POST ou erro de validaÁ„o).
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
+ * @todo      Ver a quest√£o de formul√°rios que tem campos dinamicamente
+ *   desabilitados de acordo com a requisi√ß√£o (GET, POST ou erro de valida√ß√£o).
  *   A forma atual de usar valores em campos hidden leva a diversos problemas
- *   como aumento da lÛgica de prÈ-validaÁ„o nos mÈtodos Novo() e Editar().
+ *   como aumento da l√≥gica de pr√©-valida√ß√£o nos m√©todos Novo() e Editar().
  * @version   @@package_version@@
  */
 class indice extends clsCadastro
@@ -138,6 +140,15 @@ class indice extends clsCadastro
         $registro['ref_cod_escola'], $registro['ref_cod_serie']) :
       'educar_escola_serie_lst.php';
 
+    $nomeMenu = $retorno == "Editar" ? $retorno : "Cadastrar";
+    $localizacao = new LocalizacaoSistema();
+    $localizacao->entradaCaminhos( array(
+         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+         "educar_index.php"                  => "i-Educar - Escola",
+         ""        => "{$nomeMenu} v&iacute;nculo entre escola e s&eacute;rie"
+    ));
+    $this->enviaLocalizacao($localizacao->montar());
+
     $this->nome_url_cancelar = 'Cancelar';
     return $retorno;
   }
@@ -194,7 +205,7 @@ class indice extends clsCadastro
       }
     }
 
-    $this->campoLista('ref_cod_serie', 'SÈrie', $opcoes_serie, $this->ref_cod_serie,
+    $this->campoLista('ref_cod_serie', 'S√©rie', $opcoes_serie, $this->ref_cod_serie,
       '', FALSE, '', '', $this->ref_cod_serie ? TRUE : FALSE);
 
     $this->hora_inicial          = substr($this->hora_inicial, 0, 5);
@@ -203,14 +214,18 @@ class indice extends clsCadastro
     $this->hora_fim_intervalo    = substr($this->hora_fim_intervalo, 0, 5);
 
     // hora
-    $this->campoHora('hora_inicial', 'Hora Inicial', $this->hora_inicial, TRUE);
-    $this->campoHora('hora_final', 'Hora Final', $this->hora_final, TRUE);
+    $this->campoHora('hora_inicial', 'Hora Inicial', $this->hora_inicial, FALSE);
+    $this->campoHora('hora_final', 'Hora Final', $this->hora_final, FALSE);
 
     $this->campoHora('hora_inicio_intervalo', 'Hora In&iacute;cio Intervalo',
-      $this->hora_inicio_intervalo, TRUE);
+      $this->hora_inicio_intervalo, FALSE);
 
     $this->campoHora('hora_fim_intervalo', 'Hora Fim Intervalo',
-      $this->hora_fim_intervalo, TRUE);
+      $this->hora_fim_intervalo, FALSE);
+
+		$this->campoCheck("bloquear_enturmacao_sem_vagas", "Bloquear enturma√ß√£o ap√≥s atingir limite de vagas", $this->bloquear_enturmacao_sem_vagas);
+
+		$this->campoCheck("bloquear_cadastro_turma_para_serie_com_vagas", "Bloquear cadastro de novas turmas antes de atingir limite de vagas (no mesmo turno)", $this->bloquear_cadastro_turma_para_serie_com_vagas);
 
     $this->campoQuebra();
 
@@ -230,7 +245,7 @@ class indice extends clsCadastro
     $opcoes = array('' => 'Selecione');
 
     // Editar
-    $disciplinas = 'Nenhuma sÈrie selecionada';
+    $disciplinas = 'Nenhuma s√©rie selecionada';
 
     if ($this->ref_cod_serie) {
       $disciplinas = '';
@@ -246,10 +261,15 @@ class indice extends clsCadastro
       if (is_array($lista) && count($lista)) {
         $conteudo .= '<div style="margin-bottom: 10px; float: left">';
         $conteudo .= '  <span style="display: block; float: left; width: 250px;">Nome</span>';
-        $conteudo .= '  <span style="display: block; float: left; width: 100px;">Carga hor·ria</span>';
-        $conteudo .= '  <span style="display: block; float: left">Usar padr„o do componente?</span>';
+        $conteudo .= '  <span style="display: block; float: left; width: 100px;">Carga hor√°ria</span>';
+        $conteudo .= '  <span style="display: block; float: left">Usar padr√£o do componente?</span>';
         $conteudo .= '</div>';
         $conteudo .= '<br style="clear: left" />';
+        $conteudo .= '<div style="margin-bottom: 10px; float: left">';
+        $conteudo .= "  <label style='display: block; float: left; width: 350px;'><input type='checkbox' name='CheckTodos' onClick='marcarCheck(".'"disciplinas[]"'.");'/>Marcar Todos</label>";
+        $conteudo .= "  <label style='display: block; float: left; width: 100px;'><input type='checkbox' name='CheckTodos2' onClick='marcarCheck(".'"usar_componente[]"'.");';/>Marcar Todos</label>";
+        $conteudo .= '</div>';
+        $conteudo .= '<br style="clear: left" />';         
 
         foreach ($lista as $registro) {
           $checked = '';
@@ -272,7 +292,8 @@ class indice extends clsCadastro
           $conteudo .= '<div style="margin-bottom: 10px; float: left">';
           $conteudo .= "  <label style='display: block; float: left; width: 250px'><input type=\"checkbox\" $checked name=\"disciplinas[$registro->id]\" id=\"disciplinas[]\" value=\"{$registro->id}\">{$registro}</label>";
           $conteudo .= "  <label style='display: block; float: left; width: 100px;'><input type='text' name='carga_horaria[$registro->id]' value='{$cargaHoraria}' size='5' maxlength='7'></label>";
-          $conteudo .= "  <label style='display: block; float: left'><input type='checkbox' name='usar_componente[$registro->id]' value='1' ". ($usarComponente == TRUE ? $checked : '') .">($cargaComponente h)</label>";
+          $conteudo .= "  <label style='display: block; float: left'><input type='checkbox' id='usar_componente[]' name='usar_componente[$registro->id]' value='1' ". ($usarComponente == TRUE ? $checked : '') .">($cargaComponente h)</label>";
+
           $conteudo .= '</div>';
           $conteudo .= '<br style="clear: left" />';
 
@@ -284,7 +305,7 @@ class indice extends clsCadastro
         $disciplinas .= '</table>';
       }
       else {
-        $disciplinas = 'A sÈrie/ano escolar n„o possui componentes curriculares cadastrados.';
+        $disciplinas = 'A s√©rie/ano escolar n√£o possui componentes curriculares cadastrados.';
       }
     }
 
@@ -301,7 +322,7 @@ class indice extends clsCadastro
     @session_write_close();
 
     /*
-     * Se houve erro na primeira tentativa de cadastro, ir· considerar apenas
+     * Se houve erro na primeira tentativa de cadastro, ir√° considerar apenas
      * os valores enviados de forma oculta.
      */
     if (isset($this->ref_cod_instituicao_)) {
@@ -315,21 +336,24 @@ class indice extends clsCadastro
     $componenteAno = $anoEscolar->findComponentePorSerie($this->ref_cod_serie);
 
     /*
-     * Se $disciplinas n„o for informado e o ano escolar tem componentes
+     * Se $disciplinas n√£o for informado e o ano escolar tem componentes
      * curriculares cadastrados, retorna erro.
      */
     if (!is_array($this->disciplinas) &&
         (is_array($componenteAno) && 0 < count($componenteAno))
     ) {
-      echo "<script> alert('… necess·rio adicionar pelo menos um componente curricular.') </script>";
+      echo "<script> alert('√â necess√°rio adicionar pelo menos um componente curricular.') </script>";
       $this->mensagem = 'Cadastro n&atilde;o realizado.<br>';
       return FALSE;
     }
 
+    $this->bloquear_enturmacao_sem_vagas = is_null($this->bloquear_enturmacao_sem_vagas) ? 0 : 1;
+    $this->bloquear_cadastro_turma_para_serie_com_vagas = is_null($this->bloquear_cadastro_turma_para_serie_com_vagas) ? 0 : 1;
+
     $obj = new clsPmieducarEscolaSerie($this->ref_cod_escola, $this->ref_cod_serie,
       $this->pessoa_logada, $this->pessoa_logada, $this->hora_inicial,
       $this->hora_final, NULL, NULL, 1, $this->hora_inicio_intervalo,
-      $this->hora_fim_intervalo);
+      $this->hora_fim_intervalo, $this->bloquear_enturmacao_sem_vagas, $this->bloquear_cadastro_turma_para_serie_com_vagas);
 
     if ($obj->existe()) {
       $cadastrou = $obj->edita();
@@ -376,9 +400,9 @@ class indice extends clsCadastro
     @session_write_close();
 
     /*
-     * Atribui valor para atributos usados em Gerar(), sen„o o formul·rio volta
-     * a liberar os campos InstituiÁ„o, Escola e Curso que devem ser read-only
-     * quando em modo de ediÁ„o
+     * Atribui valor para atributos usados em Gerar(), sen√£o o formul√°rio volta
+     * a liberar os campos Institui√ß√£o, Escola e Curso que devem ser read-only
+     * quando em modo de edi√ß√£o
      */
     $this->ref_cod_instituicao = $this->ref_cod_instituicao_;
     $this->ref_cod_escola      = $this->ref_cod_escola_;
@@ -394,14 +418,17 @@ class indice extends clsCadastro
     if (!is_array($this->disciplinas) &&
         (is_array($componenteAno) && 0 < count($componenteAno))
     ) {
-      echo "<script>alert('… necess·rio adicionar pelo menos um componente curricular.');</script>";
+      echo "<script>alert('√â necess√°rio adicionar pelo menos um componente curricular.');</script>";
       $this->mensagem = 'Edi&ccedil;&atilde;o n&atilde;o realizada.<br>';
       return FALSE;
     }
 
+    $this->bloquear_enturmacao_sem_vagas = is_null($this->bloquear_enturmacao_sem_vagas) ? 0 : 1;
+    $this->bloquear_cadastro_turma_para_serie_com_vagas = is_null($this->bloquear_cadastro_turma_para_serie_com_vagas) ? 0 : 1;
+
     $obj = new clsPmieducarEscolaSerie($this->ref_cod_escola, $this->ref_cod_serie,
       $this->pessoa_logada, NULL, $this->hora_inicial, $this->hora_final,
-      NULL, NULL, 1, $this->hora_inicio_intervalo, $this->hora_fim_intervalo);
+      NULL, NULL, 1, $this->hora_inicio_intervalo, $this->hora_fim_intervalo, $this->bloquear_enturmacao_sem_vagas, $this->bloquear_cadastro_turma_para_serie_com_vagas);
 
     $editou = $obj->edita();
     $obj = new clsPmieducarEscolaSerieDisciplina($this->ref_cod_serie,
@@ -440,6 +467,13 @@ class indice extends clsCadastro
               return FALSE;
             }
           }
+        }
+        //Verifica/limpa disciplinas n√£o alteradas quando a escola/s√©rie for editada e tiver disciplinas marcadas
+        //n√£o padr√£o do ano letivo.
+        $obj_ano_letivo = new clsPmieducarEscolaAnoLetivo();
+        $existe_ano_andamento = $obj_ano_letivo->lista($this->ref_cod_escola,null,null,null,1,null,null,null,null,1);
+        foreach ($existe_ano_andamento as $reg) {
+          CleanComponentesCurriculares::destroyOldResources($reg['ano']);
         }
       }
 
@@ -481,16 +515,16 @@ class indice extends clsCadastro
   }
 }
 
-// Instancia objeto de p·gina
+// Instancia objeto de p√°gina
 $pagina = new clsIndexBase();
 
-// Instancia objeto de conte˙do
+// Instancia objeto de conte√∫do
 $miolo = new indice();
 
-// Atribui o conte˙do ‡† p·gina
+// Atribui o conte√∫do √†¬† p√°gina
 $pagina->addForm($miolo);
 
-// Gera o cÛdigo HTML
+// Gera o c√≥digo HTML
 $pagina->MakeAll();
 ?>
 <script type="text/javascript">
@@ -508,7 +542,7 @@ document.getElementById('ref_cod_curso').onchange = function()
 {
   getSerie();
   var campoDisciplinas = document.getElementById('disciplinas');
-  campoDisciplinas.innerHTML = "Nenhuma sÈrie selecionada";
+  campoDisciplinas.innerHTML = "Nenhuma s√©rie selecionada";
 }
 
 function getDisciplina(xml_disciplina)
@@ -520,10 +554,15 @@ function getDisciplina(xml_disciplina)
   if (DOM_array.length) {
     conteudo += '<div style="margin-bottom: 10px; float: left">';
     conteudo += '  <span style="display: block; float: left; width: 250px;">Nome</span>';
-    conteudo += '  <label span="display: block; float: left; width: 100px">Carga hor·ria</span>';
-    conteudo += '  <label span="display: block; float: left">Usar padr„o do componente?</span>';
+    conteudo += '  <label span="display: block; float: left; width: 100px">Carga hor√°ria</span>';
+    conteudo += '  <label span="display: block; float: left">Usar padr√£o do componente?</span>';
     conteudo += '</div>';
     conteudo += '<br style="clear: left" />';
+    conteudo += '<div style="margin-bottom: 10px; float: left">';
+    conteudo += "  <label style='display: block; float: left; width: 350px;'><input type='checkbox' name='CheckTodos' onClick='marcarCheck("+'"disciplinas[]"'+");'/>Marcar Todos</label>";
+    conteudo += "  <label style='display: block; float: left; width: 100px;'><input type='checkbox' name='CheckTodos2' onClick='marcarCheck("+'"usar_componente[]"'+");';/>Marcar Todos</label>";
+    conteudo += '</div>';
+    conteudo += '<br style="clear: left" />';    
 
     for (var i = 0; i < DOM_array.length; i++) {
       id = DOM_array[i].getAttribute("cod_disciplina");
@@ -531,13 +570,13 @@ function getDisciplina(xml_disciplina)
       conteudo += '<div style="margin-bottom: 10px; float: left">';
       conteudo += '  <label style="display: block; float: left; width: 250px;"><input type="checkbox" name="disciplinas['+ id +']" id="disciplinas[]" value="'+ id +'">'+ DOM_array[i].firstChild.data +'</label>';
       conteudo += '  <label style="display: block; float: left; width: 100px;"><input type="text" name="carga_horaria['+ id +']" value="" size="5" maxlength="7"></label>';
-      conteudo += '  <label style="display: block; float: left"><input type="checkbox" name="usar_componente['+ id +']" value="1">('+ DOM_array[i].getAttribute("carga_horaria") +' h)</label>';
+      conteudo += '  <label style="display: block; float: left"><input type="checkbox" id="usar_componente[]" name="usar_componente['+ id +']" value="1">('+ DOM_array[i].getAttribute("carga_horaria") +' h)</label>';    
       conteudo += '</div>';
       conteudo += '<br style="clear: left" />';
     }
   }
   else {
-    campoDisciplinas.innerHTML = 'A sÈrie/ano escolar n„o possui componentes '
+    campoDisciplinas.innerHTML = 'A s√©rie/ano escolar n√£o possui componentes '
                                + 'curriculares cadastrados.';
   }
 
@@ -565,7 +604,7 @@ after_getEscola = function()
   getSerie();
 
   var campoDisciplinas = document.getElementById('disciplinas');
-  campoDisciplinas.innerHTML = "Nenhuma sÈrie selecionada";
+  campoDisciplinas.innerHTML = "Nenhuma s√©rie selecionada";
 };
 
 function getSerie()
@@ -585,7 +624,7 @@ function getSerie()
   limpaCampos(4);
   if (campoEscola && campoCurso) {
     campoSerie.disabled = true;
-    campoSerie.options[0].text = 'Carregando sÈries';
+    campoSerie.options[0].text = 'Carregando s√©ries';
 
     var xml = new ajax(atualizaLstSerie);
     xml.envia("educar_serie_not_escola_xml.php?esc="+campoEscola+"&cur="+campoCurso);
@@ -599,7 +638,7 @@ function atualizaLstSerie(xml)
 {
   var campoSerie = document.getElementById('ref_cod_serie');
   campoSerie.length = 1;
-  campoSerie.options[0].text = 'Selecione uma sÈrie';
+  campoSerie.options[0].text = 'Selecione uma s√©rie';
   campoSerie.disabled = false;
 
   series = xml.getElementsByTagName('serie');
@@ -610,8 +649,32 @@ function atualizaLstSerie(xml)
     }
   }
   else {
-    campoSerie.options[0].text = 'O curso n„o possui nenhuma sÈrie ou todas as sÈries j· est„ associadas a essa escola';
+    campoSerie.options[0].text = 'O curso n√£o possui nenhuma s√©rie ou todas as s√©ries j√° est√£ associadas a essa escola';
     campoSerie.disabled = true;
   }
 }
+
+function marcarCheck(idValue) {
+    // testar com formcadastro
+    var contaForm = document.formcadastro.elements.length;
+    var campo = document.formcadastro;
+    var i;
+    if (idValue == 'disciplinas[]'){
+      for (i=0; i<contaForm; i++) {
+          if (campo.elements[i].id == idValue) {
+
+              campo.elements[i].checked = campo.CheckTodos.checked;
+          }
+      }
+    }else {
+      for (i=0; i<contaForm; i++) {
+          if (campo.elements[i].id == idValue) {
+
+              campo.elements[i].checked = campo.CheckTodos2.checked;
+           }
+       }
+
+    }
+     
+} 
 </script>

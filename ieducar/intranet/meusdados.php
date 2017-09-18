@@ -1,33 +1,33 @@
 <?php
 
 /*
- * i-Educar - Sistema de gestão escolar
+ * i-Educar - Sistema de gestÃ£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de Itajaí
+ * Copyright (C) 2006  Prefeitura Municipal de ItajaÃ­
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa é software livre; você pode redistribuí-lo e/ou modificá-lo
- * sob os termos da Licença Pública Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a versão 2 da Licença, como (a seu critério)
- * qualquer versão posterior.
+ * Este programa Ã© software livre; vocÃª pode redistribuÃ­-lo e/ou modificÃ¡-lo
+ * sob os termos da LicenÃ§a PÃºblica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a versÃ£o 2 da LicenÃ§a, como (a seu critÃ©rio)
+ * qualquer versÃ£o posterior.
  *
- * Este programa é distribuí­do na expectativa de que seja útil, porém, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implí­cita de COMERCIABILIDADE OU
- * ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral
+ * Este programa Ã© distribuÃ­Â­do na expectativa de que seja Ãºtil, porÃ©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia implÃ­Â­cita de COMERCIABILIDADE OU
+ * ADEQUAÃ‡ÃƒO A UMA FINALIDADE ESPECÃFICA. Consulte a LicenÃ§a PÃºblica Geral
  * do GNU para mais detalhes.
  *
- * Você deve ter recebido uma cópia da Licença Pública Geral do GNU junto
- * com este programa; se não, escreva para a Free Software Foundation, Inc., no
- * endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * VocÃª deve ter recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral do GNU junto
+ * com este programa; se nÃ£o, escreva para a Free Software Foundation, Inc., no
+ * endereÃ§o 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  */
 
 /**
  * Meus dados.
  *
- * @author   Prefeitura Municipal de Itajaí <ctima@itajai.sc.gov.br>
+ * @author   Prefeitura Municipal de ItajaÃ­ <ctima@itajai.sc.gov.br>
  * @license  http://creativecommons.org/licenses/GPL/2.0/legalcode.pt  CC GNU GPL
  * @package  Core
- * @since    Arquivo disponível desde a versão 1.0.0
+ * @since    Arquivo disponÃ­vel desde a versÃ£o 1.0.0
  * @version  $Id$
  */
 
@@ -93,11 +93,11 @@ class indice extends clsCadastro
       $this->p_cod_pessoa_fj = $_SESSION['id_pessoa'];
       $objPessoa = new clsPessoaFj();
       $db = new clsBanco();
-      $db->Consulta("SELECT f.matricula, f.senha, f.ativo, f.ramal, f.ref_cod_setor, f.ref_cod_funcionario_vinculo, f.ref_cod_setor_new FROM funcionario f WHERE f.ref_cod_pessoa_fj={$this->p_cod_pessoa_fj}");
+      $db->Consulta("SELECT f.matricula, f.senha, f.ativo, f.ramal, f.ref_cod_setor, f.ref_cod_funcionario_vinculo, f.ref_cod_setor_new, email FROM funcionario f WHERE f.ref_cod_pessoa_fj={$this->p_cod_pessoa_fj}");
 
       if ($db->ProximoRegistro()) {
         list($this->f_matricula, $this->f_senha, $this->f_ativo, $this->f_ramal,
-          $this->f_ref_setor, $this->ref_cod_funcionario_vinculo, $this->ref_cod_setor) = $db->Tupla();
+          $this->f_ref_setor, $this->ref_cod_funcionario_vinculo, $this->ref_cod_setor, $this->email) = $db->Tupla();
 
         list($this->p_nm_pessoa, $this->p_id_federal, $this->p_endereco, $this->p_cep,
           $this->p_ref_bairro, $this->p_ddd_telefone_1, $this->p_telefone_1,
@@ -161,7 +161,7 @@ class indice extends clsCadastro
 
     $this->campoRotulo("nome", "Nome", $this->p_nm_pessoa);
 
-    // Detalhes do endereço
+    // Detalhes do endereÃ§o
     $objTipoLog = new clsTipoLogradouro();
     $listaTipoLog = $objTipoLog->lista();
     $listaTLog = array(""=>"Selecione");
@@ -265,7 +265,7 @@ class indice extends clsCadastro
 
       $this->campoTextoInv("complemento", "Complemento",  $this->complemento, "22", "20", FALSE);
 
-      $this->campoTextoInv("numero", "Número",  $this->numero, "10", "10", FALSE);
+      $this->campoTextoInv("numero", "NÃºmero",  $this->numero, "10", "10", FALSE);
 
       $this->campoTextoInv("letra", "Letra",  $this->letra, "1", "1", FALSE);
 
@@ -276,44 +276,28 @@ class indice extends clsCadastro
       $this->campoTexto("andar", "Andar", $this->andar, "2","2", FALSE);
     }
 
-    $this->campoTexto("p_ddd_telefone_1", "DDD Telefone 1",
-      $this->p_ddd_telefone_1, "2", "2", FALSE);
-
-    $this->campoTexto("p_telefone_1", "Telefone 1",  $this->p_telefone_1,
-      "10", "15", FALSE);
-
-    $this->campoTexto("p_ddd_telefone_2", "DDD Telefone 2",
-      $this->p_ddd_telefone_2, "2", "2", FALSE);
-
-    $this->campoTexto("p_telefone_2", "Telefone",  $this->p_telefone_2, "10",
-      "15", FALSE);
-
-    $this->campoTexto("p_ddd_telefone_mov", "DDD Celular", $this->p_ddd_telefone_mov,
-      "2", "2", FALSE);
-
-    $this->campoTexto("p_telefone_mov", "Celular",  $this->p_telefone_mov, "10",
-      "15", FALSE);
-
-    $this->campoTexto("p_ddd_telefone_fax", "DDD Fax", $this->p_ddd_telefone_fax,
-      "2", "2", FALSE);
-
-    $this->campoTexto("p_telefone_fax", "Fax", $this->p_telefone_fax, "10", "15",
-      FALSE);
+    $this->inputTelefone('1', 'Telefone 1');
+    $this->inputTelefone('2', 'Telefone 2');
+    $this->inputTelefone('mov', 'Celular');
+    $this->inputTelefone('fax', 'Fax');
 
     $this->campoTexto("p_http", "Site", $this->p_http, "50", "255", FALSE);
 
-    $this->campoTexto("p_email", "E-mail", $this->p_email, "50", "255", FALSE);
+    // exibe o email definido pelo usuÃ¡rio ($this->email) no lugar do email da pessoa ($this->p_email)
+    $this->campoRotulo('email', 'E-mail', $this->email . " <a href='/module/Usuario/AlterarEmail' class='decorated'>alterar e-mail</a>");
+
+    if (empty($_SESSION['convidado'])) {
+      $this->campoRotulo('senha', 'Senha', '********' . " <a href='/module/Usuario/AlterarSenha' class='decorated'>alterar senha</a>");
+
+      //$this->campoSenha("f_senha", "Senha",  $this->f_senha, FALSE);
+      //$this->campoOculto("confere_senha", $this->f_senha);
+    }
 
     $lista_sexos = array();
     $lista_sexos['']  = 'Escolha uma op&ccedil;&atilde;o...';
     $lista_sexos['M'] = 'Masculino';
     $lista_sexos['F'] = 'Feminino';
     $this->campoLista("p_sexo", "Sexo", $lista_sexos, $this->p_sexo);
-
-    if (empty($_SESSION['convidado'])) {
-      $this->campoSenha("f_senha", "Senha",  $this->f_senha, FALSE);
-      $this->campoOculto("confere_senha", $this->f_senha);
-    }
 
     $dba = new clsBanco();
     $opcoes = array();
@@ -334,6 +318,7 @@ class indice extends clsCadastro
 
   public function Editar()
   {
+
     session_start();
     $pessoaFj = $_SESSION['id_pessoa'];
     session_write_close();
@@ -405,17 +390,10 @@ class indice extends clsCadastro
       $sql = " ref_cod_setor_new = '{$setor}', ";
     }
 
-    if ($this->f_senha != $this->confere_senha) {
-      $sql_funcionario = "UPDATE funcionario SET senha=md5('{$this->f_senha}'), data_troca_senha = NOW(), ref_cod_funcionario_vinculo='{$this->ref_cod_funcionario_vinculo}', $sql ramal='{$this->f_ramal}', ref_ref_cod_pessoa_fj='{$pessoaFj}', tempo_expira_senha = 30 WHERE ref_cod_pessoa_fj={$this->p_cod_pessoa_fj}";
-    }
-    else {
-      if (empty($_SESSION['convidado'])) {
-        $sql_funcionario = "UPDATE funcionario SET $sql ramal='{$this->f_ramal}', ref_cod_funcionario_vinculo='{$this->ref_cod_funcionario_vinculo}', ref_ref_cod_pessoa_fj='{$pessoaFj}' WHERE ref_cod_pessoa_fj={$this->p_cod_pessoa_fj}";
-      }
-      else {
-        $sql_funcionario = "UPDATE funcionario SET $sql ramal='{$this->f_ramal}', ref_ref_cod_pessoa_fj='{$pessoaFj}' WHERE ref_cod_pessoa_fj={$this->p_cod_pessoa_fj}";
-      }
-    }
+    if (empty($_SESSION['convidado']))
+      $sql_funcionario = "UPDATE funcionario SET $sql ramal='{$this->f_ramal}', ref_cod_funcionario_vinculo='{$this->ref_cod_funcionario_vinculo}', ref_ref_cod_pessoa_fj='{$pessoaFj}' WHERE ref_cod_pessoa_fj={$this->p_cod_pessoa_fj}";
+    else
+      $sql_funcionario = "UPDATE funcionario SET $sql ramal='{$this->f_ramal}', ref_ref_cod_pessoa_fj='{$pessoaFj}' WHERE ref_cod_pessoa_fj={$this->p_cod_pessoa_fj}";
 
     $db = new clsBanco();
 
@@ -435,19 +413,50 @@ class indice extends clsCadastro
     }
 
     header('Location: index.php');
-    return TRUE;
   }
+
+  protected function inputTelefone($type, $typeLabel = '') {
+     if (! $typeLabel)
+       $typeLabel = "Telefone {$type}";
+ 
+     // ddd
+ 
+     $options = array(
+       'required'    => false,
+       'label'       => "(ddd) / {$typeLabel}",
+       'placeholder' => 'ddd',
+       'value'       => $this->{"p_ddd_telefone_{$type}"},
+       'max_length'  => 3,
+       'size'        => 3,
+       'inline'      => true
+     );
+ 
+     $this->inputsHelper()->integer("p_ddd_telefone_{$type}", $options);
+ 
+ 
+    // telefone
+ 
+     $options = array(
+       'required'    => false,
+       'label'       => '',
+       'placeholder' => $typeLabel,
+       'value'       => $this->{"p_telefone_{$type}"},
+       'max_length'  => 11
+     );
+ 
+     $this->inputsHelper()->integer("p_telefone_{$type}", $options);
+   }  
 }
 
 
-// Instancia objeto de página
+// Instancia objeto de pÃ¡gina
 $pagina = new clsIndex();
 
-// Instancia objeto de conteúdo
+// Instancia objeto de conteÃºdo
 $miolo = new indice();
 
-// Atribui o conteúdo à página
+// Atribui o conteÃºdo Ã  pÃ¡gina
 $pagina->addForm($miolo);
 
-// Gera o código HTML
+// Gera o cÃ³digo HTML
 $pagina->MakeAll();

@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -35,6 +35,7 @@ class clsIndexBase extends clsBase
 	{
 		$this->SetTitulo( "{$this->_instituicao} i-Educar - Ocorr&ecirc;ncia Disciplinar" );
 		$this->processoAp = "578";
+		$this->addEstilo("localizacaoSistema");
 	}
 }
 
@@ -90,12 +91,12 @@ class indice extends clsListagem
 		$this->pessoa_logada = $_SESSION['id_pessoa'];
 		session_write_close();
 
-		$this->titulo = "Matricula Ocorrencia Disciplinar - Listagem";
+		$this->titulo = "Matricula Ocorr&ecirc;ncia Disciplinar - Listagem";
 
 		foreach( $_GET AS $var => $val ) // passa todos os valores obtidos no GET para atributos do objeto
 			$this->$var = ( $val === "" ) ? null: $val;
 
-		$this->addBanner( "imagens/nvp_top_intranet.jpg", "imagens/nvp_vert_intranet.jpg", "Intranet" );
+		
 
 		if(!$this->ref_cod_matricula)
 			header("Location: educar_matricula_lst.php");
@@ -103,8 +104,8 @@ class indice extends clsListagem
 		$this->campoOculto("ref_cod_matricula",$this->ref_cod_matricula);
 
 		$this->addCabecalhos( array(
-			"Tipo Ocorrencia Disciplinar",
-			"Série ",
+			"Tipo Ocorr&ecirc;ncia Disciplinar",
+			"SÃ©rie ",
 			"Turma"
 		) );
 
@@ -149,7 +150,7 @@ class indice extends clsListagem
 			echo "<!--\nErro\nClasse clsPmieducarTipoOcorrenciaDisciplinar nao encontrada\n-->";
 			$opcoes = array( "" => "Erro na geracao" );
 		}
-		$this->campoLista( "ref_cod_tipo_ocorrencia_disciplinar", "Tipo Ocorrencia Disciplinar", $opcoes, $this->ref_cod_tipo_ocorrencia_disciplinar );
+		$this->campoLista( "ref_cod_tipo_ocorrencia_disciplinar", "Tipo Ocorr&ecirc;ncia Disciplinar", $opcoes, $this->ref_cod_tipo_ocorrencia_disciplinar );
 
 		if ( $this->ref_cod_escola )
 		{
@@ -254,6 +255,14 @@ class indice extends clsListagem
 		$this->array_botao_url[] = "educar_matricula_det.php?cod_matricula={$this->ref_cod_matricula}";
 
 		$this->largura = "100%";
+
+		$localizacao = new LocalizacaoSistema();
+	    $localizacao->entradaCaminhos( array(
+	         $_SERVER['SERVER_NAME']."/intranet" => "In&iacute;cio",
+	         "educar_index.php"                  => "i-Educar - Escola",
+	         ""                                  => "Listagem de ocorr&ecirc;ncias disciplinares da matr&iacute;cula"
+	    ));
+	    $this->enviaLocalizacao($localizacao->montar());
 	}
 }
 // cria uma extensao da classe base

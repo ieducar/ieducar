@@ -1,30 +1,30 @@
 <?php
 
 /**
- * i-Educar - Sistema de gest„o escolar
+ * i-Educar - Sistema de gest√£o escolar
  *
- * Copyright (C) 2006  Prefeitura Municipal de ItajaÌ
+ * Copyright (C) 2006  Prefeitura Municipal de Itaja√≠
  *                     <ctima@itajai.sc.gov.br>
  *
- * Este programa È software livre; vocÍ pode redistribuÌ-lo e/ou modific·-lo
- * sob os termos da LicenÁa P˙blica Geral GNU conforme publicada pela Free
- * Software Foundation; tanto a vers„o 2 da LicenÁa, como (a seu critÈrio)
- * qualquer vers„o posterior.
+ * Este programa √© software livre; voc√™ pode redistribu√≠-lo e/ou modific√°-lo
+ * sob os termos da Licen√ßa P√∫blica Geral GNU conforme publicada pela Free
+ * Software Foundation; tanto a vers√£o 2 da Licen√ßa, como (a seu crit√©rio)
+ * qualquer vers√£o posterior.
  *
- * Este programa È distribuÌ≠do na expectativa de que seja ˙til, porÈm, SEM
- * NENHUMA GARANTIA; nem mesmo a garantia implÌ≠cita de COMERCIABILIDADE OU
- * ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral
+ * Este programa √© distribu√≠¬≠do na expectativa de que seja √∫til, por√©m, SEM
+ * NENHUMA GARANTIA; nem mesmo a garantia impl√≠¬≠cita de COMERCIABILIDADE OU
+ * ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral
  * do GNU para mais detalhes.
  *
- * VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral do GNU junto
- * com este programa; se n„o, escreva para a Free Software Foundation, Inc., no
- * endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
+ * Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral do GNU junto
+ * com este programa; se n√£o, escreva para a Free Software Foundation, Inc., no
+ * endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Arquivo disponÌvel desde a vers„o 1.0.0
+ * @since     Arquivo dispon√≠vel desde a vers√£o 1.0.0
  * @version   $Id$
  */
 
@@ -32,19 +32,27 @@ require_once 'include/clsBase.inc.php';
 require_once 'include/clsDetalhe.inc.php';
 require_once 'include/clsBanco.inc.php';
 require_once 'include/pmieducar/geral.inc.php';
+require_once 'include/modules/clsModulesFichaMedicaAluno.inc.php';
+require_once 'include/modules/clsModulesUniformeAluno.inc.php';
+require_once 'include/modules/clsModulesMoradiaAluno.inc.php';
 
 require_once 'App/Model/ZonaLocalizacao.php';
 require_once 'Educacenso/Model/AlunoDataMapper.php';
 require_once 'Transporte/Model/AlunoDataMapper.php';
 
+require_once 'include/pessoa/clsCadastroFisicaFoto.inc.php';
+
+require_once 'Portabilis/View/Helper/Application.php';
+
+
 /**
  * clsIndexBase class.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class clsIndexBase extends clsBase
@@ -59,11 +67,11 @@ class clsIndexBase extends clsBase
 /**
  * indice class.
  *
- * @author    Prefeitura Municipal de ItajaÌ <ctima@itajai.sc.gov.br>
+ * @author    Prefeitura Municipal de Itaja√≠ <ctima@itajai.sc.gov.br>
  * @category  i-Educar
  * @license   @@license@@
  * @package   iEd_Pmieducar
- * @since     Classe disponÌvel desde a vers„o 1.0.0
+ * @since     Classe dispon√≠vel desde a vers√£o 1.0.0
  * @version   @@package_version@@
  */
 class indice extends clsDetalhe
@@ -86,6 +94,7 @@ class indice extends clsDetalhe
   var $nm_pai;
   var $nm_mae;
   var $ref_cod_raca;
+  var $sus;
 
   function Gerar()
   {
@@ -93,8 +102,13 @@ class indice extends clsDetalhe
     $this->pessoa_logada = $_SESSION['id_pessoa'];
     session_write_close();
 
+    // Verifica√ß√£o de permiss√£o para cadastro.
+    $this->obj_permissao = new clsPermissoes();
+
+    $this->nivel_usuario = $this->obj_permissao->nivel_acesso($this->pessoa_logada);
+
     $this->titulo = 'Aluno - Detalhe';
-    $this->addBanner('imagens/nvp_top_intranet.jpg', 'imagens/nvp_vert_intranet.jpg', 'Intranet');
+
 
     $this->cod_aluno = $_GET['cod_aluno'];
 
@@ -128,7 +142,12 @@ class indice extends clsDetalhe
         $det_raca = $obj_raca->detalhe();
       }
 
-      $registro['nome_aluno'] = $det_pessoa_fj['nome'];
+      $objFoto = new clsCadastroFisicaFoto($this->ref_idpes);
+      $detalheFoto = $objFoto->detalhe();
+      if ($detalheFoto)
+        $caminhoFoto  = $detalheFoto['caminho'];
+
+      $registro['nome_aluno'] = strtoupper($det_pessoa_fj['nome']);
       $registro['cpf']        = int2IdFederal($det_fisica['cpf']);
       $registro['data_nasc']  = dataToBrasil($det_fisica['data_nasc']);
       $registro['sexo']       = $det_fisica['sexo'] == 'F' ? 'Feminino' : 'Masculino';
@@ -161,8 +180,10 @@ class indice extends clsDetalhe
       $this->idpes_pai = $det_fisica['idpes_pai'];
       $this->idpes_mae = $det_fisica['idpes_mae'];
 
-      $this->nm_pai = $detalhe_aluno['nm_pai'];
-      $this->nm_mae = $detalhe_aluno['nm_mae'];
+      $this->sus = $det_fisica['sus'];
+
+      $this->nm_pai = $registro['nm_pai'];
+      $this->nm_mae = $registro['nm_mae'];
 
       if ($this->idpes_pai) {
         $obj_pessoa_pai = new clsPessoaFj($this->idpes_pai);
@@ -331,8 +352,8 @@ class indice extends clsDetalhe
       }
     }
 
-    // Adiciona a informaÁ„o de zona de localizaÁ„o junto ao bairro do
-    // endereÁo.
+    // Adiciona a informa√ß√£o de zona de localiza√ß√£o junto ao bairro do
+    // endere√ßo.
     $zona = App_Model_ZonaLocalizacao::getInstance();
     $registro['nm_bairro'] = sprintf(
       '%s (Zona %s)',
@@ -340,12 +361,42 @@ class indice extends clsDetalhe
     );
 
     if ($registro['cod_aluno']) {
-      $this->addDetalhe(array('CÛdigo Aluno', $registro['cod_aluno']));
+      $this->addDetalhe(array('C√≥digo Aluno', $registro['cod_aluno']));
+    }
+
+    // c√≥digo inep
+
+    $alunoMapper = new Educacenso_Model_AlunoDataMapper();
+    $alunoInep   = NULL;
+    try {
+      $alunoInep = $alunoMapper->find(array('aluno' => $this->cod_aluno));
+      $this->addDetalhe(array('C√≥digo inep', $alunoInep->alunoInep));
+    }
+    catch(Exception $e) {
+    }
+
+    // c√≥digo estado
+
+    $this->addDetalhe(array('C√≥digo estado', $registro['aluno_estado_id']));
+
+    if ($registro['caminho_foto']) {
+      $this->addDetalhe(array(
+        'Foto',
+        sprintf(
+          '<img src="arquivos/educar/aluno/small/%s" border="0">',
+          $registro['caminho_foto']
+        )
+      ));
     }
 
     if ($registro['nome_aluno']) {
-      $this->addDetalhe(array('Nome Aluno', $registro['nome_aluno']));
+      if ($caminhoFoto!=null and $caminhoFoto!='')
+        $this->addDetalhe(array('Nome Aluno', $registro['nome_aluno'].'<p><img height="117" src="'.$caminhoFoto.'"/></p>'));
+      else
+        $this->addDetalhe(array('Nome Aluno', $registro['nome_aluno']));
     }
+
+
 
     if (idFederal2int($registro['cpf'])) {
       $this->addDetalhe(array('CPF', $registro['cpf']));
@@ -358,7 +409,7 @@ class indice extends clsDetalhe
     /**
      * Analfabeto.
      */
-    $this->addDetalhe(array('Analfabeto', $registro['analfabeto'] == 0 ? 'N„o' : 'Sim'));
+    $this->addDetalhe(array('Analfabeto', $registro['analfabeto'] == 0 ? 'N√£o' : 'Sim'));
 
     if ($registro['sexo']) {
       $this->addDetalhe(array('Sexo', $registro['sexo']));
@@ -396,7 +447,7 @@ class indice extends clsDetalhe
     }
 
     if ($registro['numero']) {
-      $this->addDetalhe(array('N˙mero', $registro['numero']));
+      $this->addDetalhe(array('N√∫mero', $registro['numero']));
     }
 
     if ($registro['letra']) {
@@ -436,13 +487,13 @@ class indice extends clsDetalhe
     }
 
     if ($registro['pais_origem']) {
-      $this->addDetalhe(array('PaÌs de Origem', $registro['pais_origem']));
+      $this->addDetalhe(array('Pa√≠s de Origem', $registro['pais_origem']));
     }
 
     $responsavel = $tmp_obj->getResponsavelAluno();
 
     if ($responsavel) {
-      $this->addDetalhe(array('Respons·vel Aluno', $responsavel['nome_responsavel']));
+      $this->addDetalhe(array('Respons√°vel Aluno', $responsavel['nome_responsavel']));
     }
 
     if ($registro['ref_idpes_responsavel']) {
@@ -453,7 +504,7 @@ class indice extends clsDetalhe
         $registro['ref_idpes_responsavel'] = $det_pessoa_resp['nome'];
       }
 
-      $this->addDetalhe(array('Respons·vel', $registro['ref_idpes_responsavel']));
+      $this->addDetalhe(array('Respons√°vel', $registro['ref_idpes_responsavel']));
     }
 
     if ($registro['nm_pai']) {
@@ -461,7 +512,7 @@ class indice extends clsDetalhe
     }
 
     if ($registro["nm_mae"]) {
-      $this->addDetalhe(array('M„e', $registro['nm_mae']));
+      $this->addDetalhe(array('M√£e', $registro['nm_mae']));
     }
 
     if ($registro['fone_1']) {
@@ -501,29 +552,29 @@ class indice extends clsDetalhe
     }
 
     if ($registro['url']) {
-      $this->addDetalhe(array('P·gina Pessoal', $registro['url']));
+      $this->addDetalhe(array('P√°gina Pessoal', $registro['url']));
     }
 
     if ($registro['ref_cod_aluno_beneficio']) {
       $obj_beneficio     = new clsPmieducarAlunoBeneficio($registro['ref_cod_aluno_beneficio']);
       $obj_beneficio_det = $obj_beneficio->detalhe();
 
-      $this->addDetalhe(array('BenefÌcio', $obj_beneficio_det['nm_beneficio']));
+      $this->addDetalhe(array('Benef√≠cio', $obj_beneficio_det['nm_beneficio']));
     }
 
     if ($registro['ref_cod_religiao']) {
       $obj_religiao     = new clsPmieducarReligiao($registro['ref_cod_religiao']);
       $obj_religiao_det = $obj_religiao->detalhe();
 
-      $this->addDetalhe(array('Religi„o', $obj_religiao_det['nm_religiao']));
+      $this->addDetalhe(array('Religi√£o', $obj_religiao_det['nm_religiao']));
     }
 
     if ($det_raca['nm_raca']) {
-      $this->addDetalhe(array('RaÁa', $det_raca['nm_raca']));
+      $this->addDetalhe(array('Ra√ßa', $det_raca['nm_raca']));
     }
 
     if ($deficiencia_pessoa) {
-      $tabela = '<table border="0" width="300" cellpadding="3"><tr bgcolor="#A1B3BD" align="center"><td>DeficiÍncias</td></tr>';
+      $tabela = '<table border="0" width="300" cellpadding="3"><tr bgcolor="#A1B3BD" align="center"><td>Defici√™ncias</td></tr>';
       $cor    = '#D1DADF';
 
       foreach ($deficiencia_pessoa as $indice => $valor) {
@@ -535,7 +586,7 @@ class indice extends clsDetalhe
 
       $tabela .= '</table>';
 
-      $this->addDetalhe(array('DeficiÍncias', $tabela));
+      $this->addDetalhe(array('Defici√™ncias', $tabela));
     }
 
     if ($registro['rg']) {
@@ -543,11 +594,11 @@ class indice extends clsDetalhe
     }
 
     if ($registro['data_exp_rg']) {
-      $this->addDetalhe(array('Data de ExpediÁ„o RG', $registro['data_exp_rg']));
+      $this->addDetalhe(array('Data de Expedi√ß√£o RG', $registro['data_exp_rg']));
     }
 
     if ($registro['idorg_exp_rg']) {
-      $this->addDetalhe(array('”rg„o ExpediÁ„o RG', $registro['idorg_exp_rg']));
+      $this->addDetalhe(array('√ìrg√£o Expedi√ß√£o RG', $registro['idorg_exp_rg']));
     }
 
     if ($registro['sigla_uf_exp_rg']) {
@@ -579,19 +630,19 @@ class indice extends clsDetalhe
     }
 
     if ($registro['data_emissao_cert_civil']) {
-      $this->addDetalhe(array('Emiss„o Certid„o Civil', $registro['data_emissao_cert_civil']));
+      $this->addDetalhe(array('Emiss√£o Certid√£o Civil', $registro['data_emissao_cert_civil']));
     }
 
     if ($registro['sigla_uf_cert_civil']) {
-      $this->addDetalhe(array('Sigla Certid„o Civil', $registro['sigla_uf_cert_civil']));
+      $this->addDetalhe(array('Sigla Certid√£o Civil', $registro['sigla_uf_cert_civil']));
     }
 
     if ($registro['cartorio_cert_civil']) {
-      $this->addDetalhe(array('CartÛrio', $registro['cartorio_cert_civil']));
+      $this->addDetalhe(array('Cart√≥rio', $registro['cartorio_cert_civil']));
     }
 
     if ($registro['num_tit_eleitor']) {
-      $this->addDetalhe(array('TÌtulo de Eleitor', $registro['num_tit_eleitor']));
+      $this->addDetalhe(array('T√≠tulo de Eleitor', $registro['num_tit_eleitor']));
     }
 
     if ($registro['zona_tit_eleitor']) {
@@ -599,17 +650,7 @@ class indice extends clsDetalhe
     }
 
     if ($registro['secao_tit_eleitor']) {
-      $this->addDetalhe(array('SeÁ„o', $registro['secao_tit_eleitor']));
-    }
-
-    if ($registro['caminho_foto']) {
-      $this->addDetalhe(array(
-        'Foto',
-        sprintf(
-          '<img src="arquivos/educar/aluno/small/%s" border="0">',
-          $registro['caminho_foto']
-        )
-      ));
+      $this->addDetalhe(array('Se√ß√£o', $registro['secao_tit_eleitor']));
     }
 
     // Transporte escolar.
@@ -621,275 +662,215 @@ class indice extends clsDetalhe
     catch (Exception $e) {
     }
 
-    $this->addDetalhe(array('Transporte escolar', isset($transporteAluno) ? 'Sim' : 'N„o'));
-    if ($transporteAluno) {
-      $this->addDetalhe(array('Respons·vel transporte', $transporteAluno->responsavel));
+    $this->addDetalhe(array('Transporte escolar', isset($transporteAluno) && $transporteAluno->responsavel!='N√£o utiliza'  ? 'Sim' : 'N√£o'));
+    if ($transporteAluno && $transporteAluno->responsavel!='N√£o utiliza') {
+      $this->addDetalhe(array('Respons√°vel transporte', $transporteAluno->responsavel));
     }
 
-    // Adiciona uma aba com dados do Inep/Educacenso caso aluno tenha cÛdigo Inep.
-    if (isset($this->cod_aluno)) {
-      $alunoMapper = new Educacenso_Model_AlunoDataMapper();
+    if ($this->obj_permissao->permissao_cadastra(578, $this->pessoa_logada, 7)) {
+      $this->url_novo   = '/module/Cadastro/aluno';
+      $this->url_editar = '/module/Cadastro/aluno?id=' . $registro['cod_aluno'];
 
-      $alunoInep = NULL;
-      try {
-        $alunoInep = $alunoMapper->find(array('aluno' => $this->cod_aluno));
-      }
-      catch(Exception $e) {
-      }
-
-      if ($alunoInep) {
-        $this->addDetalhe(array('CÛdigo do aluno no Educacenso/Inep', $alunoInep->alunoInep));
-
-        if (isset($alunoInep->nomeInep)) {
-          $this->addDetalhe(array('Nome do aluno no Educacenso/Inep', $alunoInep->nomeInep));
-        }
-      }
-    }
-
-    $this->addDetalhe(array('MatrÌcula', $this->montaTabelaMatricula()));
-
-    // VerificaÁ„o de permiss„o para cadastro.
-    $obj_permissao = new clsPermissoes();
-    if ($obj_permissao->permissao_cadastra(578, $this->pessoa_logada, 7)) {
-      $this->url_novo   = 'educar_aluno_cad.php';
-      $this->url_editar = 'educar_aluno_cad.php?cod_aluno=' . $registro['cod_aluno'];
-
-      $this->array_botao = array('MatrÌcula', 'Atualizar HistÛrico', 'Ficha do Aluno');
+      $this->array_botao = array('Nova matr√≠cula', 'Atualizar Hist√≥rico');
       $this->array_botao_url_script = array(
-        sprintf('go("educar_matricula_lst.php?ref_cod_aluno=%d");', $registro['cod_aluno']),
-        sprintf('go("educar_historico_escolar_lst.php?ref_cod_aluno=%d");', $registro['cod_aluno']),
-        sprintf('showExpansivelImprimir(400, 200, "educar_relatorio_aluno_dados.php?ref_cod_aluno=%d", [], "RelatÛrio i-Educar")', $registro['cod_aluno'])
+        sprintf('go("educar_matricula_cad.php?ref_cod_aluno=%d");', $registro['cod_aluno']),
+        sprintf('go("educar_historico_escolar_lst.php?ref_cod_aluno=%d");', $registro['cod_aluno'])
       );
+    }
+
+    $objFichaMedica       = new clsModulesFichaMedicaAluno($this->cod_aluno);
+    $reg                  = $objFichaMedica->detalhe();
+
+    if($reg){
+
+      $this->addDetalhe(array('<span id="fmedica"></span>Altura/metro', $reg['altura']));
+      if (trim($reg['peso'])!='') $this->addDetalhe(array('Peso/kg', $reg['peso']));
+      if (trim($reg['grupo_sanguineo'])!='') $this->addDetalhe(array('Grupo sangu√≠neo', $reg['grupo_sanguineo']));
+      if (trim($reg['fator_rh'])!='') $this->addDetalhe(array('Fator RH', $reg['fator_rh']));
+      if (trim($this->sus)!='') $this->addDetalhe(array('N√∫mero do cart√£o do SUS', $this->sus));
+      $this->addDetalhe(array('Possui alergia a algum medicamento', ($reg['alergia_medicamento'] == 'S' ? 'Sim': 'N√£o') ));
+      if (trim($reg['desc_alergia_medicamento'])!='') $this->addDetalhe(array('Quais', $reg['desc_alergia_medicamento']));
+      $this->addDetalhe(array('Possui alergia a algum alimento', ($reg['alergia_alimento'] == 'S' ? 'Sim': 'N√£o') ));
+      if (trim($reg['desc_alergia_alimento'])!='') $this->addDetalhe(array('Quais', $reg['desc_alergia_alimento']));
+      $this->addDetalhe(array('Possui alguma doenca cong√™nita', ($reg['doenca_congenita'] == 'S' ? 'Sim': 'N√£o') ));
+      if (trim($reg['desc_doenca_congenita'])!='') $this->addDetalhe(array('Quais', $reg['desc_doenca_congenita']));
+      $this->addDetalhe(array('√â fumante', ($reg['fumante'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('J√° contraiu caxumba', ($reg['doenca_caxumba'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('J√° contraiu sarampo', ($reg['doenca_sarampo'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('J√° contraiu rubeola', ($reg['doenca_rubeola'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('J√° contraiu catapora', ($reg['doenca_catapora'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('J√° contraiu escarlatina', ($reg['doenca_escarlatina'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('J√° contraiu coqueluche', ($reg['doenca_coqueluche'] == 'S' ? 'Sim': 'N√£o') ));
+      if (trim($reg['doenca_outras'])!='') $this->addDetalhe(array('Outras doen√ßas que o aluno j√° contraiu', $reg['doenca_outras']));
+      $this->addDetalhe(array('Epil√©tico', ($reg['epiletico'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('Est√° em tratamento', ($reg['epiletico_tratamento'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('Hemof√≠lico', ($reg['hemofilico'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('Hipertenso', ($reg['hipertenso'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('Asm√°tico', ($reg['asmatico'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('Diab√©tico', ($reg['diabetico'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('Depende de insulina', ($reg['insulina'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('Faz tratamento m√©dico', ($reg['tratamento_medico'] == 'S' ? 'Sim': 'N√£o') ));
+      if (trim($reg['desc_tratamento_medico'])!='') $this->addDetalhe(array('Qual', $reg['desc_tratamento_medico']));
+      $this->addDetalhe(array('Ingere medica√ß√£o espec√≠fica', ($reg['medicacao_especifica'] == 'S' ? 'Sim': 'N√£o') ));
+      if (trim($reg['desc_medicacao_especifica'])!='') $this->addDetalhe(array('Qual', $reg['desc_medicacao_especifica']));
+      $this->addDetalhe(array('Acompanhamento m√©dico ou psicol√≥gico', ($reg['acomp_medico_psicologico'] == 'S' ? 'Sim': 'N√£o') ));
+      if (trim($reg['desc_acomp_medico_psicologico'])!='') $this->addDetalhe(array('Motivo', $reg['desc_acomp_medico_psicologico']));
+      $this->addDetalhe(array('Restri√ß√£o para atividades f√≠sicas', ($reg['restricao_atividade_fisica'] == 'S' ? 'Sim': 'N√£o') ));
+      if (trim($reg['desc_restricao_atividade_fisica'])!='') $this->addDetalhe(array('Qual', $reg['desc_restricao_atividade_fisica']));
+      $this->addDetalhe(array('Teve alguma fratura ou trauma', ($reg['fratura_trauma'] == 'S' ? 'Sim': 'N√£o') ));
+      if (trim($reg['desc_fratura_trauma'])!='') $this->addDetalhe(array('Qual', $reg['desc_fratura_trauma']));
+      $this->addDetalhe(array('Tem plano de sa√∫de', ($reg['plano_saude'] == 'S' ? 'Sim': 'N√£o') ));
+      if (trim($reg['desc_plano_saude'])!='') $this->addDetalhe(array('Qual', $reg['desc_plano_saude']));
+      $this->addDetalhe(array('<span id="tr_tit_dados_hospital">Em caso de emerg√™ncia, levar para hospital ou cl√≠nica</span>'));
+      $this->addDetalhe(array('Nome', $reg['hospital_clinica']));
+      $this->addDetalhe(array('Endere√ßo', $reg['hospital_clinica_endereco']));
+      $this->addDetalhe(array('Telefone', $reg['hospital_clinica_telefone']));
+      $this->addDetalhe(array('<span id="tr_tit_dados_responsavel">Em caso de emerg√™ncia, se n√£o for poss√≠vel contatar os respons√°veis, comunicar</span>'));
+      $this->addDetalhe(array('Nome', $reg['responsavel']));
+      $this->addDetalhe(array('Parentesco', $reg['responsavel_parentesco']));
+      $this->addDetalhe(array('Telefone', $reg['responsavel_parentesco_telefone']));
+      $this->addDetalhe(array('Celular', $reg['responsavel_parentesco_celular']));
+
+    }
+
+    $objUniforme       = new clsModulesUniformeAluno($this->cod_aluno);
+    $reg               = $objUniforme->detalhe();
+
+    if($reg){
+      $this->addDetalhe(array('<span id="funiforme"></span>Recebeu uniforme escolar', ($reg['recebeu_uniforme'] == 'S' ? 'Sim': 'N√£o') ));
+      $this->addDetalhe(array('<span class="tit_uniforme">Camiseta</span>'));
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_camiseta']));
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_camiseta']));
+      $this->addDetalhe(array('<span class="tit_uniforme">Blusa/Jaqueta</span>'));
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_blusa_jaqueta']));
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_blusa_jaqueta']));
+      $this->addDetalhe(array('<span class="tit_uniforme">Bermuda</span>'));
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_bermuda']));
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_bermuda']));
+      $this->addDetalhe(array('<span class="tit_uniforme">Cal√ßa</span>'));
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_calca']));
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_calca']));
+      $this->addDetalhe(array('<span class="tit_uniforme">Saia</span>'));
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_saia']));
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_saia']));
+      $this->addDetalhe(array('<span class="tit_uniforme">Cal√ßado</span>'));
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_calcado']));
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_calcado']));
+      $this->addDetalhe(array('<span class="tit_uniforme">Meia</span>'));
+      $this->addDetalhe(array('Quantidade', $reg['quantidade_meia']));
+      $this->addDetalhe(array('Tamanho', $reg['tamanho_meia']));
+    }
+
+    $objMoradia        = new clsModulesMoradiaAluno($this->cod_aluno);
+    $reg               = $objMoradia->detalhe();
+
+    if($reg){
+
+      $moradia = '';
+      switch ($reg['moradia']) {
+        case 'A':
+          $moradia = 'Apartamento';
+          break;
+        case 'C':
+          $moradia = 'Casa';
+            switch ($reg['material']) {
+              case 'A':
+                $moradia.= ' de alvenaria';
+                break;
+              case 'M':
+                $moradia.= ' de madeira';
+                break;
+              case 'I':
+                $moradia.= ' mista';
+                break;
+            }
+          break;
+        case 'O':
+          $moradia = 'Outra: '.$reg['casa_outra'];
+          break;
+        default:
+          $moradia = 'N√£o informado';
+      }
+
+      $this->addDetalhe(array('<span id="fmoradia"></span>Moradia', $moradia ));
+      $situacao;
+      switch ($reg['moradia_situacao']) {
+        case 1:
+          $situacao = 'Alugado';
+          break;
+        case 2:
+          $situacao = 'Pr√≥prio';
+          break;
+        case 3:
+          $situacao = 'Cedido';
+          break;
+        case 4:
+          $situacao = 'Financiado';
+          break;
+        case 5:
+          $situacao = 'Outra';
+          break;
+      }
+      $this->addDetalhe(array('Situa√ß√£o', $situacao));
+      $this->addDetalhe(array('Quantidade de quartos', $reg['quartos']));
+      $this->addDetalhe(array('Quantidade de salas', $reg['sala']));
+      $this->addDetalhe(array('Quantidade de copas', $reg['copa']));
+      $this->addDetalhe(array('Quantidade de banheiros', $reg['banheiro']));
+      $this->addDetalhe(array('Quantidade de garagens', $reg['garagem']));
+      $this->addDetalhe(array('Possui empregada dom√©stica', $reg['empregada_domestica']));
+      $this->addDetalhe(array('Possui autom√≥vel', $reg['automovel']));
+      $this->addDetalhe(array('Possui motocicleta', $reg['motocicleta']));
+      $this->addDetalhe(array('Possui computador', $reg['computador']));
+      $this->addDetalhe(array('Possui geladeira', $reg['geladeira']));
+      $this->addDetalhe(array('Possui fog√£o', $reg['fogao']));
+      $this->addDetalhe(array('Possui m√°quina de lavar', $reg['maquina_lavar']));
+      $this->addDetalhe(array('Possui microondas', $reg['microondas']));
+      $this->addDetalhe(array('Possui v√≠deo/dvd', $reg['video_dvd']));
+      $this->addDetalhe(array('Possui televis√£o', $reg['televisao']));
+      $this->addDetalhe(array('Possui celular', $reg['celular']));
+      $this->addDetalhe(array('Possui telefone', $reg['telefone']));
+      $this->addDetalhe(array('Quantidade de pessoas', $reg['quant_pessoas']));
+      $this->addDetalhe(array('Renda familiar', 'R$ '.$reg['renda']));
+      $this->addDetalhe(array('Possui √°gua encanada', $reg['agua_encanada']));
+      $this->addDetalhe(array('Possui po√ßo', $reg['poco']));
+      $this->addDetalhe(array('Possui energia el√©trica', $reg['energia']));
+      $this->addDetalhe(array('Possui tratamento de esgoto', $reg['esgoto']));
+      $this->addDetalhe(array('Possui fossa', $reg['fossa']));
+      $this->addDetalhe(array('Possui coleta de lixo', $reg['lixo']));
+
     }
 
     $this->url_cancelar = 'educar_aluno_lst.php';
     $this->largura      = '100%';
-  }
 
-  function montaTabelaMatricula()
-  {
-    $sql = sprintf('SELECT
-              cod_matricula
-            FROM
-              pmieducar.matricula
-            WHERE
-              ref_cod_aluno = %d
-              AND ativo = 1
-            ORDER BY
-              cod_matricula DESC', $this->cod_aluno);
+    $this->addDetalhe("<input type='hidden' id='escola_id' name='aluno_id' value='{$registro['ref_cod_escola']}' />");
+    $this->addDetalhe("<input type='hidden' id='aluno_id' name='aluno_id' value='{$registro['cod_aluno']}' />");
 
-    $db = new clsBanco();
-    $db->Consulta($sql);
+    // js
 
-    if ($db->Num_Linhas()) {
-      while ($db->ProximoRegistro()) {
-        list($ref_cod_matricula) = $db->Tupla();
+    Portabilis_View_Helper_Application::loadJQueryLib($this);
 
-        if (is_numeric($ref_cod_matricula)) {
-          $obj_matricula = new clsPmieducarMatricula();
-          $obj_matricula->setOrderby('ano ASC');
-          $lst_matricula = $obj_matricula->lista($ref_cod_matricula);
+    $scripts = array(
+      '/modules/Portabilis/Assets/Javascripts/Utils.js',
+      '/modules/Portabilis/Assets/Javascripts/ClientApi.js',
+      '/modules/Cadastro/Assets/Javascripts/AlunoShow.js?version=3'
+      );
 
-          if ($lst_matricula) {
-            $registro = array_shift($lst_matricula);
-          }
+    Portabilis_View_Helper_Application::loadJavascript($this, $scripts);
 
-          $table .= sprintf(
-            '<table class="tableDetalhe">
-               <tr class="formdktd">
-                 <td colspan="2"><strong>MatrÌcula - Ano %d</strong></td>
-               </tr>',
-            $registro['ano']
-          );
+    $styles = array ('/modules/Cadastro/Assets/Stylesheets/Aluno.css');
 
-          $obj_ref_cod_curso = new clsPmieducarCurso($registro['ref_cod_curso']);
-          $det_ref_cod_curso = $obj_ref_cod_curso->detalhe();
-          $nm_curso = $det_ref_cod_curso['nm_curso'];
-
-          $obj_serie = new clsPmieducarSerie($registro['ref_ref_cod_serie']);
-          $det_serie = $obj_serie->detalhe();
-          $nm_serie = $det_serie['nm_serie'];
-
-          $obj_cod_instituicao = new clsPmieducarInstituicao($registro['ref_cod_instituicao']);
-          $obj_cod_instituicao_det = $obj_cod_instituicao->detalhe();
-          $nm_instituicao = $obj_cod_instituicao_det['nm_instituicao'];
-
-          $obj_ref_cod_escola = new clsPmieducarEscola($registro['ref_ref_cod_escola']);
-          $det_ref_cod_escola = $obj_ref_cod_escola->detalhe();
-          $nm_escola = $det_ref_cod_escola['nome'];
-
-          $obj_mat_turma = new clsPmieducarMatriculaTurma();
-          $det_mat_turma = $obj_mat_turma->lista($ref_cod_matricula, NULL, NULL,
-            NULL, NULL, NULL, NULL, NULL, 1);
-
-          if ($det_mat_turma) {
-            $det_mat_turma = array_shift($det_mat_turma);
-
-            $obj_turma = new clsPmieducarTurma($det_mat_turma['ref_cod_turma']);
-            $det_turma = $obj_turma->detalhe();
-            $nm_turma  = $det_turma['nm_turma'];
-          }
-          else {
-            $nm_turma = '';
-          }
-
-          $transferencias = array();
-
-          if ($registro['aprovado'] == 1) {
-            $aprovado = 'Aprovado';
-          }
-          elseif ($registro['aprovado'] == 2) {
-            $aprovado = 'Reprovado';
-          }
-          elseif ($registro['aprovado'] == 3) {
-            $aprovado = 'Em Andamento';
-          }
-          elseif ($registro['aprovado'] == 4) {
-            if (is_numeric($registro['cod_matricula'])) {
-              $aprovado = 'Transferido';
-
-              $sql = sprintf('SELECT
-                        ref_cod_matricula_entrada,
-                        ref_cod_matricula_saida,
-                        to_char(data_transferencia, \'DD/MM/YYYY\') AS dt_transferencia
-                      FROM
-                        pmieducar.transferencia_solicitacao
-                      WHERE
-                        (ref_cod_matricula_entrada = %d
-                        OR ref_cod_matricula_saida = %d)
-                        AND ativo = 1',
-                      $registro['cod_matricula'], $registro['cod_matricula']
-              );
-
-              $db2 = new clsBanco();
-              $db2->Consulta($sql);
-
-              if ($db2->Num_Linhas()) {
-                while ($db2->ProximoRegistro()) {
-                  list($ref_cod_matricula_entrada, $ref_cod_matricula_saida,
-                    $dt_transferencia) = $db2->Tupla();
-
-                  if ($ref_cod_matricula_saida == $registro['cod_matricula']) {
-                    $transferencias[] = array(
-                      'data_trans' => $dt_transferencia,
-                      'desc'       => 'Data TransferÍncia SaÌda'
-                    );
-                  }
-                  elseif ($ref_cod_matricula_entrada == $registro['cod_matricula']) {
-                    $transferencias[] = array(
-                      'data_trans' => $dt_transferencia,
-                      'desc'       => 'Data TransferÍncia Admiss„o'
-                    );
-                  }
-                }
-              }
-            }
-          }
-          elseif ($registro['aprovado'] == 5) {
-            $aprovado = 'Reclassificado';
-          }
-          elseif ($registro['aprovado'] == 6) {
-            $aprovado = 'Abandono';
-          }
-          elseif ($registro['aprovado'] == 7) {
-            $aprovado = 'Em Exame';
-          }
-
-          $formando = $registro['formando'] == 0 ? 'N„o' : 'Sim';
-
-          $table .= sprintf(
-            '<tr class="formlttd"><td>N˙mero da MatrÌcula</td><td>%s</td></tr>',
-            $registro['cod_matricula']
-          );
-
-          $table .= sprintf(
-            '<tr class="formmdtd"><td>InstituiÁ„o</td><td>%s</td></tr>',
-            $nm_instituicao
-          );
-
-          $table .= sprintf(
-            '<tr class="formlttd"><td>Escola</td><td>%s</td></tr>',
-            $nm_escola
-          );
-
-          $table .= sprintf(
-            '<tr class="formmdtd"><td>SÈrie</td><td>%s</td></tr>',
-            $nm_serie
-          );
-
-          $table .= sprintf(
-            '<tr class="formlttd"><td>Turma</td><td>%s</td></tr>',
-            $nm_turma
-          );
-
-          $table .= sprintf(
-            '<tr class="formmdtd"><td>SituaÁ„o</td><td>%s</td></tr>',
-            $aprovado
-          );
-
-          $class = 'formmdtd';
-
-          if (is_array($transferencias)) {
-            asort($transferencias);
-
-            foreach ($transferencias as $trans) {
-              $table .= sprintf(
-                '<tr class="%s"><td>%s</td><td>%s</td></tr>',
-                $class, $trans['desc'], $trans['data_trans']
-              );
-
-              $class = $class == 'formmdtd' ? 'formlttd' : 'formmdtd';
-            }
-          }
-
-          if ($registro['aprovado'] < 4) {
-            if (is_numeric($registro["cod_matricula"])) {
-              $sql = sprintf('SELECT
-                        to_char(data_transferencia, \'DD/MM/YYYY\')
-                      FROM
-                        pmieducar.transferencia_solicitacao
-                      WHERE
-                        ref_cod_matricula_entrada = %d
-                        AND ativo = 1', $registro['cod_matricula']);
-
-              $db2 = new clsBanco();
-              $data_transferencia = $db2->CampoUnico($sql);
-
-              if ($data_transferencia) {
-                $table .= sprintf('
-                  <tr class="%s">
-                    <td>Data TransferÍncia Admiss„o</td>
-                    <td>%s</td>
-                  </tr>',
-                  $class, $data_transferencia);
-
-                $class = $class == 'formmdtd' ? 'formlttd' : 'formmdtd';
-              }
-            }
-          }
-
-          $table .= sprintf('<tr class="%s"><td>Formando</td><td>%s</td></tr>',
-            $class == 'formmdtd' ? 'formlttd' : 'formmdtd', $formando);
-
-          $table .= '</table>';
-        }
-      }
-    }
-    else {
-      return '<strong>O aluno n„o est· matriculado em nenhuma escola</strong>';
-    }
-
-    return $table;
+    Portabilis_View_Helper_Application::loadStylesheet($this, $styles);
   }
 }
 
-// Instancia o objeto da p·gina
+// Instancia o objeto da p√°gina
 $pagina = new clsIndexBase();
 
-// Instancia o objeto de conte˙do
+// Instancia o objeto de conte√∫do
 $miolo = new indice();
 
-// Passa o conte˙do para a p·gina
+// Passa o conte√∫do para a p√°gina
 $pagina->addForm($miolo);
 
 // Gera o HTML

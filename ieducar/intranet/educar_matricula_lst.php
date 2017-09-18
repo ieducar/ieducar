@@ -1,25 +1,25 @@
 <?php
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	*																	     *
-	*	@author Prefeitura Municipal de Itajaí								 *
+	*	@author Prefeitura Municipal de ItajaÃ­								 *
 	*	@updated 29/03/2007													 *
-	*   Pacote: i-PLB Software Público Livre e Brasileiro					 *
+	*   Pacote: i-PLB Software PÃºblico Livre e Brasileiro					 *
 	*																		 *
-	*	Copyright (C) 2006	PMI - Prefeitura Municipal de Itajaí			 *
+	*	Copyright (C) 2006	PMI - Prefeitura Municipal de ItajaÃ­			 *
 	*						ctima@itajai.sc.gov.br					    	 *
 	*																		 *
-	*	Este  programa  é  software livre, você pode redistribuí-lo e/ou	 *
-	*	modificá-lo sob os termos da Licença Pública Geral GNU, conforme	 *
-	*	publicada pela Free  Software  Foundation,  tanto  a versão 2 da	 *
-	*	Licença   como  (a  seu  critério)  qualquer  versão  mais  nova.	 *
+	*	Este  programa  Ã©  software livre, vocÃª pode redistribuÃ­-lo e/ou	 *
+	*	modificÃ¡-lo sob os termos da LicenÃ§a PÃºblica Geral GNU, conforme	 *
+	*	publicada pela Free  Software  Foundation,  tanto  a versÃ£o 2 da	 *
+	*	LicenÃ§a   como  (a  seu  critÃ©rio)  qualquer  versÃ£o  mais  nova.	 *
 	*																		 *
-	*	Este programa  é distribuído na expectativa de ser útil, mas SEM	 *
-	*	QUALQUER GARANTIA. Sem mesmo a garantia implícita de COMERCIALI-	 *
-	*	ZAÇÃO  ou  de ADEQUAÇÃO A QUALQUER PROPÓSITO EM PARTICULAR. Con-	 *
-	*	sulte  a  Licença  Pública  Geral  GNU para obter mais detalhes.	 *
+	*	Este programa  Ã© distribuÃ­do na expectativa de ser Ãºtil, mas SEM	 *
+	*	QUALQUER GARANTIA. Sem mesmo a garantia implÃ­cita de COMERCIALI-	 *
+	*	ZAÃ‡ÃƒO  ou  de ADEQUAÃ‡ÃƒO A QUALQUER PROPÃ“SITO EM PARTICULAR. Con-	 *
+	*	sulte  a  LicenÃ§a  PÃºblica  Geral  GNU para obter mais detalhes.	 *
 	*																		 *
-	*	Você  deve  ter  recebido uma cópia da Licença Pública Geral GNU	 *
-	*	junto  com  este  programa. Se não, escreva para a Free Software	 *
+	*	VocÃª  deve  ter  recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral GNU	 *
+	*	junto  com  este  programa. Se nÃ£o, escreva para a Free Software	 *
 	*	Foundation,  Inc.,  59  Temple  Place,  Suite  330,  Boston,  MA	 *
 	*	02111-1307, USA.													 *
 	*																		 *
@@ -104,9 +104,13 @@ class indice extends clsListagem
 		}
 		$this->campoOculto("ref_cod_aluno",$this->ref_cod_aluno);
 
-		$this->addBanner( "imagens/nvp_top_intranet.jpg", "imagens/nvp_vert_intranet.jpg", "Intranet" );
+		
 
 		$lista_busca = array(
+      "Ano",
+      "MatrÃ­cula",
+      "SituaÃ§Ã£o",
+      "Turma",
 			"S&eacute;rie",
 			"Curso"
 		);
@@ -139,7 +143,7 @@ class indice extends clsListagem
 		$this->offset = ( $_GET["pagina_{$this->nome}"] ) ? $_GET["pagina_{$this->nome}"]*$this->limite-$this->limite: 0;
 
 		$obj_matricula = new clsPmieducarMatricula();
-		$obj_matricula->setOrderby( "cod_matricula ASC" );
+		$obj_matricula->setOrderby('ano DESC, ref_ref_cod_serie DESC, aprovado, cod_matricula');
 		$obj_matricula->setLimite( $this->limite, $this->offset );
 
 		$lista = $obj_matricula->lista(
@@ -214,7 +218,42 @@ class indice extends clsListagem
 					echo "<!--\nErro\nClasse n&atilde;o existente: clsPmieducarEscola\n-->";
 				}
 
+        $enturmacoes = new clsPmieducarMatriculaTurma();
+        $enturmacoes = $enturmacoes->lista($registro['cod_matricula'], NULL, NULL,
+                                           NULL, NULL, NULL, NULL, NULL, 1);
+        $nomesTurmas = array();
+        foreach ($enturmacoes as $enturmacao) {
+          $turma         = new clsPmieducarTurma($enturmacao['ref_cod_turma']);
+          $turma         = $turma->detalhe();
+          $nomesTurmas[] = $turma['nm_turma'];
+        }
+        $nomesTurmas = implode('<br />', $nomesTurmas);
+
+        $situacao = $registro['aprovado'];
+        if ($situacao == 1)
+          $situacao = 'Aprovado';
+        elseif ($situacao == 2)
+          $situacao = 'Reprovado';
+        elseif ($situacao == 3)
+          $situacao = 'Em Andamento';
+        elseif ($situacao == 4)
+          $situacao = 'Transferido';
+        elseif ($situacao == 5)
+          $situacao = 'Reclassificado';
+        elseif ($situacao == 6)
+          $situacao = 'Abandono';
+
 				$lista_busca = array();
+
+   			$lista_busca[] = "<a href=\"educar_matricula_det.php?cod_matricula={$registro["cod_matricula"]}\">{$registro["ano"]}</a>";
+   			$lista_busca[] = "<a href=\"educar_matricula_det.php?cod_matricula={$registro["cod_matricula"]}\">{$registro["cod_matricula"]}</a>";
+   			$lista_busca[] = "<a href=\"educar_matricula_det.php?cod_matricula={$registro["cod_matricula"]}\">$situacao</a>";
+
+				if ($nomesTurmas) {
+					$lista_busca[] = "<a href=\"educar_matricula_det.php?cod_matricula={$registro["cod_matricula"]}\">$nomesTurmas</a>";
+        }
+				else
+					$lista_busca[] = "";
 
 				if ($registro["ref_ref_cod_serie"])
 					$lista_busca[] = "<a href=\"educar_matricula_det.php?cod_matricula={$registro["cod_matricula"]}\">{$registro["ref_ref_cod_serie"]}</a>";
@@ -246,6 +285,11 @@ class indice extends clsListagem
 				$this->addLinhas($lista_busca);
 			}
 		}
+    else
+    {
+				$this->addLinhas(array('Aluno sem matrÃ­culas em andamento na sua escola.'));
+    }
+
 		$this->addPaginador2( "educar_matricula_lst.php", $total, $_GET, $this->nome, $this->limite );
 		if( $obj_permissoes->permissao_cadastra( 578, $this->pessoa_logada, 7 ) )
 		{
