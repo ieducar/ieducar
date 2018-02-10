@@ -18,6 +18,7 @@ RUN apt-get -y update \
     libreadline6-dev
     make gcc
     zlib1g-dev 
+    RUN apt-get install -y software-properties-common python-software-properties \
     --no-install-recommends \
     && a2enmod rewrite \
 # Instala pacotes pear
@@ -34,7 +35,6 @@ CMD chmod 777 -R /var/www/html/i-educar
 WORKDIR /var/www/html/i-educar
 
 # Instala dependencia relatórios
-RUN apt-get install -y software-properties-common python-software-properties \
     && add-apt-repository -y ppa:openjdk-r/ppa \
     && apt-get -y update \
     && apt-get -y install openjdk-7-jdk
