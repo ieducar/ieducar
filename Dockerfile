@@ -15,8 +15,6 @@ RUN pear install XML_RPC2 Mail Net_SMTP Services_ReCaptcha
 COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
 CMD a2ensite 000-default.conf
 
-EXPOSE 80
-
 CMD mkdir /var/www/html/i-educar
 CMD chmod 777 -R /var/www/html/i-educar
 WORKDIR /var/www/html/i-educar
@@ -30,6 +28,8 @@ RUN apt-get install -y software-properties-common python-software-properties \
 CMD update-alternatives --config java
 
 CMD chmod 777 /home/portabilis/ieducar/modules/Reports/ReportSources/
+
+EXPOSE 80
 
 CMD /usr/sbin/apache2ctl -D FOREGROUND
 
