@@ -17,7 +17,8 @@ RUN apt-get -y update \
     libreadline6
     libreadline6-dev
     make gcc
-    zlib1g-dev \
+    zlib1g-dev 
+    --no-install-recommends \
     && a2enmod rewrite \
 # Instala pacotes pear
     && pear install XML_RPC2 Mail Net_SMTP Services_ReCaptcha \
