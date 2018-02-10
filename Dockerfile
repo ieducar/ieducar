@@ -18,7 +18,8 @@ RUN apt-get -y update \
     libreadline6-dev
     make gcc
     zlib1g-dev 
-    software-properties-common python-software-properties \
+    software-properties-common
+    python-software-properties
     --no-install-recommends \
     && a2enmod rewrite \
 # Instala pacotes pear
