@@ -21,6 +21,9 @@ RUN apt-get -y update \
     software-properties-common
     python-software-properties
     --no-install-recommends \
+    && add-apt-repository -y ppa:openjdk-r/ppa \
+    && apt-get -y update \
+    && apt-get -y install openjdk-7-jdk \
     && a2enmod rewrite \
 # Instala pacotes pear
     && pear install XML_RPC2 Mail Net_SMTP Services_ReCaptcha \
@@ -36,10 +39,6 @@ CMD chmod 777 -R /var/www/html/i-educar
 WORKDIR /var/www/html/i-educar
 
 # Instala dependencia relatórios
-    && add-apt-repository -y ppa:openjdk-r/ppa \
-    && apt-get -y update \
-    && apt-get -y install openjdk-7-jdk
-
 CMD update-alternatives --config java
 
 CMD chmod 777 /home/portabilis/ieducar/modules/Reports/ReportSources/
