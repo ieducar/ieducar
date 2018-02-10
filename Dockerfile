@@ -32,8 +32,8 @@ RUN apt-get -y update \
 	&& rm -rf /var/lib/apt/lists/*
 
 COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
-CMD a2ensite 000-default.conf
 
+RUN a2ensite 000-default.conf \
 CMD mkdir /var/www/html/i-educar
 CMD chmod 777 -R /var/www/html/i-educar
 WORKDIR /var/www/html/i-educar
