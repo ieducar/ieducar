@@ -5,12 +5,10 @@ MAINTAINER Caroline Salib <caroline@portabilis.com.br>
 RUN apt-get -y update \
     && apt-get install -y curl php-curl git-core apache2 libapache2-mod-php php-pgsql php-pear php-mbstring rpl wget \
     && a2enmod rewrite \
-    && apt-get clean
-
-RUN apt-get install -y libreadline6 libreadline6-dev make gcc zlib1g-dev
-
+    && apt-get clean \
+    && apt-get install -y libreadline6 libreadline6-dev make gcc zlib1g-dev \
 # Instala pacotes pear
-RUN pear install XML_RPC2 Mail Net_SMTP Services_ReCaptcha
+    && pear install XML_RPC2 Mail Net_SMTP Services_ReCaptcha
 
 COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
 CMD a2ensite 000-default.conf
