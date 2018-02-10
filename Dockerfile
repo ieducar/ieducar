@@ -12,7 +12,7 @@ RUN apt-get install -y libreadline6 libreadline6-dev make gcc zlib1g-dev
 # Instala pacotes pear
 RUN pear install XML_RPC2 Mail Net_SMTP Services_ReCaptcha
 
-ADD ieducar.conf /etc/apache2/sites-available/000-default.conf
+COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
 CMD a2ensite 000-default.conf
 
 EXPOSE 80
