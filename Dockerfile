@@ -35,8 +35,8 @@ COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
 
 RUN a2ensite 000-default.conf \
     && mkdir /var/www/html/i-educar \
-    && chmod 777 -R /var/www/html/i-educar
-    && update-alternatives --config java
+    && chmod 777 -R /var/www/html/i-educar \
+    && update-alternatives --config java \
 
 # Instala dependencia relatórios
     && chmod 777 /home/portabilis/ieducar/modules/Reports/ReportSources/
