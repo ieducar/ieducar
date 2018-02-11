@@ -34,14 +34,14 @@ RUN apt-get -y update \
 COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
 
 RUN a2ensite 000-default.conf \
-CMD mkdir /var/www/html/i-educar
-CMD chmod 777 -R /var/www/html/i-educar
+    && mkdir /var/www/html/i-educar \
+    && chmod 777 -R /var/www/html/i-educar
+    && update-alternatives --config java
 WORKDIR /var/www/html/i-educar
 
 # Instala dependencia relatórios
-CMD update-alternatives --config java
+    && chmod 777 /home/portabilis/ieducar/modules/Reports/ReportSources/
 
-CMD chmod 777 /home/portabilis/ieducar/modules/Reports/ReportSources/
 
 EXPOSE 80
 
