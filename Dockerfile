@@ -3,23 +3,24 @@ FROM ubuntu:16.04
 MAINTAINER Caroline Salib <caroline@portabilis.com.br>
 
 RUN apt-get -y update \
-    && apt-get install -y 
-    curl
-    php-curl
-    git-core
-    apache2
-    libapache2-mod-php
-    php-pgsql
-    php-pear
-    php-mbstring
-    rpl
-    wget
-    libreadline6
-    libreadline6-dev
-    make gcc
-    zlib1g-dev 
-    software-properties-common
-    python-software-properties
+    && apt-get install -y \
+    curl \
+    php-curl \
+    git-core \
+    apache2 \
+    libapache2-mod-php \
+    php-pgsql \
+    php-pear \
+    php-mbstring \
+    rpl \
+    wget \
+    libreadline6 \
+    libreadline6-dev \
+    make \
+    gcc \
+    zlib1g-dev \
+    software-properties-common \
+    python-software-properties \
     --no-install-recommends \
     && add-apt-repository -y ppa:openjdk-r/ppa \
     && apt-get -y update \
