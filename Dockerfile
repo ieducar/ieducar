@@ -44,7 +44,7 @@ RUN a2ensite 000-default.conf \
 COPY * /home/portabilis
 
 # Instala dependencia relatórios
-    && chmod 777 /home/portabilis/ieducar/modules/Reports/ReportSources/
+RUN chmod 777 /home/portabilis/ieducar/modules/Reports/ReportSources/
 
 EXPOSE 80
 
