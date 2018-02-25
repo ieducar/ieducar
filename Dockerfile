@@ -39,7 +39,9 @@ RUN a2ensite 000-default.conf \
     && chmod 777 -R /var/www/html/i-educar \
     && update-alternatives --config java \
     && groupadd -g 1000 -r portabilis \
-    && useradd -u 1000 -r -g portabilis portabilis -d /home/portabilis \
+    && useradd -u 1000 -r -g portabilis portabilis -d /home/portabilis
+    
+COPY * /home/portabilis
 
 # Instala dependencia relatórios
     && chmod 777 /home/portabilis/ieducar/modules/Reports/ReportSources/
