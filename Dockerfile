@@ -41,7 +41,7 @@ RUN a2ensite 000-default.conf \
     && groupadd -g 1000 -r portabilis \
     && useradd -u 1000 -r -g portabilis portabilis -d /home/portabilis
     
-COPY * /home/portabilis/
+COPY ieducar/ /home/portabilis/
 
 # Instala dependencia relatórios
 RUN chmod 777 /home/portabilis/ieducar/modules/Reports/ReportSources/
