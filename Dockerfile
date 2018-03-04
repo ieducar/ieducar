@@ -33,6 +33,7 @@ RUN apt-get -y update \
 	&& rm -rf /var/lib/apt/lists/*
 
 COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
+COPY ieducar/* /var/www/html/i-educar
 
 RUN a2ensite 000-default.conf \
 	&& mkdir /var/www/html/i-educar \
@@ -41,7 +42,6 @@ RUN a2ensite 000-default.conf \
 	&& groupadd -g 1000 -r portabilis \
 	&& useradd -u 1000 -r -g portabilis portabilis -d /home/portabilis
 
-COPY ieducar/ /home/portabilis/
 
 # Instala dependencia relatórios
 RUN chmod 777 /home/portabilis/ieducar/modules/Reports/ReportSources/
