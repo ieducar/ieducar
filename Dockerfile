@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
+LABEL maintainer Caroline Salib <caroline@portabilis.com.br>
 
-MAINTAINER Caroline Salib <caroline@portabilis.com.br>
 
 RUN apt-get -y update \
 	&& apt-get install -y \
