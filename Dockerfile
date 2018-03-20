@@ -32,7 +32,7 @@ RUN apt-get -y update \
 	&& apt-get purge --auto-remove -y \
 	&& rm -rf /var/lib/apt/lists/*
 COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
-COPY ieducar/* /var/www/html/i-educar
+COPY . /var/www/html/i-educar
 RUN a2ensite 000-default.conf \
 	&& mkdir /var/www/html/i-educar \
 	&& update-alternatives --config java \
