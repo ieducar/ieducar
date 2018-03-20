@@ -34,7 +34,6 @@ RUN apt-get -y update \
 COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
 COPY . /var/www/html/i-educar
 RUN a2ensite 000-default.conf \
-	&& mkdir /var/www/html/i-educar \
 	&& update-alternatives --config java \
 	&& groupadd -g 1000 -r portabilis \
 	&& useradd -u 1000 -r -g portabilis portabilis -d /home/portabilis
