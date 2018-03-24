@@ -24,7 +24,7 @@ RUN apt-get -y update \
 	--no-install-recommends \
 	&& add-apt-repository -y ppa:openjdk-r/ppa \
 	&& apt-get -y update \
-	&& apt-get -y install openjdk-7-jdk \
+	&& apt-get -y install openjdk-8-jdk \
 	&& a2enmod rewrite \
 	# Instala pacotes pear
 	&& pear install XML_RPC2 Mail Net_SMTP Services_ReCaptcha \
