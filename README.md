@@ -26,7 +26,7 @@ No sentido desta iniciativa, está a proposta de acabar com a defasagem da vers�
 
 Entretanto, a Portabilis, ao liberar todas as suas atualizações (etapa 1) irá modificar muito o código atual. Portanto, nenhum patch será aceito até lá para evitar trabalhos desnecessários.
 
-Aos interessados, pedimos encarecidamente: **assista o repositório, pois dentro dos próximos meses (expectativa para meados de maio)** iremos precisar de todo o apoio possível para esta transformação. Contamos com a compreensão de todos!
+Aos interessados, pedimos encarecidamente que **assista o repositório pois até o fim de maio (31 de maio de 2018)** iremos liberar a versão inicial, e nessa etapa, vamos precisar de todo o apoio possível para organizarmos em conjunto as melhorias do projeto. Contamos com a compreensão de todos!
 
 # Sobre o i-Educar
 
