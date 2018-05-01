@@ -24,7 +24,9 @@ RUN apt-get -y update \
 	software-properties-common \
 	# não existe mais
 	# python-software-properties \
-	--no-install-recommends \
+	--no-install-recommends \	
+	&& echo "America/Sao_Paulo" > /etc/timezone \
+	&& dpkg-reconfigure -f noninteractive tzdata \
 	&& add-apt-repository -y ppa:openjdk-r/ppa \
 	&& apt-get -y update \
 	&& apt-get -y install openjdk-8-jdk \
