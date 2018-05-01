@@ -15,7 +15,8 @@ RUN apt-get -y update \
 	rpl \
 	wget \
 	libreadline7 \
-	libreadline7-dev \
+	# virou pacote virtual
+	# libreadline7-dev \
 	make \
 	gcc \
 	zlib1g-dev \
