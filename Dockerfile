@@ -1,6 +1,7 @@
 FROM ubuntu:18.04
 LABEL maintainer Caroline Salib <caroline@portabilis.com.br>
 
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get -y update \
 	&& apt-get install -y \
