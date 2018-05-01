@@ -14,8 +14,8 @@ RUN apt-get -y update \
 	php-mbstring \
 	rpl \
 	wget \
-	libreadline6 \
-	libreadline6-dev \
+	libreadline7 \
+	libreadline7-dev \
 	make \
 	gcc \
 	zlib1g-dev \
