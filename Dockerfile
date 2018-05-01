@@ -21,7 +21,8 @@ RUN apt-get -y update \
 	gcc \
 	zlib1g-dev \
 	software-properties-common \
-	python-software-properties \
+	# não existe mais
+	# python-software-properties \
 	--no-install-recommends \
 	&& add-apt-repository -y ppa:openjdk-r/ppa \
 	&& apt-get -y update \
