@@ -34,6 +34,7 @@ RUN add-apt-repository -y ppa:openjdk-r/ppa \
 COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
 COPY . /var/www/html/i-educar
 RUN a2ensite 000-default.conf \
+	&& chown -R www-data:www-data /var/www
 EXPOSE 80
 CMD /usr/sbin/apache2ctl -D FOREGROUND
 
