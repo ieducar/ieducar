@@ -16,14 +16,10 @@ RUN apt-get -y update \
 	rpl \
 	wget \
 	libreadline7 \
-	# virou pacote virtual
-	# libreadline7-dev \
 	make \
 	gcc \
 	zlib1g-dev \
 	software-properties-common \
-	# não existe mais
-	# python-software-properties \
 	--no-install-recommends \	
 	&& echo "America/Sao_Paulo" > /etc/timezone \
 	&& dpkg-reconfigure -f noninteractive tzdata \
