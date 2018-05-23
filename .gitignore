@@ -1,3 +1,4 @@
 # Vagrant 
 /.vagrant
 Vagrantfile
+*.js~
