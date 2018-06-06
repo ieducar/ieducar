@@ -36,6 +36,7 @@ COPY . /var/www/html/i-educar
 ADD https://getcomposer.org/composer.phar /var/www/html/i-educar/composer.phar
 RUN rm -rf /var/www/html/i-educar/vendor \
 	&& rm -rf /var/www/html/nbproject \
+	&& php composer.phar install \
 	&& chown -R www-data:www-data /var/www
 EXPOSE 80
 CMD /usr/sbin/apache2ctl -D FOREGROUND
