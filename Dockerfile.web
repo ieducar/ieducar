@@ -33,6 +33,7 @@ RUN add-apt-repository -y ppa:openjdk-r/ppa \
 	&& rm -rf /var/lib/apt/lists/*
 COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
 COPY . /var/www/html/i-educar
+ADD https://getcomposer.org/composer.phar /var/www/html/i-educar/composer.phar
 RUN rm -rf /var/www/html/i-educar/vendor \
 	&& rm -rf /var/www/html/nbproject \
 	&& chown -R www-data:www-data /var/www
