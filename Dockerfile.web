@@ -1,8 +1,10 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 LABEL maintainer Caroline Salib <caroline@portabilis.com.br>
 
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get -y update \
+RUN add-apt-repository -y ppa:openjdk-r/ppa \
+	&& apt-get -y update \
 	&& apt-get install -y \
 	curl \
 	php-curl \
@@ -14,17 +16,15 @@ RUN apt-get -y update \
 	php-mbstring \
 	rpl \
 	wget \
-	libreadline6 \
-	libreadline6-dev \
+	libreadline7 \
 	make \
 	gcc \
 	zlib1g-dev \
+	openjdk-8-jdk \
 	software-properties-common \
-	python-software-properties \
-	--no-install-recommends \
-	&& add-apt-repository -y ppa:openjdk-r/ppa \
-	&& apt-get -y update \
-	&& apt-get -y install openjdk-7-jdk \
+	--no-install-recommends \	
+	&& echo "America/Sao_Paulo" > /etc/timezone \
+	&& dpkg-reconfigure -f noninteractive tzdata \
 	&& a2enmod rewrite \
 	# Instala pacotes pear
 	&& pear install XML_RPC2 Mail Net_SMTP Services_ReCaptcha \
@@ -33,10 +33,11 @@ RUN apt-get -y update \
 	&& rm -rf /var/lib/apt/lists/*
 COPY ieducar.conf /etc/apache2/sites-available/000-default.conf
 COPY . /var/www/html/i-educar
-RUN a2ensite 000-default.conf \
-	&& update-alternatives --config java \
-	&& groupadd -g 1000 -r portabilis \
-	&& useradd -u 1000 -r -g portabilis portabilis -d /home/portabilis
+ADD https://getcomposer.org/composer.phar /var/www/html/i-educar/composer.phar
+RUN rm -rf /var/www/html/i-educar/vendor \
+	&& rm -rf /var/www/html/nbproject \
+	&& php composer.phar install \
+	&& chown -R www-data:www-data /var/www
 EXPOSE 80
 CMD /usr/sbin/apache2ctl -D FOREGROUND
 
